@@ -1,0 +1,158 @@
+
+### PARSEC 1.4.3 ###
+
+ Yeah, this is my first release note, and it's not even a release, and not even
+ a proper note.  Next time will probably be better.
+
+ If you are compiling right now, please head straight down to my notes on the
+ new preprocessor flags implemented in this version.
+
+## Contents ##
+ * WHAT'S NEW 
+ * Status of tests etc. 
+ * Compile time stuff here 
+ * explanation of preprocessor flags that I use
+ * optimization flags  
+
+## WHAT'S NEW ##
+
+Plenty... New documentation is in the works.
+
+Here's what you need to know if you are working on performance and scaling
+
+# buffers #
+
+   matvecB (the new matvec) uses buffers for the communications. It only needs
+   two buffers, but if your cluster can take it and the per-node memory
+   consumption is not too high, you can increase the number of buffers, which may
+   result in smoother operation and communication hiding. Control this with 
+   the *max_lap_buffers* input flag.
+
+# blocks #
+   
+   Two changes were introduced – i) The block size can now
+   be modified using the input file, the effects of a large block size are being
+   investigated. Use *matvec_blocksize* in order to override the default.
+   
+   ii) The matvec call was restructured so that each vector is
+   dealt with sequentially, but the non-local and local parts are done
+   separately, so that the entire non-local part for the block is processed
+   before the first laplacian is approached.
+
+
+# chebff #
+
+   CHEBFF is a solver which, although may have convergence issue at the moment,
+   is very similar to subspace. Thus, optimization effort at the solver front
+   is on this one.  This is also the only solver that prints out timing
+   information to the out.* files, for quick analysis.
+
+# file i/o flag #
+
+   *Output_Data* is a new parsec.in logical flag that control the writing of parsec.dat 
+   setting it to .FALSE. is recommended if running on large numbers of nodes since 
+   the i/o is serial right now.
+
+# openmp options #
+   There are so many openmp options that could be set from the environment.
+   The two most important ones are the number of threads, and the scheduling method
+   to divide the work between them. 
+   on the tools/ folder there is a new script, FLAGS_OMP.sh, that can help you
+   automate this.
+
+# communication hiding #
+   It is unknown yet how well the communication hiding is efficient with
+   different mpi implementations. Make sure to test whether setting
+   MPICH_ASYNC_PROGRESS in your shell improves performance.
+   
+
+##### Status of tests etc. ######
+
+ I just ran most of the benchmark and test jobs using this revision. 
+ I used intel composer 15.0.0 and mkl 11.2, intelmpi 5.  Most of the tests are
+ okay, with differences between the reference files and my runs of ~1e-7 Ry in
+ the total energy. 
+
+ Since the accuracy and numbers are barely related to the performance issues,
+ This is not a show-stopper.
+
+ Here is the list of failures - 
+
+ 1. bcc - failed with \DeltaE=1e-3 Ry - not such big of a deal 
+
+ 2. orthorhombic - failed because of different number of k-points vs the reference ( version 1.3)
+
+ 3. triclinic - non-local blocks for the first atom (Na) were not recognized -
+ that's new, and will be taken care of
+
+ 4. polarization - total energies and eigenvalues okay, but polar.dat different
+
+ 5. InP - failed with \DeltaE=1e-4 Ry - really not such big of a deal
+
+ 6. Fe_Bulk - failed with \DeltaE=1e-5 Ry - really really not such big of a deal
+
+ 7. gold - matvec crash because of buffer write_protect access violation, this is
+ kinda okay since the SO parts were not properly dealt with in the new matvecB
+ (yet).
+
+ 8. liquid_si - test works but is irrelevant since the RNG is different
+
+ 9. ZnO - failed with \DeltaE=1e-4 Ry - again really not such bug of a deal
+
+ 10-11 - The water and silver cluster tests gave different end structures and
+ dipoles, so this points out something that should be looked at more clearly
+ after we know that forces are accurately calculated.
+
+##### Compile time stuff here ######
+here is what my FC/F90 lines look like, with some explanation
+    FC	= mpiifort -openmp -trace -mkl -align array32byte -align rec32byte -I$(VT_ROOT)/include 
+ mpiifort :
+ the intel mpif90
+ -openmp : 
+ use openmp
+ -mkl    :
+ link with threaded mkl
+ -align etc. : 
+ make sure that we align stuff in memory so that vectorization
+ could happen, especially inside MKL runs. This is a simple but slightly wrong explanation.
+ -trace, -I${VT_ROOT)/include : 
+ these are for including the intel TraceAnalyzer stuff
+ or else you need to load those during runtime, which I hate.
+ another thing you need to add if you want to use the trace analyzer:
+    LIBMPI= -L$(VT_LIB_DIR) -lVT  $(VT_ADD_LIBS)
+
+####explanation of preprocessor flags that I use:
+-DUSEFFTW3 : 
+ use fftw3, I use the intel wrapper for that, so -mkl does the work if your cluster is configured correctly
+ if not, you probably know how to compile with fftw3 anyways, and it is not that important to performance so what the heck
+
+-DUSEARPACK :
+ make arpack available as a solver. Recommended only for testing purposes because its super slow (relatively)
+ If you do find yourself needing arpack, you have to link with a thread-safe version of it.
+ Basically for arpack-ng, it means that you need to hack the configure 
+ so that mpi{f90,fort,ifort} has the proper flag that tells it to link with the thread-safe
+ portion of your mpi implementation
+
+-DMPI :
+ use mpi
+
+-DNEIGHCOLLETIVE : 
+ mpi-3 only feature, use non-blocking neighborhood collectives. As of intelmpi
+ ver. 5 this is just a pretty way of doing isend/irecv+wait, but it will get
+ better.
+
+-DIALLREDUCE :
+ mpi-3 only feature, use a non-blocking allreduce in matvec. This helps to
+ alleviate network load by delaying synchronization.
+
+-DITAC :
+ use the TraceAnalyzer api (recommended)
+
+-DOMPFUN : 
+ on its way to being removed, this enables various openmp stuff that are
+ encapsulated in ifdef's.
+
+### optimization flags  ###
+nothing fancy here, change your -x flag to whatever your hardware can support.
+    FFLAGS = -O3 -xAVX -ip -traceback
+

@@ -1,0 +1,31 @@
+ Total number of atoms is:            5
+ Number of different types of atoms is:            1
+ 
+  5 Na atoms with coordinates:
+    -1.015971     3.366211     2.139044
+     2.800929     3.860314    -4.162935
+     5.886940     1.162583     0.865330
+     0.850492    -3.860314     0.480202
+    -5.886940    -2.178174     4.162935
+ 
+ Applied Electric field  =  0.00100 [Ry/au]
+ 
+   Field           Total              Dipole  Moment [Deb.]
+ Component      Energy [Ry]          X          Y          Z
+  0. 0. 0.    -1.769134279793    -1.372605   0.854922   0.311230
+  1. 0. 0.    -1.763163305937    -0.338653   0.900384   0.228294
+ -1. 0. 0.    -1.775918188897    -2.405592   0.807367   0.398741
+  0. 1. 0.    -1.765507885873    -1.325094   1.904493   0.257612
+  0.-1. 0.    -1.773586386069    -1.416181  -0.188750   0.364085
+  0. 0. 1.    -1.762787310267    -1.455160   0.806419   1.247381
+  0. 0.-1.    -1.776217882965    -1.284941   0.909942  -0.621912
+ 
+ Total charge of the cluster:  -1.000
+ 
+ Polarizability of the cluster (A**3):
+                 alfaXX    alfaYY    alfaZZ       average
+ From energy:    60.2322   61.1789   54.5789      58.6633
+ From dipole:    60.2930   61.0603   54.5276      58.6270
+ 
+ Polarizability per atom =   11.7327 A**3  (energy)
+                             11.7254 A**3  (dipole)

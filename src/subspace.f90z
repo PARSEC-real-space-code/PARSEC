@@ -1,0 +1,708 @@
+#include "mycomplex.h"
+!=====================================================================
+!
+! Apply  Chebyshev filtered (nonlinear) subspace iteration to compute
+! an orthonormal basis of the wanted principal eigensubspace.
+!
+! Note that no iterative diagonalization to the Hamiltonian is involved.
+!
+! Authors:  Yunkai Zhou, Murilo Tiago  (v1.0, 2005, revised april 2014)
+!
+#ifdef BETA
+! Rev: the scaled chebyshev filter is implemeted (the previous code from 2005 
+! uses an unscaled filter, the scaled one MAY have better performance)
+#endif
+!---------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine zsubspace(kplp,nstate, nec, maxmvs, eval, evec, irp, isp, iprint, blksize, info)
+#else
+subroutine  subspace(kplp,nstate, nec, maxmvs, eval, evec, irp, isp, iprint, blksize, info)
+#endif
+  use constants
+  use parsec_global_data   !!includes constants
+  use matvecB_interface
+  implicit none
+#ifdef ITAC
+    include 'VT.inc'
+    include 'vtcommon.inc'
+  integer vtierr
+#endif
+  !
+  !  Input/Output variables:
+  !
+  !  # of states to be calculated for each representation
+  integer, intent(in)     :: nstate
+  !  on output, nec stores the number of converged eigenpairs
+  integer, intent(inout)  :: nec
+  !  k-point index
+  integer, intent(in) :: kplp
+
+  !  on input, maxmvs is the maximum number of matrix-vector products
+  !  on output, maxmvs stores the actual number of matrix-vector products
+  integer, intent(inout)  :: maxmvs
+
+  real(dp), intent(out)   :: eval(nstate)            !elec_st%eig(,,)%en
+  SCALAR, intent(inout) :: evec(parallel%ldn*parallel%mxwd,nstate) !elec_st%eig(,,)%zwf
+
+  integer,  intent(in)    :: irp   !current representation 
+  integer,  intent(in)    :: isp   !current spin orientation
+  integer,  intent(in)    :: iprint   !printout flag
+  integer,  intent(in)    :: blksize   !blocksize for subspace filtering, matmul is blocked in dgemm anyways
+  integer,  intent(inout) :: info  !on output, info==0 if successful
+
+  !
+  !  Work variables:
+  !
+  !
+  integer, parameter :: lohi = -1  !compute the smallest eigenvalues
+  integer, save    :: kssmax     !maximum subspace dimension
+  integer :: j, i,  &
+       ndim,        & !local Hamiltonian dimension
+       ldn,         & !local Hamiltonian leading dimension
+       kssmax0,     & !initial maximum subspace dimension
+       alcstat,     & !for memory allocation check
+       jmax,icache    !for matmul
+
+#ifndef BETA
+  real(dp), dimension(1) :: eval_loc  ! dummy argument for shape boundary requirements
+#endif
+  SCALAR, allocatable :: w_opv(:)   ! w_opv = (OP)*evec (OP is the hamiltonian)
+  SCALAR, allocatable :: h_proj(:,:)  ! h_proj = V'*(OP)*V (where V=evec(:,1:ncomp))
+#ifndef BETA
+  integer,  allocatable :: indx(:) ! index for ritz value sorts
+#endif
+  SCALAR, allocatable :: matmul_tmp(:,:) ! work array for matmul
+
+  !  Chebyshev filter related variables
+  integer  :: polym   !degree of the Chebyshev polynomial used
+
+  ! lowb: the lower bounds of the unwanted spectrum, or the spectrum to be dampened 
+  !  lower bounds of the spectrum to be dampened (moved to module 
+  !  work_arrays since automatic object cannot have SAVE attribute)
+  !  upper bound for the full spectrum of local Hamiltonian
+  real(dp) :: upperb
+#ifdef BETA
+  ! estimate of the lower bound of the full spectrum 
+  real(dp) :: lowb0
+#endif
+
+#ifdef BETA
+  ! temporary variables
+  real(dp) :: lowerbndtmp, middle
+  ! real(dp), dimension(1) :: eval_loc  ! dummy argument for shape boundary requirements
+  ! integer,  allocatable :: indx(:) ! index for ritz value sorts
+#endif
+!!integer  :: nrep    !number of representation
+  integer  :: ncomp   !at the initial step, ncomp is the numebr of 
+                      !eigen-pairs to compute; at latter steps, ncomp
+                      !equals to the subspace dimension 
+  integer  :: sdim    !dimension of the subspace used for the Chebyshev 
+                      !filtering (sdim=ncomp, other choices possible)
+  integer  :: messy_orth
+  !
+  !  External subroutines:
+  !
+  intrinsic min, max
+  external  Zgemm, Zlacpy, Zcopy
+  SCALAR, external :: Zdot
+
+  Interface
+#ifdef CPLX
+  subroutine  zlancz_bound(kplp,upperb, n, k, ldn, lowb0, middle)
+#else
+  subroutine   lancz_bound(kplp,upperb, n, k, ldn, lowb0, middle)
+#endif
+    use constants
+    integer,  intent(in)   :: kplp   !which kpoint
+    real(dp), intent(out) :: upperb  !upper bound of the full spectrum
+    integer,  intent(in)  :: n       !dimension of the matrix
+    integer,  intent(in)   :: k      !how many Lanczos step to take
+    integer,  intent(in)  :: ldn     !leading dimension 
+    real(dp), intent(out), optional :: lowb0  !lower bound for the full spectrum,
+                                             !not to be confused with the lowb for the filter
+    real(dp), intent(out), optional :: middle !estimated middle point of the full spectrum
+#ifdef CPLX
+  end subroutine zlancz_bound
+#else
+  end subroutine lancz_bound
+#endif
+  End Interface
+
+  !-------------------------------------------------------------------
+
+#ifdef ITAC
+    call VTBEGIN( vt_subspace_main,vtierr)
+#endif
+  !
+  ! The total number of points inside the sphere is the size of the
+  ! Hamiltonian of the system, it is stored in parallel%ndim, but this number 
+  ! is NOT used for any eigen-solver. The dimension of the local Hamiltonian
+  ! should be parallel%mydim, with leading dimension parallel%ldn.
+  ! Note that parallel%ldn < parallel%ndim is always true whenever there is
+  ! more than 1 symmetric operation. (parallel%ndim > parallel%ldn >= parallel%mydim.)
+  !
+  ndim = parallel%mydim*parallel%mxwd
+  ldn = parallel%ldn*parallel%mxwd
+
+  ncomp = nstate
+
+  !! nrep = solver%nrep  !!never used?
+
+  !  one needs to guarantee that kssmax0 >= 2*ncomp. 
+  !  the kssmax0<=ndim is not checked (it should normally be the case)
+  !  the ncomp+20 is for small nstate
+  kssmax0 = nstate
+  kssmax = nstate
+
+  if (solver%ncompcnt(irp,isp) <= 0) then
+     solver%ncompcnt(irp,isp) = max(solver%ncompcnt(irp,isp), ncomp)
+  else
+     solver%ncompcnt(irp,isp) = min(solver%ncompcnt(irp,isp), ncomp)
+  end if
+
+  if (iprint >= 2)  then
+       write(9,'(6(2x, a, i4))')  "kssmax=",kssmax, "kssmax0=",  &
+       kssmax0, "ncomp=",ncomp, "ncompcnt=",solver%ncompcnt(irp,isp),  &
+       "irp=",irp
+       call myflush(9)
+  end if
+
+
+#ifdef BETA
+  !  estimate the upper bound of the spectrum of the updated
+  !  Hamiltonian (by 10 steps of standard Lanczos)
+#ifdef CPLX
+  call zlancz_bound(kplp,upperb, ndim, 10, ldn, lowb0, middle)
+#else
+  call  lancz_bound(kplp,upperb, ndim, 10, ldn, lowb0, middle)
+#endif
+
+#endif
+  
+  !  a better way may be to adapt the polym by checking the difference
+  !  between eval_loc(j, irp) and eval_loc(j+1, irp).
+  !  if the difference is small (i.e., close to convergence),
+  !  then polym can be reduced (this is not implemented).
+
+  polym = solver%polym
+
+  sdim = ncomp
+#ifdef BETA
+  lowerbndtmp = maxval(solver%eval_loc(1:solver%ncompcnt(irp,isp),irp,isp))
+#endif
+
+  if ( solver%firstfilt(irp,isp) ) then
+     !  for the first filtering, assign the largest value in eval_loc
+     !  to lowerb. note that eval_loc contains only sdim ritz values 
+     !  (even though its dimension is > 2*sdim)
+#ifdef BETA
+     solver%lowerb(irp,isp) = max(min(lowerbndtmp, middle), zero)
+#else
+     solver%lowerb(irp,isp) = &
+          maxval(solver%eval_loc(1:solver%ncompcnt(irp,isp),irp,isp)) 
+     solver%lowerb(irp,isp) = max(solver%lowerb(irp,isp), zero)
+#endif
+     solver%firstfilt(irp,isp) = .false.  !!so that next call will be not 'firstfilt'
+  else
+#ifdef BETA
+     if ( lowerbndtmp < solver%lowerb(irp,isp) ) then
+        solver%lowerb(irp,isp) = min(lowerbndtmp + 0.95d0*(solver%lowerb(irp,isp)-lowerbndtmp), &
+                                     lowerbndtmp*0.95d0 + middle*0.05d0)
+     else
+        solver%lowerb(irp,isp) = min(lowerbndtmp + 0.05d0*(lowerbndtmp-solver%lowerb(irp,isp)), &
+                                     solver%lowerb(irp,isp)*0.95d0 + middle*0.05d0)
+     end if
+#else
+     solver%lowerb(irp,isp) = max(solver%lowerb(irp,isp),  &
+          maxval(solver%eval_loc(1:solver%ncompcnt(irp,isp),irp,isp)))
+#endif
+  end if
+
+
+#ifdef BETA
+  if (parallel%iammaster) then
+     write(7,*) 'Subspace filter report:'
+     write(7, '(2(a, i5))') 'irp=', irp,  ',   isp=', isp 
+     write(7, '(5(a, f12.5))') '  up=', upperb, ', low=', lowerbndtmp, ', prevlow=', &
+          solver%lowerb(irp,isp), ', low0=',lowb0, ', mid=', middle
+    ! write(7, '(2(a, f13.6))') '  bounds used:  upperb=', upperb, ',   lowerb=', solver%lowerb(irp,isp)
+     call myflush(7)
+  end if
+#endif
+
+#ifdef BETA
+  if ( upperb < solver%lowerb(irp,isp) ) then
+     write(9, *)  '**** Wrong filter bounds found in  subspace.f90, usually this should not happen'
+     write(9, *)  '**** self-adapt the bounds now, preceed with caution (check your results)'
+     write(9,7) 'irp=', irp, 'lowerb=',solver%lowerb(irp,isp),  'upperb=',upperb,  &
+        'maxritz=',  maxval(abs(solver%eval_loc(:,irp,isp))), 'polym=',polym
+     call myflush(9)
+     if (parallel%iammaster) then
+        write(7, *)  '**** Wrong filter bounds found in  subspace.f90, usually this should not happen'
+        write(7, *)  '**** self-adapt the bounds now, preceed with caution (check your results)'
+        call myflush(7)
+     end if
+     !! decrease lowerb and increase upperb, to make sure lowerb < upperb
+     lowerbndtmp = solver%lowerb(irp,isp)
+     solver%lowerb(irp,isp) = (upperb + lowb0)/2
+     upperb = upperb + 0.1d0*(lowerbndtmp - upperb)
+  end if
+
+
+
+#else
+  !  estimate the upper bound of the spectrum of the updated
+  !  Hamiltonian (by five steps of standard Lanczos)
+#ifdef CPLX
+  call zlancz_bound(kplp,upperb, ndim, 5, ldn)
+#else
+  call lancz_bound(kplp,upperb, ndim, 5, ldn)
+#endif
+#endif
+
+
+  !  clear the matvec counter, add # of matvec's for upperb calculation above
+#ifdef BETA
+  maxmvs = 10  
+#else
+  maxmvs = 5
+#endif
+
+  !  adapt polym if the 'unwanted' interval is long in length
+  !  (usually a larger polym is needed in this situation)
+  if (upperb - solver%lowerb(irp,isp) > 1400.d0) then
+     polym = max(polym, 15)
+  elseif (upperb - solver%lowerb(irp,isp) > 1200.d0) then
+     polym = max(polym, 11)
+  elseif (upperb - solver%lowerb(irp,isp) > 1000.d0) then
+     polym = max(polym, 9)
+  elseif (upperb - solver%lowerb(irp,isp) > 850.d0) then
+     polym = max(polym, 8)
+  end if
+
+#ifdef ITAC
+    call VTEND( vt_subspace_main,vtierr)
+    call VTBEGIN( vt_subspace_filter,vtierr)
+ call VTTIMESYNC(vtierr)
+#endif
+  !
+  !  filter the evec as Cm(H)*evec, where
+  !  Cm() is the Chebyshev polynomial with degree polym 
+  ! (should also pass the lowb0 to realize the 'scaling' of filter, not done yet)
+  !
+#ifdef CPLX
+  call zcheby_filter(kplp,ldn, sdim, polym, solver%lowerb(irp,isp), upperb, maxmvs, evec, nstate,blksize)
+#else
+  call  cheby_filter(kplp,ldn, sdim, polym, solver%lowerb(irp,isp), upperb, maxmvs, evec, nstate,blksize)
+#endif
+       
+
+#ifdef ITAC
+    call VTEND( vt_subspace_filter,vtierr)
+    call VTBEGIN( vt_subspace_main,vtierr)
+#endif
+  !
+  ! call iterative-Gram-Schmidt to make the filtered Vbasis orthonormal
+  !
+  ! Save flops, use orth_normal here. so what if it might be slightly numerically unstable!
+  messy_orth = 1
+  if (messy_orth == 1 ) then
+  ! carpe diem!
+#ifdef CPLX
+     call zorth_normal(parallel, ldn, ndim, 0, sdim , evec , 1 , info)
+#else
+     call orth_normal(parallel, ldn, ndim, 0, sdim , evec , 1 , info)
+#endif
+  else
+#ifdef CPLX
+  call zdgks(parallel, ldn, ndim, sdim, evec,info)
+#else
+  call dgks(parallel, ldn, ndim, sdim, evec,info)
+#endif
+  endif
+  if (info /= 0)  return
+
+  allocate(w_opv(ldn), stat=alcstat)
+  call alccheck('subspace:w_opv', ldn, alcstat)
+
+  ! 
+  !=== do the rayleigh-ritz refinement with subspace rotation ===
+  ! 
+
+  if (iprint >= 2) then
+     write(9,*) ' Subspace rotation with LAPACK/ESSL'
+     call myflush(9)
+  end if
+
+  allocate(h_proj(sdim,sdim))
+
+
+
+
+!  compute h_proj = evec'*(OP)*evec
+!  compute only the lower triangular part 
+!  AJB: but 1d matvec is not efficent :/
+
+do j = 1, sdim
+        call ZmatvecB(kplp, 1, evec(1,j), w_opv, ldn)
+        maxmvs = maxmvs + 1
+
+        do i = j, sdim
+                h_proj(i,j) = Zdot(ndim, evec(1:ndim,i), 1, w_opv(1:ndim), 1)
+        enddo
+enddo
+
+
+
+
+        !AJB consider using mpi dervied datatypes
+        ! something like
+        ! do i=1,nwant
+        !  disp_array(i)=sdim*(i-1)+1
+        !  block_array(i)=sdim -i 
+        ! end do
+        ! call mpi_type_indexed(nwant,block_array,disp_array,MPI_DOUBLE_SCALAR,mpi_lower,mpinfo)
+        ! call mpi_type_commit(mpi_tridiag,mpinfo)
+        ! them mpi_allreduce_
+        ! and lastly
+        ! call mpi_type_free(mpi_tridiag,mpinfo)
+        ! 
+  do j = 1, sdim
+     call Zpsum(h_proj(1,j), sdim, parallel%group_size, parallel%group_comm)
+  enddo
+
+  !  compute the eigen-pairs for h_proj = evec'*(OP)*evec
+#ifdef CPLX
+  call my_zheev('L', sdim, h_proj, sdim, solver%eval_loc(1:sdim,irp,isp), info)
+#else
+  call my_dsyev('L', sdim, h_proj, sdim, solver%eval_loc(1:sdim,irp,isp), info)
+#endif
+  ! 
+  !  compute the updated basis V <- V*h_proj 
+  !  (note that after my_dsyev/my_zheev h_proj stores the eigenvectors)
+  ! 
+  ! This can be done by ELPA/SCALAPACK with only small/medium modifications
+#ifdef ITAC
+    call VTEND( vt_subspace_main,vtierr)
+    call VTBEGIN( vt_subspace_update,vtierr)
+#endif
+     allocate(matmul_tmp(ndim,sdim), stat=alcstat)
+     call alccheck('subspace_matmul_tmp', ndim*sdim, alcstat)
+
+     call Zgemm('N','N',ndim,sdim,sdim,Zone,evec,ldn,h_proj,sdim,Zzero,matmul_tmp,ndim)
+
+     do j = 1,sdim
+     call Zcopy(ndim,matmul_tmp(1,j),1,evec(1,j),1)
+     enddo
+     deallocate(matmul_tmp)
+
+#ifdef ITAC
+    call VTEND( vt_subspace_update,vtierr)
+    call VTBEGIN( vt_subspace_main,vtierr)
+#endif
+
+  if (iprint >= 2) then
+       write(9,*) 'Subspace filter report:'
+       write(9,7)'irp=',irp,'lowerb=',solver%lowerb(irp,isp),   &
+       'upperb=',upperb,  'maxritz=',   &
+       maxval(abs(solver%eval_loc(:,irp,isp))), 'polym=',polym
+       call myflush(9)
+  end if
+7 format(2x, a, i3, 3(2x, a, e12.5), 2x, a, i2)
+
+  if (info /= 0) then 
+     write(9, *)  "in subspace.f90p, call my_zheev/dsyev error"
+     return       !eigval.F will take care of the (info /= 0) case
+  end if
+
+  !  assign the subspace dimension as the number of 
+  !  "converged eigenpairs" (no true diagonalization is involved)
+  nec = ncomp
+
+  deallocate(h_proj)
+
+  !=== finished the rayleigh-ritz refinement with rotation ===
+
+  nec = min(nec, nstate)
+
+  !  copy the required nec (here it is nstate) eigen-pairs from
+  !  local arrays back to the PARSEC arrays eval 
+  do j=1, nec
+     eval(j) = solver%eval_loc(j,irp,isp)
+  enddo
+
+  if (allocated(w_opv))    deallocate(w_opv)
+
+#ifdef ITAC
+    call VTEND( vt_subspace_main,vtierr)
+#endif
+  return
+  !===================================================================
+
+contains
+  !-------------------------------------------------------------------
+  !   compute Chebyshev filtered vectors:
+  !  
+  !      evec(:,1:sdim) = (Filter)*evec(:,1:sdim)
+  !-------------------------------------------------------------------
+#ifdef CPLX
+  subroutine zcheby_filter(kplp, ldn, sdim, pm, lowb, uppb, mvcount, evec, nstate,blk)
+#else
+  subroutine cheby_filter(kplp, ldn, sdim, pm, lowb, uppb, mvcount, evec, nstate,blk)
+#endif
+    use constants
+    implicit none
+    !
+    !  Input/Output variables:
+    !
+    integer, intent(in) :: &
+         kplp, &       ! k-point index
+         ldn, &        ! linear dimension of eigenvectors
+         sdim, &       ! subspace dimension
+         pm, &         ! degree of Chebyshev polynomial
+         nstate, &        ! # of states to be calculated for each representation
+         blk
+                        !  the one-block approach is NOT used, because if sdim is large
+                        !  then one would need three (ldn,sdim) work arrays, which can 
+                        !  be too memory demanding for this filtering
+                        !  instead, we use a smaller block-size blk, which uses at most 
+                        !  three (ldn,blk) work arrays
+                        !  (one can simply set blk=1 to save some memory if necessary.
+                        !  blk=1 also works pretty well because 'matvec' is not a BLAS3 as 
+                        !  for dense algebra, it is actually sparse matrix-vector product, 
+                        !  kind of like BLAS2)
+                        !  AJB: not true in this version
+                        !integer, parameter   :: blk=5
+                        !integer, parameter   :: blk=15
+    SCALAR, intent(inout) :: evec(parallel%ldn*parallel%mxwd,nstate) !elec_st%eig(,,)%zwf
+
+    real(dp),intent(in)  :: lowb !lower bound of the 'unwanted' spectrum 
+    real(dp),intent(in)  :: uppb !upper bound of the full spectrum
+
+    integer, intent(inout) :: mvcount  !count number of mat-vec products for the filtering step
+
+    !
+    !  Work variables:
+    !real(dp)  :: e, twoeinv, center, sigma, sigma1, sigma2, sigma1einv, lowb0
+    SCALAR  :: e, twoeinv, center, sigma, sigma1, sigma2, sigma1einv, lowb0
+    integer   :: i, jc, jend, dimtmp, int_t1, int_t2, dpm, col
+
+    SCALAR :: vout(ldn,blk), vnew(ldn,blk), vtmp(ldn,blk)
+
+    !
+    !  External subroutines:
+    !
+    intrinsic floor
+
+    !-----------------------------------------------------------------
+    ! Here pm < 10 condition is imposed because for small pm, large
+    ! dpm should not be used. Also in parsec.f90p, polym is lowered only
+    ! when polym > 10.
+    !
+    dpm = solver%dpm
+
+    e = (uppb - lowb)/two
+    twoeinv = two/e
+    center= (uppb+lowb)/two
+#ifdef BETA
+    lowb0 = lowb - e/four     !this is just an adhoc hack (a better way is to let lowb0 be the
+                             !smallest ritz value currently available from previous SCF step)
+    sigma = e/(lowb0 - center)
+#else
+    sigma = e/(lowb - center)
+#endif
+    sigma1 = sigma
+    sigma1einv = sigma1/e
+    vout(:,:) = Zzero
+    vnew(:,:) = Zzero
+    !AJB: why init this? every init counts
+    !vtmp(:,:) = Zzero
+
+    int_t1 = floor(real(sdim,dp)/blk)
+    dimtmp = int_t1*blk
+
+    if(mod(int_t1,2) == 0) then
+     int_t2=dimtmp/2
+    else
+     int_t2=((int_t1+1)/2)*blk
+    endif
+
+    ! 50% of the lower vectors are being filtered with lower pm
+    do jc = 1, int_t2, blk
+
+       jend = jc+blk-1
+!using intrinsic buffers now (unlike in chebff)
+       call ZmatvecB(kplp,blk,evec(1,jc),vout,ldn)
+       mvcount = mvcount+blk
+
+!$OMP PARALLEL DO
+       do col = 1,blk
+       !vout = (vout-center*evec(:,jc:jend))*sigma1einv
+       vout(:,col) = (vout(:,col)-center*evec(:,col+jc-1))*sigma1einv
+
+       !vtmp = evec(:,jc:jend)
+       vtmp(:,col) = evec(:,col+jc-1)
+       enddo
+!$OMP END PARALLEL DO
+
+       do i = 2, pm-dpm
+
+          sigma2 = one /(two/sigma1 - sigma)
+!using intrinsic buffers now (unlike in chebff)
+          call ZmatvecB(kplp,blk,vout,vnew,ldn)
+          mvcount = mvcount+blk
+
+!$OMP PARALLEL DO
+          do col = 1,blk
+              vnew(:,col) = (vnew(:,col)-center*vout(:,col))*twoeinv - sigma*vtmp(:,col)
+              vnew(:,col) = vnew(:,col)*sigma2
+              vtmp(:,col) = vout(:,col)
+              vout(:,col) = vnew(:,col)
+          enddo
+!$OMP END PARALLEL DO
+          ! vnew = (vnew-center*vout)*twoeinv - sigma*vtmp
+          ! vnew = vnew*sigma2
+          ! vtmp = vout
+          ! vout = vnew
+          sigma = sigma2
+
+       end do
+
+        do col=1,blk
+               call Zcopy(ldn,vout(1,col),1,evec(1,col+jc-1),1)
+        end do
+       !evec(:,jc:jend)=vout
+
+    end do
+
+         !write(9,*) "cheb filter: jend was",jend
+         !write(9,*) "(cheb filter: jc is",jc,")"
+         !write(9,*) "cheb filter: starting now with int_t2+1",int_t2+1
+         !write(9,*) "cheb filter: will go up to-dimtmp",dimtmp
+
+    ! 50% of the higher vectors are being filter with higher pm
+
+    do jc = int_t2+1, dimtmp, blk
+       jend = jc+blk-1
+
+       call ZmatvecB(kplp,blk,evec(1,jc),vout,ldn)
+       mvcount = mvcount+blk
+!$OMP PARALLEL DO
+       do col = 1,blk
+       !vout = (vout-center*evec(:,jc:jend))*sigma1einv
+       vout(:,col) = (vout(:,col)-center*evec(:,col+jc-1))*sigma1einv
+
+       !vtmp = evec(:,jc:jend)
+       vtmp(:,col) = evec(:,col+jc-1)
+       enddo
+!$OMP END PARALLEL DO
+
+!        vout = (vout-center*evec(:,jc:jend))*sigma1einv
+
+!        vtmp = evec(:,jc:jend)
+
+       do i = 2, pm+dpm
+
+          sigma2 = one /(two/sigma1 - sigma)
+
+          call ZmatvecB(kplp,blk,vout,vnew,ldn)
+          mvcount = mvcount+blk
+
+!$OMP PARALLEL DO
+          do col = 1,blk
+              vnew(:,col) = (vnew(:,col)-center*vout(:,col))*twoeinv - sigma*vtmp(:,col)
+              vnew(:,col) = vnew(:,col)*sigma2
+              vtmp(:,col) = vout(:,col)
+              vout(:,col) = vnew(:,col)
+          enddo
+!$OMP END PARALLEL DO
+          ! vnew = (vnew-center*vout)*twoeinv - sigma*vtmp
+          ! vnew = vnew*sigma2
+          ! vtmp = vout
+          ! vout = vnew
+          sigma = sigma2
+
+       end do
+
+        do col=1,blk
+               call Zcopy(ldn,vout(1,col),1,evec(1,col+jc-1),1)
+        end do
+
+       !evec(:,jc:jend)=vout
+
+    end do
+
+         !write(9,*) "cheb filter: jend was",jend
+         !write(9,*) "(cheb filter: jc is",jc,")"
+
+
+    !  end of vector filtering.
+
+    !  filter the remaining vectors (if any) 
+    jc   = dimtmp+1
+    jend = sdim
+
+         !write(9,*) "cheb filter: starting now with ",jc
+
+    dimtmp = sdim-jc+1
+    if (dimtmp > 0) then
+         !write(9,*) "cheb filter: will go up to jend",jend
+       call ZmatvecB(kplp,dimtmp,evec(1,jc),vout(1,1),ldn)
+       mvcount  = mvcount+dimtmp
+
+!$OMP PARALLEL DO 
+      do col = 1,dimtmp
+       vout(:,col)=(vout(:,col) - center*evec(:,jc+col-1))*sigma1einv
+       vtmp(:,col)= evec(:,jc+col-1)
+      end do
+!$OMP END PARALLEL DO
+       ! vout(:,1:dimtmp)=(vout(:,1:dimtmp) -  &
+       !                  center*evec(:,jc:jend))*sigma1einv
+
+       ! vtmp(:,1:dimtmp)= evec(:,jc:jend)
+
+    ! Remaining vectors are also being filtered with higher pm:
+       do i = 2, pm+dpm
+
+          sigma2 = one /(two/sigma1 - sigma)
+
+          call ZmatvecB(kplp,dimtmp,vout,vnew,ldn)
+
+          mvcount = mvcount+dimtmp
+!$OMP PARALLEL DO
+          do col = 1,dimtmp
+              vnew(:,col) = (vnew(:,col)-center*vout(:,col))*twoeinv - sigma*vtmp(:,col)
+              vnew(:,col) = vnew(:,col)*sigma2
+              vtmp(:,col) = vout(:,col)
+              vout(:,col) = vnew(:,col)
+          enddo
+!$OMP END PARALLEL DO
+
+!           vnew(:,1:dimtmp) = (vnew(:,1:dimtmp) -   &
+!                              center*vout(:,1:dimtmp))*twoeinv -   &
+!                              sigma*vtmp(:,1:dimtmp)
+!           vnew(:,1:dimtmp) = vnew(:,1:dimtmp)*sigma2
+!           vtmp(:,1:dimtmp) = vout(:,1:dimtmp)
+!           vout(:,1:dimtmp) = vnew(:,1:dimtmp)
+          sigma = sigma2 
+
+       end do
+       !evec(:,jc:jend)=vout(:,1:dimtmp)
+        do col=1,dimtmp
+               call Zcopy(ldn,vout(1,col),1,evec(1,jc+col-1),1)
+        end do
+    end if
+
+#ifdef CPLX
+  end subroutine zcheby_filter
+#else
+  end subroutine cheby_filter
+#endif
+  !===================================================================
+#ifdef CPLX
+end subroutine zsubspace
+#else
+end subroutine subspace
+#endif
+!=====================================================================

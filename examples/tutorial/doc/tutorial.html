@@ -1,0 +1,478 @@
+<html><head><title>Parsec tutorial</title></head><body bgcolor="#ffffff">
+<hr>
+<h1><center>PARSEC TUTORIAL</center></h1>
+
+<h3> Contents </h3>
+<ol>
+    <li> <a href="#intro"> A brief explanation of what PARSEC does</a>.
+    </li><li> <a href="#firstrun"> First run: the silane molecule, SiH<sub>4</sub></a>.
+    </li><li> <a href="#conv"> Silane, convergence tests</a>.
+    </li><li> <a href="#relaxation"> Silane, structural relaxation</a>.
+    </li><li> <a href="#IP"> Charged molecule: ionization potential of silane</a>.
+    </li><li> <a href="#polarized"> Static electric susceptibility: silane in an uniform electric field</a>.
+    </li><li> <a href="#bccH"> Periodic sysem: solid hydrogen</a>.
+  </li></ol>
+
+<hr>
+
+The goal of this tutorial is to show the main features of PARSEC by providing step-by-step instructions on how to get the input files, run the code, and interpret the output files. We go through a number of short, but illustrative calculations. The reader is expected to know a minimum about electronic structure calculations and density functional theory (DFT). Of course, the more experienced the reader is, the more he/she will be able to extract from this tutorial. Also, it is impossible to cover all features of the code in a short tutorial. I refer readers to the <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/index.html">User's Guide</a> for an explanation of more specialized options in the code. <p></p>
+
+<h3>WARNING: this tutorial will <i>not</i> teach you how to:</h3>
+<ul>
+<li> generate pseudopotentials;
+</li><li> compile the code or set compilation up;
+</li><li> make modifications in the code in a safe/easy fashion.
+</li></ul>
+
+Some of these topics are covered in the User's Guide. Finally, a word of caution to beginners: make sure you know something about the particular application you want to use PARSEC for. If you start doing expensive DFT calculations without knowing what you should get out of them, you are probably wasting time. <p></p>
+
+<!-------------------------------------------------------------------->
+
+<a name="intro"></a> <h2>1.  A brief explanation of what PARSEC does</h2>
+
+<p>PARSEC was developed to calculate various properties of a collection of atoms in its quantum-mechanical ground state. A central problem is getting a description of electron wave-functions in this ground state. The theoretical framework is density-functional theory (DFT), which provides the electronic ground state after we manage to solve a self-consistent (SCF) eigenvalue problem:
+
+<p ALIGN="center"><img src="img7.png"></p>
+
+<p>where <i> u<sub>i</sub></i> and <i>E<sub>i</sub></i> are respectively wave-function and energy eigenvalue of all the energy levels. <i>V<sub>e-ion</sub></i> is the interaction potential between electrons and ions, essentially a pseudopotential in PARSEC calculations. <i>V<sub>xc</sub></i> is a functional of electron density, calculated for example within the local-density approximation (LDA). The equation above differs from usual eigenvalue problems in that the electron density <i>n</i>(<b>r</b>) depends itself on the wave-functions:
+
+<p ALIGN="center"><img src="img8.png"></p>
+
+<p>where the sum above is performed over all occupied energy levels. In practice, the eigenvalue problem and the calculation of electron density are solved using some iterative method, which ensures self-consistency between density and wave-functions.
+
+<p>PARSEC solves the SCF problem directly in real space: wave-functions are calculated on a regular grid of points, { <b>r</b><i><sub>j</sub>; j= 1, .., N</i> }. In confined systems such as clusters of atoms and molecules, wave-functions are required to vanish outside a large spherical domain which contains the atoms. In periodic systems, wave-functions are required to be periodic over a user-defined periodic cell. More details about the theoretical framework behind PARSEC can be found in References <a href="#Ref1">[1]</a> <a href="#Ref2">[2]</a>.
+
+<!-------------------------------------------------------------------->
+
+<a name="firstrun"></a> <h2>2.  First run: the silane molecule, SiH<sub>4</sub></h2>
+
+<i>Working directory:</i> <tt> SiH4_FirstRun</tt>
+
+<p>This is a simple calculation. These are the input files: <tt>Si_POTRE.DAT</tt> and <tt>H_POTRE.DAT</tt> (pseudopotential files), and <tt>parsec.in</tt> (input parameters). Let us take a look at <tt>parsec.in</tt>. Most of the parameters there have self-explanatory values. Also, most of them have default values and are therefore omitted (that is why <tt>parsec.in</tt> is so short!). These are the parameters without default values:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#473">Boundary_Sphere_Radius</a>: 3 ang</pre></td>
+ <td style="vertical-align: top"> 
+This calculation uses finite boundary conditions (default) such that electrons are confined within a a sphere of radius 3 angstroms centered on the molecule.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#474">Grid_Spacing</a>: 0.35 ang</pre></td>
+ <td style="vertical-align: top"> 
+The electron wave-functions are calculated on a uniform grid, with spacing between nearest-neighbors of 0.35 angstroms. The spacing is the same for all Cartesian directions.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#501">States_Num</a>:  8</pre></td>
+ <td style="vertical-align: top"> 
+The lowest 8 eigenvalues/eigenvectors will be calculated. PARSEC uses pseudopotentials, so there are only 8 valence electrons (4 for silicon and 1 for each hydrogen atom) and 4 occupied molecular levels. In order to stabilize the SCF calculation, users should always add a few empty levels, even though only the occupied ones are necessary for calculating the charge density.
+</td>
+</tr><tr>
+<td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#486">Atom_Types_Num</a>:  2</pre></td>
+ <td style="vertical-align: top"> 
+This calculation uses two chemical elements. The last lines in <tt>parsec.in</tt> specify the chemical elements, local components in the pseudopotentials and coordinates of each atom. This input is set for a Si-H bond length of approximately 1.49 angstroms.
+</td></tr>
+</tbody>
+</table>
+
+<p>Some optional parameters are also specified:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#487">Coordinate_Unit</a>: Cartesian_Ang</pre></td>
+ <td style="vertical-align: top"> 
+Coordinates of atoms are given in angstroms. The default is atomic units (Bohr radius is one).
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#477">Eigensolver</a>: diagla</pre></td>
+ <td style="vertical-align: top"> 
+The eigensolver used is DIAGLA. Default eigensolver is ARPACK.
+</td></tr>
+</tbody>
+</table>
+
+<p>Refer to the User's Guide for a complete list of input options/parameters.
+
+<p>You can simply run the code by entering the name of the executable (you may want to put it in your <tt>PATH</tt>):
+
+<pre> ./parsec.ser</pre>
+
+<p>Calculation should take around one minute. Once it is done, you will see a number of new files:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> parsec.out</pre></td>
+ <td style="vertical-align: top"> 
+Main output file, with information about energy eigenvalues, forces on atoms, total energy and more.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> out.000</pre></td>
+ <td style="vertical-align: top"> 
+Log file, with information about the progress of the eigensolver and other data. Occasionally, error messages are sent to this file. In parallel environment, each process (task, or processing unit) will have its own log file.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> wfn.dat</pre></td>
+ <td style="vertical-align: top"> 
+Contains the calculated eigenvectors. This is a binary (unformatted) file.
+</td></tr>
+</tbody>
+</table>
+
+<p>We can already extract some useful information from this calculation. The first lines of file <tt>parsec.out</tt> show the list of input parameters (the ones declared in <tt>parsec.in</tt> and the ones for which default values are used). It also has information about the pseudopotentials and existing symmetry operations in the system. In the sequence, it shows data for all SCF cycles performed before reaching self-consistency. In the last cycle, we see that the first 4 molecular orbitals are fully occupied, and that there is a gap of 9.90 eV between the lowest unoccupied molecular orbital (LUMO) and the highest occupied molecular orbital (HOMO). Forces are printed at the end of the file: the silicon atom feels null force, and each hydrogen atom feels a force of magnitude 0.07 Ry/bohr directed towards the central silicon atom. Overall, the results seem reasonable, but are they converged with respect to the input parameters? This is the subject of next section.
+
+<!-------------------------------------------------------------------->
+
+<a name="conv"></a> <h2>3. Silane, convergence tests</h2>
+
+<p>A central aspect of DFT calculations is numerical convergence. In the framework of real-space DFT, there are two numerical parameters which should be always tested for convergence: the grid spacing and the boundary radius. This last one is important only in confined systems; for extended systems, the corresponding parameter is the super-cell size, or the Monkhorst-Pack grid.
+
+<!-------------------------------------------------------------------->
+
+<h4>3.1. Boundary radius</h4>
+
+<i>Working directory:</i> <tt> SiH4_convR</tt>
+
+<p>We start by testing convergence with respect to the boundary radius. A rule of thumb is to choose this value so that the confining shell is at least several angstroms away from any atom. Directory <tt>SiH4_convR</tt> contains a series of calculations already prepared for various choices of boundary radius. Users are encouraged to go through at least a couple of them and watch carefully the impact of the various choices on the final results: total energy, forces, energy eigenvalues etc. It may be boring to prepare and execute all those runs. One can write scripts to make the task easier. In fact, there is a script which can submit all those runs: <tt>run_convR</tt> (the executable must be in your <tt>PATH</tt>). Notice that the grid spacing used is still 0.35 angstroms.
+
+<p>The following table shows the dependence of various quantities as function of boundary radius.
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> Boundary Radius (angstroms)</td>
+ <td style="vertical-align: top"> Total Energy (Ry)</td>
+ <td style="vertical-align: top"> HOMO Eigenvalue (eV)</td>
+ <td style="vertical-align: top"> LUMO Eigenvalue (eV)</td>
+ <td style="vertical-align: top"> Force on H Atom (Ry/bohr)</td>
+ <td style="vertical-align: top"> CPU Time (sec)</td>
+</tr><tr>
+ <td> 3</td> <td>-12.31645</td> <td>-7.3792</td> <td> 2.5140</td> <td>0.0692</td> <td>1.37</td>
+</tr><tr>
+ <td> 5</td> <td>-12.43797</td> <td>-8.5136</td> <td> 0.0624</td> <td>0.0251</td> <td>8.62</td> 
+</tr><tr>
+ <td> 7</td> <td>-12.43825</td> <td>-8.5221</td> <td>-0.4068</td> <td>0.0250</td> <td>30.40</td> 
+</tr><tr>
+ <td> 9</td> <td>-12.43825</td> <td>-8.5224</td> <td>-0.4831</td> <td>0.0250</td> <td>87.55</td> 
+</tr><tr>
+ <td> 11</td> <td>-12.43825</td> <td>-8.5227</td> <td>-0.4987</td> <td>0.0250</td> <td>199.56</td> 
+ </tr>
+</tbody>
+</table>
+
+<p>A total energy converged to within 1 mRy is obtained with boundary radius 5 angstroms or larger. This is the value we will use for all subsequent SiH<sub>4</sub> calculations. Notice that the LUMO energy eigenvalue converges very slowly with respect to the boundary radius. This is a particularity of the silane molecule. It happens because the LUMO is distributed over a volume substantially larger than the volume taken by occupied orbitals.
+
+<!-------------------------------------------------------------------->
+
+<h4>3.2.  Grid spacing</h4>
+
+<i>Working directory:</i> <tt> SiH4_convh</tt>
+
+<p>Users familiar with plane-wave DFT codes know that the energy cutoff essentially defines numerical accuracy. Due to the complementarity between real space and reciprocal space, there is a relationship between the converged energy cut-off (E<sub>cut</sub>) and the converged grid spacing (h) for a given calculation:
+
+<p ALIGN="center"><img src="img1.png"></p>
+
+<p>Often, the value of the converged grid spacing is dictated by the hardest pseudopotential in the calculation. In practice, one should always test the reliability of the value used before proceeding to production runs.
+
+<p>Directory <tt>SiH4_convh</tt> has a number of subdirectories, each one set for a calculation with a particular grid spacing: from 0.35 angstroms to 0.15 angstroms. Notice that the only parameter modified in files <tt>parsec.in</tt> is the grid spacing. Again, readers are encouraged to go through at lest a couple of those test runs and get a feeling of how the results change by changing the grid spacing. The following table gives a summary of results for the various quantities as a function of grid spacing.
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> Grid Spacing (angstroms)</td>
+ <td style="vertical-align: top"> Total Energy (Ry)</td>
+ <td style="vertical-align: top"> HOMO Eigenvalue (eV)</td>
+ <td style="vertical-align: top"> LUMO Eigenvalue (eV)</td>
+ <td style="vertical-align: top"> Force on H Atom (Ry/bohr)</td>
+ <td style="vertical-align: top"> CPU Time (sec)</td>
+</tr><tr>
+ <td> 0.35</td> <td>-12.43797</td> <td>-8.5136</td> <td>0.0624</td> <td>0.0251</td> <td>8.70</td> 
+</tr><tr>
+ <td> 0.30</td> <td>-12.44925</td> <td>-8.5347</td> <td>0.0578</td> <td>0.0147</td> <td>15.67</td> 
+</tr><tr>
+ <td> 0.25</td> <td>-12.45271</td> <td>-8.5366</td> <td>0.0637</td> <td>0.0115</td> <td>36.60</td> 
+</tr><tr>
+ <td> 0.20</td> <td>-12.45474</td> <td>-8.5393</td> <td>0.0649</td> <td>0.0092</td> <td>82.65</td> 
+</tr><tr>
+ <td> 0.15</td> <td>-12.45462</td> <td>-8.5393</td> <td>0.0747</td> <td>0.0079</td> <td>280.50</td> 
+ </tr>
+</tbody>
+</table>
+
+<p>The total energy changes by less than 1 mRy between grid spacings 0.20 angstroms and 0.15 angstroms, which is a rather negligible amount. Therefore, the choice of h = 0.20 angstroms seems safe for converged results.
+
+<!-------------------------------------------------------------------->
+
+<a name="relaxation"></a> <h2>4.  Silane, structural relaxation</h2>
+
+<i>Working directory:</i> <tt> SiH4_relaxation</tt>
+
+<p>Now that the necessary convergence tests are finished, we are ready to perform production runs using the silane molecule as example. One of the most common types of calculations is structural relaxation of a molecular system. This is done by directly minimizing the total energy of the system with respect to the position of the atoms. Since we have access to the forces acting on each atom, the structural relaxation can be done easily by moving the atoms along the direction of the forces until we reach a configuration where the forces have negligible magnitude. The technical name for this method is "steepest descent". In parsec, this is labeled <tt>simple</tt> method. There are several variants of steepest descent, which differ among each other by choices such as how far the atoms move for given forces. In general, steepest descent is a simple but usually inefficient algorithm. More refined algorithms use information about previous configurations in order to optimize the movement of atoms and find the minimum energy configuration with fewer iterations. One such algorithm is BFGS (Broyden-Fletcher-Goldfarb-Shanno, after the authors), which is implemented in PARSEC and it is the recommended algorithm for total energy minimization.
+
+<p>Directory <tt>SiH4_relaxation</tt> has a prepared calculation for structural relaxation of the isolated silane molecule. In file <tt>parsec.in</tt>, the reader will notice that the values of grid spacing and boundary radius were chosen according to the previous convergence studies. Also, it has a few additional lines at the end:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#507">Minimization</a>: BFGS</pre></td>
+ <td style="vertical-align: top"> 
+Enables structural relaxation using the BFGS algorithm.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#509">Force_Min</a>: 0.01 ry/bohr</pre></td>
+ <td style="vertical-align: top"> 
+Total energy will be considered minimized once the magnitude of the forces on all atoms fall below this limit.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#508">Movement_Num</a>: 10</pre></td>
+ <td style="vertical-align: top"> 
+Maximum number of relaxation steps, just to prevent infinite loops if the algorithm does not find the minimum.
+</td></tr>
+</tbody>
+</table>
+
+<p>This calculation takes several minutes because it will actually perform various sequences of SCF cycles, one for each geometry of the molecule. The minimization algorithm should find the energy minimum after a few iterations. The reader should have three facts in mind though:
+
+<ol>
+<li> The number of minimization iterations depend strongly on the number of degrees of freedom (i.e., number of atoms). Large systems will typically require more iterations.
+
+</li><li> Symmetry operations are not broken during structural relaxation. If a system in its initial configuration has some point symmetry operations, they will remain during the calculation. If you want them broken, you need to provide an initial configuration with broken symmetries (any small displacement of atoms will be sufficient).
+
+</li><li> There is a inherent numerical accuracy associated to the calculation of forces, which arises from the finite grid spacing and from the technique used to calculate forces from the DFT solution. Typically, this numerical accuracy is of the order of 0.01 Ry/bohr. Therefore, the minimum force should not be chosen to be much smaller than this value. 
+</li></ol>
+
+<p><b>Question:</b> Do you have a guess about what happens if the minimum force is chosen exceedingly small (say, 10<sup>-4</sup> Ry/bohr or so) ?
+
+<p>After the calculation is done, there will be 3 extra output files:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> atom.dat</pre></td>
+ <td style="vertical-align: top"> 
+with a summary of configurations (atomic positions, forces, total energy);
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> bfgs.dat</pre></td>
+ <td style="vertical-align: top"> 
+with internal data pertinent to the BFGS algorithm;
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> relax_restart.dat</pre></td>
+ <td style="vertical-align: top"> 
+which can be used to restart a relaxation calculation if needed.
+</td></tr>
+</tbody>
+</table>
+
+<p>As usual, <tt>parsec.out</tt> will contain a detailed log of the calculation. From the last configuration, at the end of either <tt>parsec.out</tt> or <tt>atom.dat</tt> files, we can read out the equilibrium configuration and the final forces. From this run, we find an equilibrium configuration such that the molecule has the shape of a perfect tetrahedron, with Si-H bond length 1.483 angstroms, in very good agreement with the experimental value of 1.480 angstroms<a href="#Ref3"> [3]</a>.
+
+<p>We can also explore the vicinity of the energy minimum. One of the vibrational modes of this molecule is a breathing mode, where the hydrogen atoms oscillate around equilibrium so that bond angles remain unchanged and the Si-H bonds stretch and shrink in phase. Most likely, this is the path taken during structural relaxation, since a change in bond angles would result in loss of point group symmetry. If we make a plot of total energy versus bond length, we should see a distorted parabola. The curvature of the parabola at its minimum will be related to the frequency of this vibrational mode:
+
+<p ALIGN="center"><img src="img2.png"></p>
+
+<p>and
+
+<p ALIGN="center"><img src="img3.png"></p>
+
+<p>The mass of each hydrogen atom is m = 1836 m<sub>e</sub>. Performing a polynomial regression using the relaxation steps in <tt>atom.dat</tt>, we find:
+
+<p ALIGN="center"><img src="img5.png"></p>
+
+<p>and
+
+<p ALIGN="center"><img src="img6.png"></p>
+
+<p>which is 22% smaller than the measured vibrational frequency, of 2187 cm<sup>-1</sup>. This estimation of vibrational frequency may change if we take anharmonic effects into account and/or perform a polynomial regression with more data points.
+
+<!-------------------------------------------------------------------->
+
+<a name="IP"></a> <h2>5.  Charged molecule: ionization potential of silane</h2>
+
+<i>Working directory:</i> <tt> SiH4_IP</tt>
+
+<p>One of the advantages of using confined boundary conditions is that we can modify the net electric charge in the system at hand by changing the number of electrons in it directly. As a consequence, we can study charged structures as easily as neutral ones. Here, we are interested in knowing by how much the total energy of the molecule changes when we remove one electron from it. This is the <i>(First) Ionization Potential</i>: the energy required to extract one electron from a molecule.
+
+<p>Directory <tt>SiH4_IP</tt> has two subdirectories: one for a neutral molecule, and one for a molecule with one less electron (net charge = 1 <i>e</i>). The net charge of the system is specified with option <tt><a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#502">Net_Charges</a></tt>. Notice that the input of both runs specify the equilibrium bond length obtained previously, given in atomic units (<tt><a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#487">coordinate_unit</a> cartesian_bohr</tt>). Also, spin polarization is enabled. This means that we are actually using the LSDA (local spin-density approximation) instead of the LDA (local-density approximation). There are two reasons for using the LSDA rather than the LDA:
+
+<ol>
+<li> The LSDA often gives values of total energy more accurate than LDA, due to the extra spin degree of freedom.
+
+</li><li> The charged molecule has an odd number of valence electrons (7). Therefore, it is intrinsically spin-polarized. In this case, the LDA is just not applicable.
+</li></ol>
+
+<p>Running the two calculations as they were set will result in the following values of total energy: E<sub>total</sub> = -12.451 Ry (neutral molecule) and E<sub>total</sub> = -11.554 Ry (cation SiH<sub>4</sub>). The charged molecule has higher total energy, with an imbalance of 0.897 Ry = 12.20 eV, not too far from the measured first ionization potential of around 12.3 eV (vertical value)<a href="#Ref4">[4]</a>.
+
+<p>We can also calculate higher ionization potentials by removing two, three or more electrons and observing the change in total energy. This procedure of calculating ionization potentials is known appropriately as DeltaSCF, and it usually has an accuracy of around 1 eV or less.
+
+<p>What about adding electrons? The energy gained by adding one electron to a molecule is its electron affinity. Some molecules, and silane is one of them, are unstable upon the capture of one electron. These molecules do not have a well-defined electron affinity. Sometimes, they are said to have zero electron affinity. 
+
+<p><b>Question:</b> What happens if we try to calculate the electron affinity of silane by calculating the total energy of the anion? 
+<p><i>Hint</i>: try to think about what happens to this total energy if we increase the boundary radius and what it means to say that silane is "unstable upon the capture of one electron".
+
+<!-------------------------------------------------------------------->
+
+<a name="polarized"></a> <h2>6.  Static electric susceptibility: silane in an uniform electric field</h2>
+
+<i>Working directory:</i> <tt> SiH4_polarization</tt>
+
+<p>Now, we want to study the behavior of the silane molecule under a static electric field. As you may know from looking at the parsec output of from previous knowledge, the silane molecule does not have permanent dipole moment. But it can show an induced dipole moment under the effect of an external field. The ratio between the magnitude of the induced dipole moment and the external field is the static susceptibility, which we will now calculate.
+
+<p>Directory SiH4_polarized has a prepared calculation for electric polarization. Notice that the last lines of <tt>parsec.in</tt> have this information:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#523">Polarizability</a>: .true.</pre></td>
+ <td style="vertical-align: top"> 
+Enables an external, uniform electric field.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#524">Electric_Field</a>: 0.001 Ry/bohr/e</pre></td>
+ <td style="vertical-align: top"> 
+An electric field with this magnitude will be applied.
+</td></tr>
+</tbody>
+</table>
+
+<p>Notice that this feature is available <i>only</i> for confined systems. There are subtle but important issues when we try to apply static electric fields to a periodic system, which are beyond the scope of this tutorial.
+
+<p>When we run this calculation, we will probably notice that this is taking much longer than most of the previous runs, although the system is the same! There are two reasons for this:
+
+<ol>
+<li> PARSEC uses a so-called "six-field" approach. It goes through 7 separate SCF calculations: one for the system in the absence of electric field, and six calculations for all the possible directions of electric field (three Cartesian directions, and two orientations for each direction).
+
+</li><li> No information about point-group symmetries is used if an electric field is applied, because the field most often breaks those symmetries. In highly symmetric molecules, the impact of lost symmetry operations in the overall computational load is usually significant.
+</li></ol>
+
+<p>After the calculation is done, we will see a new output file: <tt>polar.dat</tt>. This file has a summary of energetics during the application of the six different electric fields. The file ends with a report of the static susceptibility tensor (diagonal part only). For silane, this tensor is isotropic, with static susceptibility of 5.0 angstroms<sup>3</sup>.
+
+<!-------------------------------------------------------------------->
+
+<a name="bccH"></a> <h2>7.  Periodic system: solid hydrogen</h2>
+
+<i>Working directory:</i> <tt> bccH_54cell</tt>
+
+<p> PARSEC has been developed primarily for use in confined systems, but it is also able to solve the Kohn-Sham equation in systems with periodic boundary conditions. For this class of systems, the user must define a periodic supercell which, for version 1.1 of the code, must be orthorhombic (meaning: the three unit lattice vectors must be mutually orthogonal). This section of the tutorial shows an example of periodic system: solid hydrogen. We model solid hydrogen as a body-centered cubic (BCC) crystal. BCC hydrogen is known to show a metal-insulator transition. In the limit of extremely low density, hydrogen is insulator with a very high energy gap. As density increases, the energy gap decreases until it vanishes at a critical density. The exact critical density depends on the particular theory employed. DFT in the local spin-density approximation (LSDA) predicts this critical density to be around <it> n = 75 atoms/nm<sup>3</sup></it> <a href="#Ref5">[5]</a>. In the low-density limit, hydrogen shows antiferromagnetism.
+
+<p> Directory <tt> bccH_54cell </tt> has the input for a calculation of solid hydrogen. We model the crystal as a supercell containing 54 atoms (a 3x3x3 extension of the standard BCC cell). New parameters used in the input are:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#470">Periodic_System</a>: .true.</pre></td>
+ <td style="vertical-align: top"> 
+Imposes periodic boundary conditions, instead of confined boundary conditions (as default). As expected, the <tt> Boundary_Sphere_Radius </tt> parameter is not necessary with periodic boundary conditions.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> begin <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#471">Cell_Shape</a>
+    1.0     1.0     1.0
+ end Cell_Shape
+</pre></td>
+ <td style="vertical-align: top"> 
+The periodic cell is orthorhombic with all three unit lattice vectors having length 1.0.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#472">Lattice_vector_Scale</a>: 12.8972759 ang </pre></td>
+ <td style="vertical-align: top"> 
+The length of all unit lattice vectors is multiplied by the scale specified, resulting in unit lattice vectors with length 12.8972759 angstroms.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#487">Coordinate_Unit</a>: Lattice_Vectors </pre></td>
+ <td style="vertical-align: top"> 
+For the sake of simplicity in the construction of the supercell, coordinates of atoms are given in units of lattice vectors.
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#526">Output_All_States</a>: .true. </pre></td>
+ <td style="vertical-align: top"> 
+File <tt> wfn.dat </tt> will store all calculated Kohn-Sham eigenvectors, instead of only the occupied ones (default).
+</td>
+</tr><tr>
+ <td style="vertical-align: top"> <pre> <a href="http://www.ices.utexas.edu/~mtiago/parsec/guide/node6.html#506">Spin_Polarization</a>: .true. </pre></td>
+ <td style="vertical-align: top"> 
+Enables spin-polarization. This calculation will use the LSDA exchange-correlation functional.
+</td></tr>
+</tbody>
+</table>
+
+<p> As usual, the user should test the grid spacing for convergence. The working directory has a series of subdirectories with various runs for different choices of grid spacings. After running them, one should obtain the following table:
+
+<table style="margin-left: auto; margin-right: auto; text-align: left; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> Grid Spacing (angstroms)</td>
+ <td style="vertical-align: top"> Total Energy (Ry)</td>
+ <td style="vertical-align: top"> VBM Eigenvalue, spin up (eV)</td>
+ <td style="vertical-align: top"> VBM Eigenvalue, spin down (eV)</td>
+ <td style="vertical-align: top"> CPU Time (sec)</td>
+</tr><tr>
+ <td> 0.50</td> <td>-49.72795</td> <td>-1.9236</td> <td>-2.6469</td> <td>79.50</td>
+</tr><tr>
+ <td> 0.45</td> <td>-51.70797</td> <td>-2.3094</td> <td>-2.9536</td> <td>146.26</td>
+</tr><tr>
+ <td> 0.40</td> <td>-51.63678</td> <td>-2.3077</td> <td>-2.9909</td> <td>278.22</td>
+</tr><tr>
+ <td> 0.35</td> <td>-51.56695</td> <td>-2.2979</td> <td>-2.9909</td> <td>457.27</td>
+</tr><tr>
+ <td> 0.30</td> <td>-51.51275</td> <td>-2.2845</td> <td>-2.9755</td> <td>893.35</td>
+</tr><tr>
+ <td> 0.25</td> <td>-51.50302</td> <td>-2.2849</td> <td>-2.9772</td> <td>1974.44</td>
+ </tr>
+</tbody>
+</table>
+
+<p> As we see, the grid spacing 0.50 angstroms gives a really unconverged total energy. But, since our purpose here is not to get very accurate results but just to learn the code, we can relax the requirements on grid spacing and still get meaningful results.
+
+<p> After the calculation finishes, we see the usual output files. Let us take a look at file <tt> parsec.out </tt>. Somewhere at the end of the setup, we see the following lines:
+
+<pre>
+ Input grid spacing:  0.945 bohr
+ Final grid spacings:  1.016  1.016  1.016 bohr
+ Number of grid points along each direction:  24  24  24
+</pre>
+
+<p> This means that, since the grid spacing is not commensurate with the dimensions of the supercell, it had to be readjusted to a slightly larger value. After readjustment, the grid was set with a total of 24x24x24 points (ratio between cell dimensions and grid spacing = 24).
+
+<p> The rest of the file looks pretty much like most of the other files we have seen before. After self-consistency is achieved, file <tt> parsec.out </tt> shows the final Kohn-Sham eigenvalues for spin components "up" and "down" separately. Also, the magnetic moment is printed:
+
+<pre>
+ Electrons in up, down spins:   35.00   19.00
+ Net magnetic moment (in Bohr magnetons):   16.00
+</pre> 
+
+<p> Here, the net magnetic moment takes into account only the spin contribution. Finally, the forces acting on the various atoms have magnitude less than 5 mRy/bohr.
+
+<!-------------------------------------------------------------------->
+
+<hr>
+<h3> References:</h3>
+
+<p> <a name="Ref1">[1]</a> J. R. Chelikowsky, N. Troullier, and Y. Saad
+<i><a HREF="
+http://prola.aps.org/abstract/PRL/v72/i8/p1240_1">
+Finite-difference-pseudopotential method: Electronic structure
+calculations without a basis
+</a></i>,
+Phys. Rev. Lett. <b> 72</b>,  1240 (1994).
+
+<p> <a name="Ref2">[2]</a> J. R. Chelikowsky
+<i><a HREF="
+http://www.iop.org/EJ/abstract/-coll=rev/-group=issn/0022-3727/33/8/201">
+The pseudopotential-density functional method applied to nanostructures
+</a></i>, J. of Phys. D <b> 33</b>,  R33 (2000).
+
+<p> <a name="Ref3">[3]</a> <a href="http://srdata.nist.gov/cccbdb/"> NIST Computational Chemistry Comparison and Benchmark DataBase </a>; silane SiH<sub>4</sub> geometric <a href="http://srdata.nist.gov/cccbdb/alldata2.asp?casno=7803625"> data</a>.
+
+<p> <a name="Ref4">[4]</a> <a href="http://webbook.nist.gov/chemistry/">  NIST Chemistry Webbook</a>, silane SiH<sub>4</sub> gas phase ion energetic <a href="http://webbook.nist.gov/cgi/cbook.cgi?ID=C7803625&Units=SI&Mask=20#Ion-Energetics"> data</a>.  
+
+<p> <a name="Ref5">[5]</a> J.-L. Li, G.-M. Rignanese, E.K. Chang, X. Blase, and S.G. Louie, <i><a href="http://prola.aps.org/abstract/PRB/v66/i3/e035102">GW study of the metal-insulator transition of bcc hydrogen </a></i> Phys. Rev. B<b> 66 </b>, 035102 (2002).
+
+<hr>
+
+<h3><a href="http://www.ices.utexas.edu/ccm/"> Center for Computational Materials, Univ. of Texas at Austin</a> </h3>
+<h3><a href="http://www.ices.utexas.edu/parsec"> PARSEC code</a> </h3>
+<h4>Author of this tutorial: 
+<a href="http://www.ices.utexas.edu/~mtiago">Murilo Tiago </a></h4>
+
+</body></html>

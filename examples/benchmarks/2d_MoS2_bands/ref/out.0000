@@ -1,0 +1,1002 @@
+ Processor No            0   has started
+ Number of processors:            8
+ Number of threads/processor: *** No openMP support
+ Original Laplacian coefficients are:    1.33333333333333     
+   1.33333333333333        1.00000000000000       -1.33333333333333     
+  0.000000000000000E+000  0.000000000000000E+000
+ number of zero mixed derivatives is:            2
+ 2d non-orthogonal grid found
+ Laplacian number of directions:  1
+ Laplacian coefficients data:
+ 0.67  0.67  1.00  0.67  0.00  0.00
+  survived first allreduce
+  grid%lap_dir_num > 0
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is       12672
+  reduced size is        12672
+  maximum distance between grid points and their images is
+   0.1693E-14  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node            1
+  neibs sent to node            2
+  neibs sent to node            3
+ The local dimension is :        3168
+ INTERIOR POINTS Mvec, PreCond (           0        1032 ) 
+ WARNING, NO MATVEC INTERIOR POINTS
+ CURRENT SYSTEM SIZE/PE RATIO NOT RECOMMENDED
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ send PE            1  #rows:        3168
+ send PE            2  #rows:        3168
+ send PE            3  #rows:        3168
+ I communicate with            3  processors, a total of         9504  elements
+ Also, I receive from these procs:         9504  elements
+ 
+ topo_aware: I am now aware that I communicate with           3 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+# Poisson solver, return code =   0  convergence rate =   0.5788E-01
+ # reported residual norm:   1.583937712471155E-003
+ # euclidean norm of lap(pot):   8.358947525215987E-004
+ ewald real space limits            4           4
+ ratom(           1 )=  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000
+ ratom(           2 )=  0.333333333333330       0.333333333333330     
+  -2.98576846688340     
+ ratom(           3 )=  0.333333333333330       0.333333333333330     
+   2.98576846688340     
+ ng=         169
+ ewald terms   8.31893252954166       -197.757723961982     
+  0.116740384428885       -60.9324750231577     
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.5185E-01
+ # reported residual norm:   4.364489596454082E-005
+ # euclidean norm of lap(pot):   2.165953824095365E-005
+ allocating both dwvec and zwvec of size (why!):       12673
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   48
+  nwant  =   36,  nconv=   37,  true nconv=    37
+  num_iter =      21,  max_iter =     180
+  num_mv  =    2951,   num_restart=      12
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3929E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         2951  nec =           37
+  nstate =           36  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   48
+  nwant  =   36,  nconv=   37,  true nconv=    37
+  num_iter =      19,  max_iter =     180
+  num_mv  =    2759,   num_restart=      10
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3946E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         2759  nec =           37
+  nstate =           36  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   48
+  nwant  =   36,  nconv=   37,  true nconv=    37
+  num_iter =      19,  max_iter =     180
+  num_mv  =    2779,   num_restart=      10
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3802E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         2779  nec =           37
+  nstate =           36  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   48
+  nwant  =   36,  nconv=   37,  true nconv=    37
+  num_iter =      22,  max_iter =     180
+  num_mv  =    3077,   num_restart=      13
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4033E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3077  nec =           37
+  nstate =           36  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   48
+  nwant  =   36,  nconv=   37,  true nconv=    37
+  num_iter =      21,  max_iter =     180
+  num_mv  =    2991,   num_restart=      13
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3514E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         2991  nec =           37
+  nstate =           36  info =            0
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5123E-01
+ # reported residual norm:   1.398621081519214E-006
+ # euclidean norm of lap(pot):   6.633800721321602E-007
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5184E-01
+ # reported residual norm:   1.307281848868048E-006
+ # euclidean norm of lap(pot):   5.862722179013393E-007
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5267E-01
+ # reported residual norm:   2.659092784280432E-007
+ # euclidean norm of lap(pot):   1.197868858806622E-007
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5110E-01
+ # reported residual norm:   1.890228198127702E-007
+ # euclidean norm of lap(pot):   9.641749700585718E-008
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5183E-01
+ # reported residual norm:   4.349116656100463E-008
+ # euclidean norm of lap(pot):   2.042964465461595E-008
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5212E-01
+ # reported residual norm:   1.513546938640231E-008
+ # euclidean norm of lap(pot):   7.456795003259324E-009
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5137E-01
+ # reported residual norm:   7.455124274678816E-009
+ # euclidean norm of lap(pot):   3.746004661587904E-009
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5037E-01
+ # reported residual norm:   1.443635042729120E-009
+ # euclidean norm of lap(pot):   6.973356491631729E-010
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5120E-01
+ # reported residual norm:   5.470272479186976E-010
+ # euclidean norm of lap(pot):   2.735389674455695E-010
+  forcnloc reports: 
+  I received L =            1  for atom #           1  with mnloc =          156
+  I received L =            2  for atom #           1  with mnloc =          156
+  forcnloc reports: 
+  I received L =            1  for atom #           2  with mnloc =          115
+  I received L =            2  for atom #           2  with mnloc =          115
+  forcnloc reports: 
+  I received L =            1  for atom #           3  with mnloc =          115
+  I received L =            2  for atom #           3  with mnloc =          115
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      22,  max_iter =     175
+  num_mv  =    3077,   num_restart=      13
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3582E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3077  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      24,  max_iter =     175
+  num_mv  =    3289,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4067E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3289  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3375,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4019E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3375  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      24,  max_iter =     175
+  num_mv  =    3269,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4214E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3269  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      22,  max_iter =     175
+  num_mv  =    3077,   num_restart=      14
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3251E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3077  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      27,  max_iter =     175
+  num_mv  =    3607,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4343E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3607  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3395,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3714E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3395  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3435,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3969E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3435  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3415,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3816E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3415  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3501,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4277E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3501  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3521,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4026E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3521  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      29,  max_iter =     175
+  num_mv  =    3859,   num_restart=      20
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3969E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3859  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3541,   num_restart=      18
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4175E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3541  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      22,  max_iter =     175
+  num_mv  =    3077,   num_restart=      13
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3239E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3077  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3461,   num_restart=      14
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4164E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3461  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3521,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4244E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3521  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3541,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3462E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3541  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      28,  max_iter =     175
+  num_mv  =    3733,   num_restart=      18
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4289E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3733  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      30,  max_iter =     175
+  num_mv  =    3985,   num_restart=      20
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3749E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3985  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      27,  max_iter =     175
+  num_mv  =    3687,   num_restart=      19
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3129E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3687  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3561,   num_restart=      18
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3850E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3561  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      29,  max_iter =     175
+  num_mv  =    3919,   num_restart=      21
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3824E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3919  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      32,  max_iter =     175
+  num_mv  =    4277,   num_restart=      23
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3827E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         4277  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      22,  max_iter =     175
+  num_mv  =    3077,   num_restart=      13
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3649E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3077  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3375,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4102E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3375  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      32,  max_iter =     175
+  num_mv  =    4237,   num_restart=      24
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3516E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         4237  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      33,  max_iter =     175
+  num_mv  =    4363,   num_restart=      25
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3302E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         4363  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      29,  max_iter =     175
+  num_mv  =    3899,   num_restart=      19
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3592E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3899  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      31,  max_iter =     175
+  num_mv  =    4111,   num_restart=      23
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3815E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         4111  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3435,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3551E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3435  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      30,  max_iter =     175
+  num_mv  =    3985,   num_restart=      19
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4034E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3985  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      28,  max_iter =     175
+  num_mv  =    3753,   num_restart=      18
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4166E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3753  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3521,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4320E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3521  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      23,  max_iter =     175
+  num_mv  =    3183,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3866E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3183  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3395,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4023E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3395  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3481,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4009E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3481  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3375,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3969E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3375  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3375,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4251E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3375  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      24,  max_iter =     175
+  num_mv  =    3289,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3916E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3289  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3395,   num_restart=      17
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4209E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3395  nec =           36
+  nstate =           35  info =            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          768
+ 
+ Sizes of all non-local blocks 
+   768   205   205
+ 
+ Transform atoms           3
+ My number of non-local rows:          386  of total         1178
+ My number of rows in WS sphere:            0  of total            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      25,  max_iter =     175
+  num_mv  =    3395,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3899E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         3395  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      27,  max_iter =     175
+  num_mv  =    3587,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4278E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =         3587  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      24,  max_iter =     175
+  num_mv  =    3289,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.3935E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =         3289  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      26,  max_iter =     175
+  num_mv  =    3461,   num_restart=      16
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4042E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =         3461  nec =           36
+  nstate =           35  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    3168,  blksize=  6,  n_spdim=   47
+  nwant  =   35,  nconv=   36,  true nconv=    36
+  num_iter =      24,  max_iter =     175
+  num_mv  =    3269,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-06,   ritzmax= 0.4351E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =         3269  nec =           36
+  nstate =           35  info =            0
+ 
+ Closing file on PE #           0
+ 

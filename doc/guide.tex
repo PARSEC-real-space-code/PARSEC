@@ -1,0 +1,2297 @@
+\documentclass{article}
+
+
+
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks,
+	citecolor=black,
+	filecolor=magenta,
+	linkcolor=blue,
+	urlcolor=cyan
+}
+
+
+
+\title{PARSEC 1.4 User's Guide}
+\author{
+{Prof. J. R. Chelikowsky's Research Group} \\
+{http://real-space.org/}
+}
+\date{\today}
+
+\makeindex
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+
+
+
+
+
+\section{What it is}
+
+PARSEC is a computer code that solves the Kohn-Sham equations by 
+expressing electron wave-functions directly in real space, without use 
+of explicit basis set. The name stands for "Pseudopotential Algorithm 
+for Real-Space Electronic Calculations". It handles one-dimensional and 
+three-dimensional periodic boundary conditions and confined-system 
+boundary conditions. In the latter, the charge density and 
+wave-functions are required to vanish outside a spherical shell 
+enclosing the electronic system. A finite-difference approach is used 
+for the calculation of spatial derivatives. Norm-conserving 
+pseudopotentials are used to describe the interaction between valence 
+electrons and ionic cores (core electrons+nuclei). Owing to the sparsity 
+of the Hamiltonian matrix, the Kohn-Sham equations are solved by direct 
+or iterative diagonalization, with the use of extremely efficient 
+sparse-matrix eigensolvers. Besides standard DFT calculations, parsec is 
+able to perform structural relaxation, simulated annealing, Langevin 
+molecular dynamics, and polarizability calculations (confined-system 
+boundary conditions only). It can also be used to provide input for 
+TDLDA (time-dependent density functional theory, in adiabatic 
+local-density approximation), GW approximation, and solution of the 
+Bethe-Salpeter equation for optical excitations.
+
+The development of parsec started in the early 1990's with the work of
+ J.R. Chelikowsky, N. Troullier,
+ and Y. Saad ( Phys. Rev. Lett {\bf 72}, 1240 ; Phys. Rev. B {\bf 50},
+11355). Later, many people have contributed with additional features and
+performance improvement:
+
+\begin{itemize}
+\item A. Stathopolous : mathematical subroutines;
+\item H. Kim : core correction, multipole expansion;
+\item I. Vasiliev : Polarizability, asymptotically-corrected functionals;
+\item M. Jain and L. Kronik : GGA, generalized Broyden mixer,
+  ``cleaning'' of the source code, efficiency improvements, and added functions;
+\item K. Wu : improvements in the iterative eigensolver {\em diagla} 
+      and the Hartree solver by conjugate-gradient;
+\item R. Burdick : major rewrite and improvement of multipole expansion;
+\item M. Alemany and M. Jain : periodic boundary conditions, parallel
+implementation;
+\item M. Alemany and E. Lorin : ARPACK solver;
+\item A. Makmal: dynamical memory allocation;
+\item M. Tiago : parallelization, symmetry operations, wire (1-D)
+  boundary conditions, this user's guide;
+\item Y. Zhou : Chebyshev-Davidson eigensolver; 
+thick-restart Lanczos eigensolver; Chebyshev subspace
+filtering method which serves to avoid diagonalizations;
+\item A. Natan : non-orthogonal boundary conditions; slab (2-D)
+\item A. Benjamini: slab (2-D)
+\item D. Nave : spin-orbit potential;
+\item H.-W. Kwak : LDA+U;
+\item S. Beckman : k-point sampling.
+\end{itemize}
+
+
+
+
+
+
+
+\section{Getting the code}
+
+Public versions of the code can be downloaded from
+{Prof. Chelikowsky's group page} 
+{http://real-space.org/}. There is also a development
+version, with implementations that are being tested for stability and
+performance. If you are interested in contributing to development,
+contact the developers.
+
+PARSEC is distributed under the General Public License (GPL). In a
+nutshell, these are the conditions implied in using it:
+
+\begin{itemize}
+\item It should be used for non-commercial purposes only.
+\item The authors give no warranty regarding its reliability or
+  usefulness to your particular application.
+\item The authors offer no technical support.
+\end{itemize}
+
+
+
+\subsection{Compiling PARSEC}
+
+At the beginning of the {\tt Makefile} file, edit the include line with
+the correct machine-dependent compilation file. Existing compilation files
+are inside subdirectory {\tt config}. Some of the existing files are:
+
+\begin{itemize}
+\item {\tt make.ibmsp3, make.ibmsp3\_mpi} : sp.msi.umn.edu, with/without MPI support.
+\item {\tt make.intel} : plain i686 machine running linux.
+\end{itemize}
+
+This code has been ported and tested on a variety of different 
+platforms: IBM SP3 and SP4 (AIX compiler), SGI (intel and f90 
+compilers), Intel/Linux (g95, intel compilers).  Once the {\tt 
+config/make.*} file has been edited, build the executable by running 
+make.  Upon completing a successful build, the file {\tt parsec.ser} (no 
+MPI support) or {\tt parsec.mpi} (with MPI support) will be found in the 
+src directory.
+
+PARSEC uses several external libraries. For the basic serial build the
+only necessary external library is LAPACK/BLAS. The best option is to
+pick machine optimized versions of these libraries such as ESSL (IBM)
+or MKL (Intel). If these are unavailable you can download LAPACK from
+\href{http://www.netlib.org/lapack/}{netlib}. If you want to use
+periodic boundary conditions then
+\href{http://www.fftw.org/}{FFTW} is needed. Turn this feature on
+by passing either -DUSEFFTW3 or -DUSEFFTW2 to the preprocessor
+depending on if you are using the version 2 or 3 of the library. If
+you want to use the parallel implementation you need
+\href{http://www-unix.mcs.anl.gov/mpi/mpich/}{MPICH2}. To make the
+parallel version pass -DMPI to the preprocessor. If you want to use
+the ARPACK diagonalization method, you need to build the
+\href{http://www.caam.rice.edu/software/ARPACK/}{ARPACK library}. Pass the flag
+-DUSEARPACK to the preprocessor.
+
+To port PARSEC to new machines you will need to modify the existing 
+config/make.* file for the machine you want to use. In addition you may 
+need to modify the machine specific files {\tt myflush.f90p}, {\tt 
+timing.f90p}, {\tt cfftw.f90p}. If you look in these you will notice 
+that there have been a variety of ports made and machine specific 
+modifications have been specified by preprocessor calls (e.g. the 
+preprocessor flag {\tt -DIBM} specifies that the IBM ``mclock'' function 
+be used for timing calls).  In the case that the Portland Group compiler 
+is used, the preprocessor flag {\tt -DPGI} must be passed.
+
+In addition to these preprocessor flags there are several other
+options that can be passed to the preprocessor. These are generally
+for development or other highly specialized purposes. Their operation
+can be learned by reading the source code. 
+
+
+
+\subsection{Porting to new platforms}
+
+Besides creating a new {\tt make.*} file for the machine you want to use,
+these are the files you may have to modify in
+order to port it to other platforms: myflush.F, timing.F, cfftw.F
+
+PARSEC uses the following external libraries:
+
+\begin{itemize}
+\item \href{http://www.caam.rice.edu/software/ARPACK/}{ARPACK}, diagonalization of sparse matrices. Optional. The interface with arpack is turned on with compilation flag {\tt  USEARPACK}.
+
+\item \href{http://www.fftw.org}{FFTW}, versions 2.x or 3.x,
+used for 3-dimensional FFT of real functions. Optional. The interface
+with FFTW is turned on with compilation flag {\tt  USEFFTW2} or {\tt USEFFTW3}. Notice that, without FFTW, PARSEC cannot handle periodic systems.
+
+\item \href{http://www.netlib.org/lapack/}{LAPACK/BLAS},
+linear algebra. Alternatively, support for libraries 
+ESSL (IBM) and \href{http://www.intel.com/cd/software/products/asmo-na/eng/index.htm}{MKL} (Intel Math Kernel Library) is also available.
+
+\item MPI : message passing interface, for parallel machines.
+
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+\section{Running PARSEC}
+
+
+
+\subsection{Basic input}
+
+\begin{itemize}
+\item {\tt parsec.in} : input file with user-provided parameters.
+
+\label{InputPseudopotentials}
+\item Pseudopotential files. For the moment, only  norm-conserving
+  pseudopotentials are implemented. Currently, PARSEC supports four
+  different formats (see {\tt Pseudopotential\_Format}
+  {PseudopotentialFormat}):
+
+\begin{itemize}
+\item {\tt Martins\_old }: original format, included for
+  back-compatibility with older versions of PARSEC. Pseudopotential files have
+  name {\tt *\_POTR.DAT}. In this format, files do not have atomic parameters
+  such as cut-off radii included.
+
+\item {\tt Martins\_new }: format of files created with
+  Prof. J.L. Martins' pseudopotential generator,
+  \href{http://bohr.inesc-mn.pt/~jlm/pseudo.html}{version 5.69p}. The distributors of
+  Parsec have a version of Prof. Martins' code with minor but
+  important modifications, so that files in the proper format are
+  created. Pseudopotential files have name {\tt  *\_POTRE.DAT}.
+  Files in this format are compatible with the
+  \href{http://www.uam.es/siesta/}{``Siesta''} DFT
+  program, but the opposite is not true: pseudo-wavefunctions are
+  appended to {\tt *\_POTRE.DAT} files, but the same does not
+  necessarily happen to formatted pseudopotential files used in
+  Siesta. WARNING: different from {\tt Martins\_old} format, a single
+  radial grid is used for pseudopotentials, pseudowavefunctions and
+  densities, and the grid density has a default value which is often too
+  low. In some cases, this can be a problem, especially for the core
+  density. There are at least two solutions for this problem: either
+  modify the default value of grid density (for example, set {\tt bb=160}
+  in file input.f), or specify your own grid density in input file
+  {\tt atom.dat}, or the equivalent in your pseudopotential code. A
+  good sanity check is to compare the results provided by parsec with
+  reliable results obtained by using other DFT codes.
+
+\item {\tt Martins\_Wang }: format of files created with Martins' code
+  as modified by Lin-Wang Wang. This format is also supported by the
+  DFT codes \href{http://hpcrd.lbl.gov/~linwang/PEtot/PEtot.html}{PEtot} and
+  \href{http://www.nersc.gov/projects/paratec/}{PARATEC}. Pseudopotential files have
+  name {\tt *\_POTRW.DAT}.
+
+\item {\tt FHIPP }: format of files created by the
+  \href{http://www.fhi-berlin.mpg.de/th/fhi98md/fhi98PP/}{FHIPP code}. Pseudopotential
+  files have name {\tt *\_FHIPP.DAT}. This format allows calculations
+  within the virtual crystal approximation, but they do not currently
+  allow the inclusion of spin-orbit corrections.
+\end{itemize}
+
+\end{itemize}
+
+We do not offer any advice to the user about the choice of
+pseudopotential, although we do distribute the newest version of
+J.L. Martins pseudopotential generator with PARSEC. For generating
+pseudopotentials we suggest the user read the webpages:
+
+\begin{itemize}
+
+\item \href{http://www.fhi-berlin.mpg.de/th/fhi98md/fhi98PP/}{http://www.fhi-berlin.mpg.de/th/fhi98md/fhi98PP/},
+\item \href{http://opium.sourceforge.net/}{http://opium.sourceforge.net/},
+\item \href{http://bohr.inesc-mn.pt/~jlm/pseudo.html}{http://bohr.inesc-mn.pt/~jlm/pseudo.html} and
+\item \href{http://hpcrd.lbl.gov/~linwang/PEtot/PEtot.html}{http://hpcrd.lbl.gov/~linwang/PEtot/PEtot.html}.
+\end{itemize}
+
+
+
+\subsection{The parsec.in file}
+
+The user-provided input uses the electronic structure data format 
+(ESDF), implemented as a module written by Chris J. Pickard. Comments 
+can be added on any line, and are preceded by any of the symbols ``{\tt 
+\# ; !}''. Keywords and blockwords are case insensitive. Characters 
+``{\tt . : =}'' and multiple spaces are ignored. Most parameters have 
+default values. All parameters with true/false value have default value 
+false. Parameter values can be written anywhere in the file, with the 
+exception that information pertinent to the same chemical element should 
+be given in consecutive lines (sometimes, data from different elements 
+can be mixed, but this should be avoided for the sake of clarity). 
+Keywords are always followed by their corresponding value on the same 
+line. Input values with intrinsic physical unit can be given in 
+different units, with name following the value. Default unit is used if 
+none is specified. For example, the line
+
+\begin{verbatim}
+grid_spacing 0.5 ang
+\end{verbatim}
+%
+sets a grid spacing of 0.5 angstroms. Blocks have the syntax:
+
+\begin{verbatim}
+begin Blockword
+.
+.
+.
+end Blockword
+\end{verbatim}
+
+WARNINGS: 
+
+\begin{itemize}
+
+\item PARSEC does not watch out for misprints in {\tt parsec.in}. Lines
+with unrecognized keywords or blockwords are usually ignored.
+
+\item The EDSL library sometimes screws up when identifying
+certain features with certain atom types (more on this in
+chapter \ref{KnownProblems}).
+\end{itemize}
+
+
+
+\subsection{Basic output}
+
+\begin{itemize}
+\item {\tt parsec.out} : The unified output file. This file contains
+  most of the relevant messages about the calculation as well as the
+  results.
+
+\item {\tt out.*} : The standard output from each processor. It
+  contains some warnings and error messages. Information about the
+  diagonalization as well as other processor specific information is
+  written here. These files are useful for debugging.
+
+\item {\tt parsec.dat} : The eigenvalues, density function, effective
+  potential, wave-functions and other output data, in binary
+  (unformatted) form. This file can sometimes be very lengthy. 
+\end{itemize}
+
+
+
+\subsection{Interrupting calculation \label{StopSCF}}
+
+In situations when the user wants to interrupt a calculation, he/she
+can do it by creating a file with name {\tt stop\_scf} (case sensitive). This file can
+be empty, but it must be created in the working directory, the same
+one which contains all the input/output files. The sequence of
+SCF iterations will be aborted as early as possible and output written
+to files {\tt parsec.out} and {\tt parsec.dat}. The last file can be
+used then as input to a subsequent calculation. This feature is useful
+if the user wants to stop the calculation ``smoothly'' and be able to
+restart it at a later time.
+
+
+
+
+
+
+
+
+\section{Input options}
+
+
+
+\subsection{The real-space grid}
+
+The following parameters define the region of space where the
+Kohn-Sham equations will be solved, and the appropriate boundary
+conditions. In parallel environment, grid points are distributed among
+processors. Symmetry operations are used to reduce the sampled region
+to an irreducible wedge.
+
+\subsubsection{\tt Boundary\_Conditions
+\index{Boundary\_Conditions@{\tt Boundary\_Conditions}}
+\label{BoundaryConditions}}
+({\it word}),
+default value = {\tt cluster }
+
+Defines the type of boundary conditions to be imposed. Available
+options are:
+
+    \begin{itemize}
+    \item{\tt cluster}. Specifies completely confined system, with boundary
+    conditions such that the electron wavefunctions are zero outside a spherical
+    domain. The discretized grid is laid out following the Cartesian
+    directions. If necessary (and if
+    consistent with other input options), a constant vector is added to all
+    atomic coordinates so that the geometric center of the systems coincides with
+    the origin of the Cartesian system.
+    
+    \item {\tt bulk}. Specifies periodic boundary conditions along all
+    3 Cartesian (or generalized) directions. If necessary, the input grid
+    spacing may be increased so as to
+    make it commensurable with the given size of periodic cell. Also, atomic
+    coordinates are used as given, with no initial repositioning around the origin
+    of the real-space grid. If atoms are found to be outside the cell, they are
+    replaced by their periodic image inside the cell.
+    
+    \item {\tt wire}. The
+    system is assumed to be periodic along the Cartesian {\bf x} direction
+    and confined within a cylinder centered on the {\bf x} axis. The
+    periodicity length is defined in block {\tt Cell\_Shape}
+    {CellShape}. The cylinder radius is defined by {\tt
+    Boundary\_Sphere\_Radius} {BoundarySphereRadius}. This type of
+    boundary conditions can be used together with k-point sampling.
+    
+    \item {\tt slab}. The system is assumed to be periodic along the
+    Cartesian {\bf x} and {\bf y} directions. The cell structure is defined
+    in the block {\tt Cell\_Shape} {CellShape}. The slab width is 
+    twice the value that is defined in  {\tt Boundary\_Sphere\_Radius} 
+    {BoundarySphereRadius}. This boundary conditions can be used together with
+    k-point sampling. 
+    \end{itemize}
+
+
+
+\subsubsection{\tt Cell\_Shape 
+\index{Cell\_Shape@{\tt Cell\_Shape}}
+\label{CellShape}}
+({\it block}),
+default value = {\tt no default }
+
+Specification of unit lattice vectors in Cartesian coordinates. Notice
+that, in contrast to earlier versions, this version requires the full
+vectors. With bulk boundary conditions (periodicity along the 3
+Cartesian directions), this block must have three lines, for the
+coordinates of the 3 unit lattice vectors. With wire boundary
+conditions (periodicity along the {\bf x} direction only, this block
+must have one line with a single number: the periodicity length along
+{\bf x}. With slab boundary conditions (periodicity along the {\bf x} and 
+{\bf y}), this block must have 2 lines with 2d vectors that span the x-y
+plane, if 3d vevtors are given, the 3rd number is ignored.  A global scale of unit lattice vectors can be done with input
+flag ({\tt Lattice\_Vector\_Scale}{LatticeVectorScale}).
+Relevant only in periodic systems (bulk, slab, or wire). 
+
+\subsubsection{\tt Lattice\_Vector\_Scale 
+\index{Lattice\_Vector\_Scale@{\tt Lattice\_Vector\_Scale}}
+\label{LatticeVectorScale}}
+({\it real}),
+default value = {\tt 1 },
+default unit = {\it bohr} (Bohr radii)
+
+Constant which multiplies the length of all three unit lattice
+vectors. This is useful for volumetric expansions or contractions in
+periodic systems. Relevant only in periodic systems.
+
+\subsubsection{\tt Super\_Cell 
+\index{Super\_Cell@{\tt Super\_Cell}}
+\label{SuperCell}}
+({\it block}),
+default value = {\tt 1 1 1 }
+
+Specification of super-cell with respect to unit lattice vectors of a
+periodic system. If declared to be ($n,m,l$), then the actual periodic
+cell will be a $n \times m \times l$ expansion of the cell specified in
+input. Atom coordinates are expanded accordingly. This is useful in
+super-cell calculations where the super-cell is obtained by
+replicating a minimal cell several times. Not used in non-periodic
+systems. In wire (1-D) systems, only the first number is used. In slab 
+(2-D) systems, only the first 2 numbers are used.
+
+\subsubsection{\tt Super\_Cell\_Vac 
+\index{Super\_Cell\_Vac@{\tt Super\_Cell\_Vac}}
+\label{SuperCellVac}}
+({\it block}),
+default value = {\tt 0 0 0 }
+
+Specification of vacuum in a supercell calculation. If declared to be
+($n,m,l$), the super-cell is expanded by adding $n$ empty cell along the
+first periodic direction, $m$ empty cells along the second periodic
+direction and $l$ empty cells along the third periodic direction. If
+applicable, this expansion is done after the expansion defined by
+{\tt Super\_Cell}{SuperCell}. Not used in non-periodic
+systems. In wire (1-D) systems, only the first number is used. In slab 
+(2-D) systems, only the first 2 numbers are used.
+
+\subsubsection{\tt Boundary\_Sphere\_Radius 
+\index{Boundary\_Sphere\_Radius@{\tt Boundary\_Sphere\_Radius}}
+\label{BoundarySphereRadius}}
+({\it real}),
+default value = {\tt no default },
+default unit = {\it bohr} (Bohr radii)
+
+Radius of enclosing spherical shell. Boundary conditions in
+non-periodic systems are such that all wave-functions vanish beyond a spherical
+shell centered in the origin and with given radius. The Hartree potential is
+also set to vanish on the shell (internally, this is done by solving Poisson's
+equation with a compensating charge outside the shell). Calculation stops if any
+atom is found outside the shell. The amount of extra space that should be given
+between the shell and any inner atom is strongly system-dependent and should be
+carefully tested for convergence. With wire boundary conditions
+(system periodic along the {\bf x} axis and confined along
+perpendicular directions), this option defines the radius of the
+confining cylinder. With slab boundary conditions this number is half the slab
+width in the {\bf z} axis.
+
+\subsubsection{\tt Grid\_Spacing 
+\index{Grid\_Spacing@{\tt Grid\_Spacing}}
+\label{GridSpacing}}
+({\it real}),
+default value = {\tt no default },
+default unit = {\it bohr} (Bohr radii)
+
+Distance between neighbor points in the real-space grid.
+This is a critical parameter in the calculation and it should be carefully
+tested for convergence. The grid is assumed to be regular. In periodic systems 
+(3-D and 2-D) the grid can be non-orthogonal according to the lattice vectors
+definition.
+
+\subsubsection{\tt Expansion\_Order 
+\index{Expansion\_Order@{\tt Expansion\_Order}}
+\label{ExpansionOrder}}
+({\it integer}),
+default value = {\tt 12 }
+
+Order used in the finite-difference expansion of gradients and Laplacians. It
+corresponds to twice the number of neighbor points used on each side and for
+each direction. It must be an even number.
+
+\subsubsection{\tt Ignore\_Symmetry 
+\index{Ignore\_Symmetry@{\tt Ignore\_Symmetry}}
+\label{IgnoreSymmetry}}
+({\it boolean}),
+default value = {\tt false}
+
+Cancels all symmetry operations. if this flag is true, symmetry is not going 
+to be used in the calculation. 
+
+\subsubsection{\tt Double\_Grid\_Order 
+\index{Double\_Grid\_Order@{\tt Double\_Grid\_Order}}
+\label{DoubleGridOrder}}
+({\it integer}),
+default value = {\tt 1 }
+
+Order for the double-grid used in the calculation of pseudopotentials
+in real space. In order to account for short-range variations in
+pseudopotentials (which can break translational symmetry in periodic
+systems), a double grid is defined following the method of Ono and
+Hirose ({\it Phys. Rev. Lett.} {\bf 82}, 5016 (1999) ). A double-grid
+order $N$ implies that $N-1$ additional grid points will be added
+between two neighbor points in the original grid, and Kohn-Sham
+eigenvectors interpolated between them. The default value is
+equivalent to original setting (no double grid).
+
+\subsubsection{\tt Cluster\_Domain\_Shape
+\index{Cluster\_Domain\_Shape@{\tt Cluster\_Domain\_Shape}}
+\label{ClusterDomainShape}}
+({\it word}),
+default value = {\tt sphere}
+
+This option is relevant for the 0-D case only. It defines the shape of
+the boundary conditions of the grid. Implemented options are:
+
+\begin{itemize}
+\item {\tt sphere}: Spherical boundary conditions are used. The domain is
+defined by all the points that fulfill $(x^2+y^2+z^2)<R^2$ where R is defined
+by the {\tt Boundary\_Sphere\_Radius} {BoundarySphereRadius}
+
+\item {\tt ellipsoid}: Ellipsoid boundary conditions are used. The 
+Ellipsoid paramaters are defined by the {\tt Domain\_Shape\_Parameters} 
+{DomainShapeParameters} block, this block MUST be defined.
+
+\item {\tt cylinder}: Cylindrical boundary conditions are used. The cylinder
+parameters are defined by the {\tt Domain\_Shape\_Parameters}
+{DomainShapeParameters} block, this block MUST be defined.
+
+\item {\tt box}: Box boundary conditions defines a rectangular cuboid box. The
+box parameters are defined by the {\tt Domain\_Shape\_Parameters}
+{DomainShapeParameters} block, this block MUST be defined.
+\end{itemize}
+
+\subsubsection{\tt Domain\_Shape\_Parameters
+\index{Domain\_Shape\_Parameters@{\tt Domain\_Shape\_Parameters}}
+\label{DomainShapeParameters}}
+({\it block}), 
+default value = {\tt no default}
+
+This block defines the paramers for the differnet shapes of the grid. A
+single line with 3 numbers is supplied. The meaning of the numbers depend
+on the domain definition:
+
+\begin{itemize}
+\item{ellipsoid}: The numbers are simply the a,b,c of the ellipsoid. 
+
+\item{cylinder}: The numbers are R, L, d. R is the cylinder radius, L is
+the cylinder length and d is the orientation: d=1 for x, d=2 for y and d=3
+for Z. 
+
+\item{box}: The numbers are simply a,b,c - the box dimensions in x,y,z 
+respectively.
+\end{itemize} 
+ 
+\subsubsection{\tt Full\_Hartree
+\index{Full\_Hartree@{\tt Full\_Hartree}}
+\label{FullHartree}}
+( {\it boolean}),
+default value = {\tt false }
+
+This flag is set for the case of an isolated shape that is extended 
+in one dimension relative to the others (e.g. a cylinder where $L >> R$). 
+In such shapes the usual multipole approximation is not converging well 
+and so an exact calculation of the Hartree potential is performed for 
+the boundary conditions of the Poisson equation. Note that such calculation 
+is much slower than the usual multipole approximation.
+   
+\subsubsection{\tt Boundary\_Mask 
+\index{Boundary\_Mask@{\tt Boundary\_Mask}}
+\label{BoundaryMask}}
+({\it boolean}),
+default value = {\tt false }
+
+Option available in confined systems only. Allows for flexibility in
+the definition of the real-space grid. If enabled, the grid will be
+constructed according to function {\tt My\_Mask} built in the
+source. See source for more information. WARNING: function {\tt
+  My\_Mask} must be tailored to the specific system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Diagonalization parameters}
+
+Many DFT codes solve the Kohn-Sham equations by minimizing
+the total energy functional. Parsec uses a different approach: it
+performs iterative diagonalization of the Kohn-Sham
+equations. Expressed in real space, the Hamiltonian is a sparse
+matrix, and efficient algorithms can be used to obtain the low-energy
+eigenstates with minimal memory usage and parallel communication.
+
+\subsubsection{\tt Eigensolver 
+\index{Eigensolver@{\tt Eigensolver}}
+\label{Eigensolver}}
+({\it word}),
+default value = {\tt chebdav }
+
+Implemented eigensolvers are:
+
+\begin{itemize}
+\item {\tt arpack}:
+Implicitly restarted Lanczos eigensolver as implemented in ARPACK.
+Reference: \href{http://www.caam.rice.edu/software/ARPACK/}
+{http://www.caam.rice.edu/software/ARPACK/}
+\item {\tt diagla}: Block preconditioned Lanczos.
+Reference: A. Stathopoulos, Y. Saad, and K. Wu, SIAM J. on Scientific
+Computing {\bf 19} 229 (1998).
+\item {\tt trlanc}: Locally modified 
+thick-restart Lanczos package developed by K. Wu and H. Simon.
+Reference: {{http://crd.lbl.gov/~kewu/trlan.html}
+{http://crd.lbl.gov/~kewu/trlan.html}}
+\item {\tt chebdav}: Chebyshev-Davidson eigensolver algorithm. References:
+Y. Zhou, Y. Saad, M.L. Tiago, and J.R. Chelikowsky,
+J. Comput. Phys. {\bf 219}, 172 (2006); Phys. Rev. E {\bf 74}, 066704 (2006).
+\item {\tt chebff}: Chebyshev-filtered subspace iteration eigensolver. References:
+Y. Zhou, J. R. Chelikowsky, Y. Saad,
+J. Comput. Phys. {\bf 274}, 770--782 (2014).
+\end{itemize}
+
+The last two eigensolvers use significantly less memory, and
+{\tt diagla} occasionally fails to converge in periodic systems.
+
+\subsubsection{\tt Diag\_Tolerance 
+\index{Diag\_Tolerance@{\tt Diag\_Tolerance}}
+\label{DiagTolerance}}
+({\it real}),
+default value = {\tt 1.d-4 }
+
+Tolerance in the residual norm of eigen-pairs.
+
+\subsubsection{\tt Maximum\_Matvec 
+\index{Maximum\_Matvec@{\tt Maximum\_Matvec}}
+\label{MaximumMatvec}}
+({\it integer}),
+default value = {\tt max(30000,N*neig) }
+
+Maximum number of matrix-vector operations to be allowed on each
+diagonalization. This is useful if diagonalization fails to
+converge. The ideal value depends on the actual number of rows in the 
+Hamiltonian ({\tt N}) and the number of desired eigenvalues ({\tt neig}).
+Calculations with hundreds of atoms or more may require this
+parameter to be increased from its default value.
+
+\subsubsection{\tt Subspace\_Buffer\_Size 
+\index{Subspace\_Buffer\_Size@{\tt Subspace\_Buffer\_Size}}
+\label{SubspaceBufferSize}}
+({\it integer}),
+default value = {\tt 5 }
+
+Number of additional eigenvalues to be computed for each representation. Must
+be some positive value, so that the full set of eigenvalues can be
+reconstructed from the sum of representations without missing levels.
+
+\subsubsection{\tt Chebyshev\_Filtering 
+\index{Chebyshev\_Filtering@{\tt Chebyshev\_Filtering}}
+\label{ChebyshevFiltering}}
+({\it boolean}),
+default value = {\tt false }
+
+After the first few diagonalizations, this option replaces the
+standard diagonalization with a polynomial filtering of the
+approximate eigen-subspace. 
+This technique is usually much more efficient than any of the
+eigensolvers above. It is enabled automatically if the eigensolver
+{\tt chebdav} is used. Reference for the subspace filtering method is:
+
+Y. Zhou, Y. Saad, M.L. Tiago, and J.R. Chelikowsky,
+{\it Self-consistent-field calculation using Chebyshev
+polynomial filtered subspace iteration}, J. Comput. Phys. {\bf 219}, 172 (2006)
+
+\subsubsection{\tt Chebdav\_Degree 
+\index{Chebdav\_Degree@{\tt Chebdav\_Degree}}
+\label{ChebdavDegree}}
+({\it integer}),
+default value = {\tt 20 }
+
+Degree of Chebyshev polynomial used in the Chebyshev-Davidson
+eigensolver. The degree is recommended to be within 15 to 30,
+usually a degree within 17 to 25 should work well.
+%It should not be less than 15, and better results are
+%obtained with polynomial 20 or more.
+
+\subsubsection{\tt Chebyshev\_Degree 
+\index{Chebyshev\_Degree@{\tt Chebyshev\_Degree}}
+\label{ChebyshevDegree}}
+({\it integer}),
+default value = {\tt 15 }
+
+Average degree of Chebyshev polynomial used in the subspace filtering
+method, this degree generally is smaller than the degree used
+in the Chebyshev-Davidson method. 
+Note that the subspace filtering method serves to avoid 
+doing diagonalizations, while the Chebyshev-Davidson method is
+used for diagonalization. 
+
+This  polynomial degree is recommended to be within 7 to 20.  
+If slow convergence is observed for some hard problems, 
+one may use a higher degree, e.g., 21 to 25.
+
+\subsubsection{\tt Chebyshev\_Degree\_Delta
+\index{Chebyshev\_Degree\_Delta@{\tt Chebyshev\_Degree\_Delta}}
+\label{ChebyshevDegreeDelta}}
+({\it integer}),
+default value = {\tt 1 } (if {\tt Chebyshev\_Degree} $<$ 10), {\tt 3} otherwise
+
+During subspace filtering, the energy spectrum is divided in two windows of
+equal width: the low-energy window is filtered with polynomial of degree
+$p-\delta$ and the high-energy window is filtered with polynomial of degree
+$p+\delta$, where $p$ is the average degree ({\tt Chebyshev\_Degree}) and
+$\delta$ is the degree variation ({\tt Chebyshev\_Degree\_Delta}). Large
+values of the degree variation usually give shorter runtime, but they may
+make the filtering process unstable if the ratio $\delta/p$ is much larger
+than around 0.30.
+
+
+\subsection{Self-consistency and mixing parameters}
+
+\subsubsection{\tt Max\_Iter 
+\index{Max\_Iter@{\tt Max\_Iter}}
+\label{MaxIter}}
+({\it integer}),
+default value = {\tt 50 }
+
+Maximum number of iterations in the self-consistent loop.
+
+\subsubsection{\tt Convergence\_Criterion 
+\index{Convergence\_Criterion@{\tt Convergence\_Criterion}}
+\label{ConvergenceCriterion}}
+({\it real}),
+default value = {\tt 2.d-4 },
+default unit = {\it Ry} (rydbergs)
+
+The density function is considered converged when the self-consistent
+residual error (SRE) falls below this value. The SRE is an integral of the
+square of the difference between the last two self-consistent potentials,
+weighted by electron density and taken squared root. This parameter should
+not be chosen less than the typical diagonalization accuracy.
+
+\subsubsection{\tt Convergence\_Criterion\_Approach
+\index{Convergence\_Criterion\_Approach@{\tt Convergence\_Criterion\_Approach}}
+\label{ConvergenceCriterionApproach}}
+({\it real}),
+default value = {\tt 100 * Convergence\_Criterion },
+default unit = {\it Ry} (rydbergs)
+
+If the SRE becomes less than this value and if the polynomial order during
+subspace filtering is more than 10, the polynomial order will be reduced
+by one unity after each SCF cycle until the order becomes equal to 10.
+Beyond that point, the order is kept fixed. This is a performance parameter,
+and it exploits the fact that subspace filtering with low order is as efficient
+as filtering with high order if the eigenvectors are close enough to the
+converged solution.
+
+\subsubsection{\tt Mixing\_Method 
+\index{Mixing\_Method@{\tt Mixing\_Method}}
+\label{MixingMethod}}
+({\it word}),
+default value = {\tt Anderson }
+
+Defines the scheme used in the mixing of old and new potentials. 
+Implemented schemes are {\tt Broyden}, {\tt Anderson}, {\tt msecant1}, 
+{\tt msecant2}, {\tt msecant3}. The first two methods were proved to be 
+equivalent by V. Eyert, 1996. In practice, there is no significant 
+difference between them. Broyden mixing uses disk for input/output of 
+internal data. The last three methods are multi-secant methods. They 
+were developed and coded by Haw-ren Fang and Yousef Saad, at the 
+University of Minnesota. {\tt Msecant1} is a class of multi-secant 
+methods with Type-I update to minimize the change of Jacobian. {\tt 
+Msecant2} is a class of multi-secant methods with Type-II update to 
+minimize the change of inverse Jacobian. {\tt Msecant3} is a hybrid 
+method, that minimizes the change of Jacobian or inverse Jacobian 
+depending on the secant errors. This last method was inspired by the 
+work of J.M. Mart{\'i}nez.
+
+\subsubsection{\tt Mixing\_Param 
+\index{Mising\_Param@{\tt Mixing\_Param}}
+\label{MixingParam}}
+({\it real}),
+default value = {\tt 0.30 }
+
+Choice for the diagonal Jacobian used in the mixing of potentials. Typical
+range is between {\tt 0.1} and {\tt 1.0}. Small values reduce the amount
+of mixing and result in slower but more controlled convergence. For improved
+performance, the user may try reducing this parameter in cases where
+the energy landscape is too corrugated (e.g.: magnetic systems, or systems
+with many degrees of freedom).
+
+\subsubsection{\tt Memory\_Param 
+\index{Memory\_Param@{\tt Memory\_Param}}
+\label{MemoryParam}}
+({\it integer}),
+default value = {\tt 4 }
+
+Number of previous SCF steps used in mixing. Ideal values range from 4 to 6.
+Larger values may actually worsen convergence because it includes steps far
+from the real solution.
+
+\subsubsection{\tt Restart\_Mixing 
+\index{Restart\_Mixing@{\tt Restart\_Mixing}}
+\label{RestartMixing}}
+({\it integer}),
+default value = {\tt 20 }
+
+Maximum number of iterations in the self-consistent loop before mixing
+is restarted. This should improve SCF convergence in cases when mixing
+becomes ``stuck'' and the SRE stops decreasing.
+
+\subsubsection{\tt Mixing\_Group\_Size
+\index{Mising\_Group\_Size@{\tt Mixing\_Group\_Size}}
+\label{MixingGroupSize}}
+({\it integer}),
+default value = {\tt 1 }
+
+Sets the size of groups of secant equations. To set infinite
+size of groups, use {\tt Mixing\_Group\_Size: 0}.
+
+\subsubsection{\tt Mixing\_EN\_Like
+\index{Mising\_EN\_Like@{\tt Mixing\_EN\_Like}}
+\label{MixingENLike}}
+({\it integer}),
+default value = {\tt 0 }
+
+Indicates using the Broyden-like update of the approximate
+(inverse) Jacobian. For EN-like update, set {\tt Mixing\_EN\_Like: 1}.
+Possible values are {\tt 0} and {\tt 1}.
+
+\subsubsection{\tt Mixing\_Preferred\_Type
+\index{Mising\_Preferred\_Type@{\tt Mixing\_Preferred\_Type}}
+\label{MixingPreferredType}}
+({\it integer}),
+default value = {\tt 1 }
+
+Relevant only for hybrid multi-secant methods ({\tt msecant3}). Possible
+values are {\tt 0} and {\tt 1}. The preferred type of update should be
+specified when the secant error is undefined (i.e., the first group of update).
+
+\subsubsection{\tt Mixing\_Restart\_Factor
+\index{Mising\_Restart\_Factor@{\tt Mixing\_Restart\_Factor}}
+\label{MixingRestartFactor}}
+({\it real}),
+default value = {\tt 0.10 }
+
+This parameter defines the restarting factor (ratio between the the norm of
+old function versus new function). If $||f_{new}||$ is too large relative
+to $||f_{old}||$, then the linear model or its approximation is not
+reliable, so restart should be performed. More precisely,
+if $||f_{old}|| < \mbox{restart\_factor} * ||f_{new}||$ then restart should be
+performed. In particular, if restart\_factor is 0, then no restart is done.
+
+\subsubsection{\tt Mixing\_Memory\_Expand\_Factor
+\index{Mising\_Memory\_Expand\_Factor@{\tt Mixing\_Memory\_Expand\_Factor}}
+\label{MixingMemoryExpandFactor}}
+({\it real}),
+default value = {\tt 2.0 }
+
+This line means that whenever the memory for mixing is insufficient, it will
+expand by a factor of 2.0, or by the value defined at input.
+
+
+The last five parameters are only effective for multi-secant
+methods. Anderson and Broyden methods are special cases of multi-secant
+methods. One
+can reduce to these methods by choosing carefully the multi-secant parameters.
+For example, Broyden's first method is obtained by setting:
+
+\begin{verbatim}
+Mixing_Group_Size: 1
+Mixing_EN_Like: 0
+Mixing_Method: msecant1
+\end{verbatim}
+%
+whereas Broyden's second method is obtained by replacing {\tt msecant1} above
+with {\tt msecant2}. Anderson mixing is obtained by setting:
+
+\begin{verbatim}
+Mixing_Method: msecant2
+Mixing_Group_Size: 0
+Mixing_EN_Like: 0
+\end{verbatim}
+
+The very first nonlinear Eirola-Nevanlinna (EN)-like algorithm proposed by Yang
+can be obtained by setting:
+
+\begin{verbatim}
+Mixing_Method: msecant1
+Mixing_Group_Size: 1
+Mixing_EN_Like: 1
+\end{verbatim}
+
+
+
+
+
+
+
+
+\subsection{Global atom and pseudopotential parameters}
+
+\subsubsection{\tt Atom\_Types\_Num 
+\index{Atom\_Types\_Num@{\tt Atom\_Types\_Num}}
+\label{AtomTypesNum}}
+({\it integer}),
+default value = {\tt no default }
+
+Number of different chemical elements present in the system.
+
+\subsubsection{\tt Coordinate\_Unit 
+\index{Coordinate\_Unit@{\tt Coordinate\_Unit}}
+\label{CoordinateUnit}}
+({\it word}),
+default value = {\tt Cartesian\_Bohr }
+
+By default, positions of atoms are given in cartesian coordinates and
+units of Bohr radius. Other implemented options are:
+
+\begin{itemize}
+\item {\tt Cartesian\_Ang} atomic coordinates given in angstroms, cartesian.
+
+\item {\tt Lattice\_Vectors} atomic coordinates given in units of lattice
+  vectors. Available only with periodic boundary conditions.
+\end{itemize}
+
+\subsubsection{\tt Old\_Interpolation\_Format 
+\index{Old\_Interpolation\_Format@{\tt Old\_Interpolation\_Format}}
+\label{OldInterpolationFormat}}
+({\it boolean}),
+default value = {\tt false }
+
+This is a compatibility flag. Normally, the local component of pseudopotentials
+{\it V} at some arbitrary point {\it r} is evaluated by linear interpolation of the
+function {\it r*V}. Due to the Coulomb-like behavior of {\it V} far away from
+the atom, this interpolation is exact beyond the cut-off radius. This
+flag reverts to the old method: linear interpolation of {\it V} itself.
+It should be used for debugging purposes only.
+
+
+
+
+
+
+
+
+\subsection{Parameters specific to each atom type}
+
+These parameters should be given in sequence in {\tt parsec.in}, and
+they refer to a particular chemical element in the system.
+
+\subsubsection{\tt Atom\_Type 
+\index{Atom\_Type@{\tt Atom\_Type}}
+\label{AtomType}}
+({\it word}),
+default value = {\tt no default }
+
+Chemical symbol of the current element. THIS IS CASE SENSITIVE!
+
+\subsubsection{\tt Pseudopotential\_Format 
+\index{Pseudopotential\_Format@{\tt Pseudopotential\_Format}}
+\label{PseudopotentialFormat}}
+({\it word}),
+default value = {\tt Martins\_new }
+
+Specification for the format of input pseudopotentials. Available
+choices are: {\tt Martins\_old}, {\tt Martins\_new}, {\tt Martins\_Wang}
+and {\tt FHIPP}. See also \linebreak { input of pseudopotential 
+files}{InputPseudopotentials}.
+
+\subsubsection{\tt Potential\_Num 
+\index{Potential\_Num@{\tt Potential\_Num}}
+\label{PotentialNum}}
+({\it integer}),
+default value = {\tt no default }
+
+Number of available angular components. Relevant for pseudopotential
+formats {\tt Martins\_old} and {\tt FHIPP}.
+
+\subsubsection{\tt Core\_Cutoff\_Radius 
+\index{Core\_Cutoff\_Radius@{\tt Core\_Cutoff\_Radius}}
+\label{CoreCutoffRadius}}
+({\it real}),
+default value = {\tt no default },
+default unit = {\it bohr} (Bohr radii)
+
+Maximum cut-off radius used in the generation of pseudopotential.
+Relevant for pseudopotential formats {\tt Martins\_old}, {\tt
+  Martins\_Wang} and {\tt FHIPP}.
+
+\subsubsection{\tt Electron\_Per\_Orbital 
+\index{Electron\_Per\_Orbital@{\tt Electron\_Per\_Orbital}}
+\label{ElectronPerOrbital}}
+({\it block}),
+default value = {\tt no default }
+
+Number of electrons per atomic orbital used in the generation of
+pseudopotential. Relevant for pseudopotential formats {\tt
+  Martins\_old} and {\tt FHIPP}.
+
+\subsubsection{\tt Local\_Component 
+\index{Local\_Component@{\tt Local\_Component}}
+\label{LocalComponent}}
+({\it integer}),
+default value = {\tt no default }
+
+Choice of angular component to be considered local in the Kleinman-Bylander
+transformation. No ghost-state check is done in parsec. Therefore, check if
+the chosen component does not have ghost states. Relevant for
+pseudopotential formats {\tt Martins\_old}, {\tt Martin\_new} and {\tt FHIPP}.
+
+\subsubsection{\tt Nonlinear\_Core\_Correction 
+\index{Nonlinear\_Core\_Correction@{\tt Nonlinear\_Core\_Correction}}
+\label{NonlinearCoreCorrection}}
+({\it boolean}),
+default value = {\tt false }
+
+This flag should be enabled if the pseudopotentials for this element
+have non-linear core correction. Relevant for pseudopotential format
+{\tt FHIPP} only.
+
+\subsubsection{\tt Move\_Flag 
+\index{Move\_Flag@{\tt Move\_Flag}}
+\label{MoveFlag}}
+({\it integer}),
+default value = {\tt 0 }
+
+Type of movement to be applied to atoms. Relevant only if structural relaxation
+is performed. Value {\tt 0} makes all atoms movable in all directions. Value
+{\it n}
+positive makes the first {\it n} atoms movable. A negative value makes selected atoms
+movable (the selection is made inside block {\tt Atom\_Coord}
+{AtomCoord}).
+
+\subsubsection{\tt Atom\_Coord 
+\index{Atom\_Coord@{\tt Atom\_Coord}}
+\label{AtomCoord}}
+({\it block}),
+default value = {\tt no default }
+
+Coordinates of atoms belonging to the current chemical species. See
+{\tt Coordinate\_Unit} {CoordinateUnit}. If structural relaxation is done with selected atoms
+({\tt Move\_Flag} {MoveFlag} $<$ 0), each triplet of coordinates
+must be followed by an integer: 0 if this atom is fixed, 1 if it is movable.
+
+\subsubsection{\tt Alpha\_Filter 
+\index{Alpha\_Filter@{\tt Alpha\_Filter}}
+\label{AlphaFilter}}
+({\it real}),
+default value = {\tt 0.0 }
+
+Cut-off parameter in Fourier filtering of pseudopotentials, in reciprocal
+space. If value is non-positive, pseudopotentials are not
+filtered. Fourier filtering is implemented according to Briggs {\it et
+  al.} Phys. Rev. B {\bf 54}, 14362 (1996), but no second filtering in
+real space has been implemented so far.
+
+\subsubsection{\tt Beta1\_Filter 
+\index{Beta1\_Filter@{\tt Beta1\_Filter}}
+\label{Beta1Filter}}
+({\it real}),
+default value = {\tt 0.0 }
+
+Cut-off parameter in Fourier filtering of pseudopotentials, in reciprocal
+space. Referenced only if {\tt alpha\_filter} is positive.
+
+\subsubsection{\tt Core\_Filter 
+\index{Core\_Filter@{\tt Core\_Filter}}
+\label{CoreFilter}}
+({\it  real}),
+default value = equal to {\tt Alpha\_Filter}
+
+Cut-off parameter in Fourier filtering of non-linear core density. If
+non-positive, then core density is not filtered.
+
+\subsubsection{\tt Initial\_Spin\_Polarization
+\index{Initial\_Spin\_Polarization@{\tt Initial\_Spin\_Polarization}}
+\label{InitialSpinPolarization}}
+({\it real}),
+default value = {\tt 0.1 },
+
+Value of spin polarization to be used in the initial guess of charge
+density. An initial spin polarization of 0.1 means that the charge
+ratio $( n^\uparrow - n^\downarrow )/( n^\uparrow + n^\downarrow )$ is
+0.1. Warning: if you specify this parameter for one chemical element,
+then you also must specify it for all the other ones (use zero for
+non-spin polarized atoms).
+
+\subsubsection{\tt LDAplusU\_U 
+\index{LDAplusU\_U@{\tt LDAplusU\_U}}
+\label{LDAplusUU}}
+({\it real}),
+default value = {\tt 0.0 },
+default unit = {\it Ry} (rydbergs)
+
+Value of the U parameter (on-site Coulomb interaction) for this
+chemical element. A positive value for this quantity or for the J
+parameter below will add a on-site Coulomb interaction in the DFT
+Hamiltonian, following the ``LDA+U'' approach, see: Anisimov {\it et
+  al.}, Phys. Rev. B {\bf 44}, 943 (1991).
+
+\subsubsection{\tt LDAplusU\_J 
+\index{LDAplusU\_J@{\tt LDAplusU\_J}}
+\label{LDAplusUJ}}
+({\it real}),
+default value = {\tt 0.0 },
+default unit = {\it Ry} (rydbergs)
+
+Value of the J parameter (exchange part of on-site Coulomb
+interaction) for this chemical element.
+
+\subsubsection{\tt SO\_psp 
+\index{SO\_psp@{\tt SO\_psp}}
+\label{SOpsp}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables the inclusion of spin-orbit components in the
+pseudopotentials for this chemical element. Notice that {\tt FHIPP}
+format does not currently have support for spin-orbit
+components. Spin-orbit components for pseudopotential format
+{\tt Martins\_old} require one additional file, with name
+{\tt *\_SO.DAT}. Notice that the inclusion of spin-orbit components
+require spin-polarized calculation, flag
+{\tt Spin\_Polarization}{SpinPolarization}.
+
+\subsubsection{\tt SCF\_SO 
+\index{SCF\_SO@{\tt SCF\_SO}}
+\label{SCFSO}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables the inclusion of spin-orbit components as
+perturbation. Spin-orbit components are included in a SCF calculation
+only after the solution is obtained without spin-orbit
+components. This can lead to easier convergence.
+
+\subsubsection{\tt Cubic\_Spline 
+\index{Cubic\_Spline@{\tt Cubic\_Spline}}
+\label{CubicSpline}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables cubic spline interpolation in the pseudopotentials. This is
+useful if the radial grid where pseudopotentials are computed is
+coarse, especially in the vicinity of the cut-off radius.
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Electronic parameters}
+
+\subsubsection{\tt Restart\_Run 
+\index{Restart\_Run@{\tt Restart\_Run}}
+\label{RestartRun}}
+({\it boolean}),
+default value = {\tt false}
+
+By default, the initial charge density in a parsec run is built from
+the superposition of atomic charge densities. If you want instead to
+start from a previous run, choose value true.
+For confined systems, having {\tt restart\_run = true} prevents the initial
+centering of atoms. If this flag is used but an adequate file {\tt
+  parsec.dat} is not found, the calculation is interrupted.
+
+\subsubsection{\tt States\_Num 
+\index{States\_Num@{\tt States\_Num}}
+\label{StatesNum}}
+({\it integer}),
+default value = {\tt no default }
+
+Number of energy eigenvalues to be computed. In spin-polarized calculations,
+this is the number of eigenvalues per spin orientation.
+
+\subsubsection{\tt Net\_Charges 
+\index{Net\_Charges@{\tt Net\_Charges}}
+\label{NetCharges}}
+({\it real}),
+default value = {\tt 0.0 },
+default unit = {\it e} (electron charge)
+
+Net electric charge in the system, in units of electron charge. It can also
+be used in periodic systems. In that case, a background charge is used
+and the divergent component of the Hartree potential is ignored.
+
+\subsubsection{\tt Fermi\_Temp 
+\index{Fermi\_Temp@{\tt Fermi\_Temp}}
+\label{FermiTemp}}
+({\it real}),
+default value = {\tt 80.0 },
+default unit = {\it K} (kelvins)
+
+Fermi temperature used to smear out the Fermi energy. If a
+negative value is given, then the occupancy of Kohn-Sham orbitals is read from
+file {\tt occup.in} and kept fixed throughout the
+calculation. 
+
+\subsubsection{\tt Correlation\_Type 
+\index{Correlation\_Type@{\tt Correlation\_Type}}
+\label{CorrelationType}}
+({\it word}),
+default value = {\tt CA } (without spin polarization), {\tt PL } (with
+spin polarization)
+
+Choice of exchange-Correlation functional to be used. Available
+choices and their variants are:
+
+\begin{itemize}
+\item {\tt CA, PZ }: Ceperley-Alder (LDA), with spin-polarized
+  option. D.M. Ceperley and B.J. Alder, Phys. Rev. Lett. {\bf 45},
+  566 (1980);  J.P. Perdew and A. Zunger, Phys. Rev. B {\bf 23}, 
+5048 (1981).
+
+\item {\tt XA}: Slater's x-alpha (LDA). J.C. Slater, Phys. Rev. {\bf 81} 385 (1951).
+
+\item {\tt WI}: Wigner's interpolation (LDA). E. Wigner, Phys. Rev. {\bf 46},
+  1002 (1934).
+
+\item {\tt HL}: Hedin-Lundqvist (LDA). L. Hedin and B.I. Lundqvist,
+  J. Phys. C {\bf 4}, 2064 (1971).
+
+\item {\tt LB}: Ceperley-Alder with Leeuwen-Baerends correction
+  (asymptotically corrected). R. van Leeuwen and E. J. Baerends,
+  Phys. Rev. A {\bf 49}, 2421 (1994).
+
+\item {\tt CS}: Ceperley-Alder with Casida-Salahub correction
+  (asymptotically corrected). M.E. Casida and D.R. Salahub,
+  J. Chem. Phys. {\bf 113}, 8918 (2000).
+
+\item {\tt PL, PWLDA}: Perdew-Wang (LDA), with spin-polarized
+  option. J.P. Perdew and Y. Wang, Phys. Rev. B {\bf 45}, 13244 (1992).
+
+\item {\tt PW, PW91, PWGGA}: Perdew-Wang (GGA), with spin-polarized
+  option. J. Perdew, {\it Electronic Structure of Solids}
+  (ed. P. Ziesche and H. Eschrig, Akademie Verlag, Berlin, 1991).
+
+\item {\tt PB, PBE}: Perdew-Burke-Ernzerhof (GGA), with spin-polarized
+  option. J.P. Perdew, K. Burke, and M. Ernzerhof, Phys. Rev. Lett.
+  {\bf 77}, 3865 (1996).
+\end{itemize}
+
+\subsubsection{\tt Ion\_Energy\_Diff 
+\index{Ion\_Energy\_Diff@{\tt Ion\_Energy\_Diff}}
+\label{IonEnergyDiff}}
+({\it real}),
+default value = {\tt 0.0},
+default unit = {\it Ry} (rydbergs)
+
+Energy difference used in the construction of the Casida-Salahub functional.
+Relevant only if that functional is used.
+
+\subsubsection{\tt Spin\_Polarization 
+\index{Spin\_Polarization@{\tt Spin\_Polarization:}}
+\label{SpinPolarization}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables spin-polarized densities and functional.
+
+\subsubsection{\tt Symmetrize\_Charge\_Density 
+\index{Symmetrize\_Charge\_Density@{\tt Symmetrize\_Charge\_Density:}}
+\label{SymmetrizeChargeDensity}}
+({\it boolean}),
+default value = {\tt false }
+
+Forces charge density to be resymmetrized after each SCF step. In some
+cases (for example, if the Fermi temperature is too small), the charge
+density may lose symmetry after some steps due to round-off error
+accumulation. This option is valid only in confined (totally
+non-periodic) systems. For periodic systems, the charge density is
+always symmetrized.
+
+\subsubsection{\tt Add\_Point\_Charges 
+\index{Add\_Point\_Charges@{\tt Add\_Point\_Charges:}}
+\label{AddPointCharges}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables embedding of the system in electrostatic point charges. This
+feature can be used when the actual system is surrounded by additional
+ions which do not take part in electronic processes and can be taken
+into account as classical point charges, without a full
+quantum-mechanical treatment. Also, the system must be confined:
+{\tt Boundary\_Conditions cluster}{BoundaryConditions}.
+
+\subsubsection{\tt Point\_Typ\_Num 
+\index{Point\_Typ\_Num@{\tt Point\_Typ\_Num}}
+\label{PointTypNum}}
+({\it integer}),
+default value = {\tt 0}
+
+Number of classical point charge types. Referenced only if point
+charge embedding is enabled.
+
+\subsubsection{\tt Pt\_Chg 
+\index{Pt\_Chg@{\tt Pt\_Chg}}
+\label{PtChg}}
+({\it real}),
+default value = {\tt 0.0},
+default unit = {\it e} (electron charge)
+
+Charge of each point charge type.
+
+\subsubsection{\tt Point\_Coord 
+\index{Point\_Coord@{\tt Point\_Coord}}
+\label{PointCoord}}
+({\it block}),
+default value = {\tt no default}
+
+Coordinates of each point charge. They can also be rescaled with a
+coordinate unit. See {\tt Coordinate\_Unit} {CoordinateUnit}.
+
+\subsubsection{\tt External\_Mag\_Field 
+\index{External\_Mag\_Field@{\tt External\_Mag\_Field}}
+\label{ExternalMagField}}
+({\it real}),
+default value = {\tt 0.0},
+default unit = {\it Ry/mu\_Bohr} (rydbergs per Bohr magneton)
+
+Strength of the external magnetic field applied on the system, along
+the {\bf z} direction. This magnetic field acts only on the spin magnetic
+dipole, and not on orbital magnetic dipole (orbital angular momentum
+is very small for electrons).
+
+
+
+
+
+
+
+
+
+\subsection{Wave functions and k-points}
+
+The parameters here affect the wave functions and the k-point
+sampling.
+
+\subsubsection{\tt Complex\_Wfn 
+\index{Complex\_Wfn@{\tt Complex\_Wfn}}
+\label{ComplexWfn}}
+({\it boolean}),
+default value = {\tt true}
+
+By default use complex value for the wavefunctions.  This is necessary
+for sampling of k-space and for other instances.  For the case that 
+only the $\Gamma$ point is sampled the calculation will run much
+faster and uses fewer resources if this parameter is turned to false.
+
+\subsubsection{\tt Kpoint\_Method 
+\index{Kpoint\_Method@{\tt Kpoint\_Method}}
+\label{KpointMethod}}
+({\it string}),
+default value = {\tt none }
+
+The method to sample k-space.  There are two options
+\begin{itemize}
+\item{\tt none}: No additional k-point is used besides the $\Gamma$
+  (0,0,0) point. Also, wave-functions are computed as real functions
+  (null imaginary part).
+
+\item{\tt mp}:  Sample by the Monkhorst-Pack algorithm (see
+  H.J. Monkhorst and J.D. Pack, Phys. Rev. B {\bf 13}, 5188 (1976))
+This will require including a Monkhorst\_Pack\_Grid in a block.
+
+\item{\tt manual}:  Manual sampling of k-space.  This will require
+  including a kpoint\_list in a block.
+
+\end{itemize}
+
+\subsubsection{\tt Monkhorst\_Pack\_Grid 
+\index{Monkhorst\_Pack\_Grid@{\tt Monkhorst\_Pack\_Grid}}
+\label{MonkhorstPackGrid}}
+({\it block}),
+default value = {\tt none }
+
+Grid to sample kpoints over via the Monkhorst-Pack algorithm. Relevant
+only if  {\tt Kpoint\_Method}{KpointMethod} = {\tt mp}.
+
+\subsubsection{\tt Monkhorst\_Pack\_Shift 
+\index{Monkhorst\_Pack\_shift@{\tt Monkhorst\_Pack\_Shift}}
+\label{MonkhorstPackShift}}
+({\it block}),
+default value = {\tt none }
+
+Shift of Monkhorst-Pack grid. Kpoints in this grid have coordinates
+given by: $k_i = ( i + s )/n$ in units of reciprocal lattice vectors,
+where n is a grid order (see {\tt Monkhorst\_Pack\_Grid}
+{MonkhorstPackGrid}), s is a shift and i is an integer with value
+between 0 and $n-1$. Relevant
+only if  {\tt Kpoint\_Method}{KpointMethod} = {\tt mp}.
+
+\subsubsection{\tt Kpoint\_List 
+\index{Kpoint\_List@{\tt Kpoint\_List}}
+\label{KpointList}}
+({\it block}),
+default value = {\tt none }
+
+List of k-points to sample and the sampling weight of each k-point. Relevant only if {\tt
+  Kpoint\_Method}{KpointMethod} = {\tt manual}.
+
+\subsubsection{\tt Kpoint\_Unit 
+\index{Kpoint\_Unit@{\tt Kpoint\_Unit}}
+\label{KpointUnit}}
+({\it string}),
+default value = {\tt Cartesian\_Inverse\_Bohr }
+
+Defines the type of coordinates used to input k-points. Available
+options are {\tt Cartesian\_Inverse\_Bohr } (Cartesian coordinates,
+units of inverse Bohr radius) and {\tt Reciprocal\_Lattice\_Vectors }
+(units of reciprocal lattice vectors).
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Band structure and Density of States (DOS) calculation}
+
+Special commands are given for band structure calculation and density 
+of states (DOS) calculation. Both calculations can be carried out at the
+end of an SCF run - so no need for a special run. 
+
+\subsubsection{\tt bandstruc
+\index{bandstruc@{\tt bandstruc}}
+\label{bandstruc}}
+({\it block}),
+default value = {\tt no default }
+
+bandstruc is a block containing the path in k-space to be calculated 
+for the band structure. The block is composed of lines. Each line defines 
+a segment in the band path and contains 7 numbers and a label, the first 
+number is a serial number. the next 6 numbers contain the starting k-point 
+of the segment and final k-point of the segment, given in {\it relative} 
+coordinates. the last part of each line is a label, describing the segment. 
+
+An example is shown below for the 2d case of graphene:
+
+\begin{verbatim}
+begin bandstruc
+1 0.0 0.0 0.0 0.5 0.0 0.0 gamma-M
+2 0.5 0.0 0.0 0.333333333 -0.333333333 0.0 M-K
+3 0.333333333 -0.333333333 0.0 0.0 0.0 0.0 K-gamma
+end bandstruc
+\end{verbatim}
+
+In the case of 2d - the 3rd number of each k-point should be $0.0$. The 
+band structure calculation is done after the SCF calculation has ended. 
+At the end of calculation a text file that is called "bands.dat" is created.
+The file is arranged a line of number. Each line is arranged as follows:
+
+\begin{verbatim}
+
+spin, line_num, kpoint_num, kpt_x, kpt_y, kpt_z, eigs(kpt,spin,1:n)-efermi
+
+\end{verbatim}
+
+spin - is simply 1 or 2, line\_number is the path segment number, kpoint\_num
+is the k-point number, kpt\_x, kpt\_y and kpt\_z are the k-point components,
+note that they are given in {\it cartesian} coordinates and not in relative. 
+eigs are simply the eigenvalues, they are given relative to the fermi level. 
+
+\subsubsection{\tt bandstruc\_points
+\index{bandstruc\_points@{\tt bandstruc\_points}}
+\label{BandstrucPoints}}
+({\it integer}),
+default value = {\tt 20 }
+
+This parameter defines the number of points in the {\it shortest} segment
+in the band path that is given. The calculation is done so that the points
+density along the path is kept constant.  
+
+\subsubsection{\tt create\_dos
+\index{create\_dos@{\tt create\_dos}}
+\label{CreateDos}}
+({\it boolean}),
+default value = {\tt false}
+
+Density of States (DOS) is calculated when this flag is true. DOS calculation
+can be performed only for periodic (3d) or partially periodic (1d and 2d) 
+systems.
+
+\subsubsection{\tt dos\_pnum
+\index{dos\_pnum@{\tt dos\_pnum}}
+\label{DosPnum}}
+({\it integer}),
+default value = {\tt 1000}
+
+Number of points in the energy axis for the DOS calculation. 
+
+
+  
+
+
+
+
+
+\subsection{Non-self consistent calculations and BerkeleyGW interface}
+
+Special commands are given for non-self consistent calculations and interface
+to the {\tt BerkeleyGW} code {http://www.berkeleygw.org}. Unlike
+band structure and density of states (DOS) calculation, the non-self consistent
+calculations has to be carried out after the end of an SCF run. The code
+reads {\tt parsec.dat} file for charge density and potential information.
+This file is NOT overwritten.  It should be kept in mind that one has to 
+specify the parameters for the scf calculation as well. The code uses 
+these when reading {\tt parsec.dat} to ensure that it is the intended
+file. The non-self consistent code is independent of the BerkeleyGW interface
+and can be used separately as well. 
+ 
+\subsubsection{\tt nscf\_kpoints
+\index{nscf\_kpoints@{\tt nscf\_kpoints}}
+\label{nscfkpoints}}
+({\it block}),
+default value = {\tt no default }
+
+nscf\_kpoints is a block containing the points in k-space and their weights
+to be calculated in the non-self consistent calclation. The weights are not 
+used unless one is outputing information for BerkeleyGW calculation. The format
+for each line in this block is the same as {\tt Kpoint\_list}.
+
+\subsubsection{\tt Nscf\_Kpoint\_Unit
+\index{Nscf\_Kpoint\_Unit@{\tt Nscf\_Kpoint\_Unit}}
+\label{NscfKpointUnit}}
+({\it string}),
+default value = {\tt Cartesian\_Inverse\_Bohr }
+
+Defines the type of coordinates used to input {\tt nscf\_kpoints}. Available
+options are {\tt Cartesian\_Inverse\_Bohr } (Cartesian coordinates,
+units of inverse Bohr radius) and {\tt Reciprocal\_Lattice\_Vectors }
+(units of reciprocal lattice vectors).
+
+\subsubsection{\tt nscf\_states\_num
+\index{nscf\_states\_num@{\tt nscf\_states\_num}}
+\label{nscfstatesnum}}
+({\it integer}),
+default value = {\tt none }
+
+This parameter defines the number of states to be calculated in the 
+non-self consistent calculation.
+
+\subsubsection{\tt nscf\_fermi\_level
+\index{nscf\_fermi\_level@{\tt nscf\_fermi\_level}}
+\label{nscffermilevel}}
+({\it real}),
+default value = {\tt none}
+
+Because no self-consistent calculation is done in the same run, the code 
+does not have any idea about the Fermi Level. So a Fermi level has to be 
+provided from the previous scf calculation. Default units are Ry.
+
+\subsubsection{\tt output\_gw
+\index{output\_gw@{\tt output\_gw}}
+\label{outputgw}}
+({\it boolean}),
+default value = {\tt false }
+
+This flag determines whether output for {\tt BerkeleyGW} is written. In
+order to use this flag, the code must be compiled with {-DBGW} flag. It 
+also has to be linked properly to {\tt BerkeleyGW} code libraries which
+contain subroutines for input/output in {\tt BerkeleyGW} format. When true,
+this flag will write {\tt WFN}, {\tt VXC}, and {\tt RHO} files. These 
+files contain the wavefunction information (in g-space), exchange-correlation
+potential (in g-space) and charge density (in g-space) respectively. These
+can be used as input to the {\tt BerkeleyGW} code.
+
+\subsubsection{\tt nscf\_kgrid
+\index{nscf\_kgrid@{\tt nscf\_kgrid}}
+\label{nscfkgrid}}
+({\it block}),
+default value = {\tt none }
+
+Grid used to sample kpoints via the Monkhorst-Pack algorithm for non-self 
+consistent calculation. This information is just passed to {\tt BerkeleyGW}. 
+The calculation is performed on the {\tt nscf\_kpoints}{nscfkpoints}. 
+Relevant only if  {\tt output\_gw}{outputgw} = {\tt true}.
+
+\subsubsection{\tt nscf\_kgrid\_shift
+\index{nscf\_kgrid\_shift@{\tt nscf\_kgrid\_shift}}
+\label{nscfkgridshift}}
+({\it block}),
+default value = {\tt none }
+
+Shift of Monkhorst-Pack grid for non-self consistent calculations. 
+Kpoints in this grid have coordinates given by: $k_i = ( i + s )/n$ 
+in units of reciprocal lattice vectors, where n is a grid order 
+(see {\tt nscf\_kgrid}{nscfkgrid}), s is a shift and i is an 
+integer with value between 0 and $n-1$. This information is just passed 
+to {\tt BerkeleyGW}. The calculation is performed on the 
+{\tt nscf\_kpoints}{nscfkpoints}. Relevant only if 
+{\tt output\_gw}{outputgw} = {\tt true}.
+
+
+
+
+
+
+
+\subsection{Structural relaxation}
+
+\subsubsection{\tt Minimization 
+\index{Minimization@{\tt Minimization}}
+\label{Minimization}}
+({\it word}),
+default value = {\tt none }
+
+Choice of method for structural relaxation. Available options are:
+{\tt none} (no
+relaxation), {\tt simple} (steepest-descent algorithm), {\tt BFGS}
+(Broyden-Fletcher-Goldfarb-Shanno, the best), and {\tt manual} (manual movement). Steepest-descent should be
+used as last resort. With manual movement, the sequence of atomic coordinates
+must be provided by the user in file {\tt manual.dat} and it is used
+``as is''. The last choice is useful for debugging. Symmetry operations
+are ignored if manual movement is performed
+
+\subsubsection{\tt Movement\_Num 
+\index{Movement\_Num@{\tt Movement\_Num}}
+\label{MovementNum}}
+({\it integer}),
+default value = {\tt 500 }
+
+Maximum number of iterations during structural relaxation.
+
+\subsubsection{\tt Force\_Min 
+\index{Force\_Min@{\tt Force\_Min}}
+\label{ForceMin}}
+({\it real}),
+default value = {\tt 1.0d-2 },
+default unit = {\it Ry/bohr} (rydbergs/Bohr radii)
+
+Maximum magnitude of the force on any atom (that was allowed to move) in the relaxed structure.
+This should not be set less than about 0.01 {\it Ry/a.u.}, which is the
+usual accuracy in the calculation of forces.
+
+\subsubsection{\tt Max\_Step 
+\index{Max\_Step@{\tt Max\_Step}}
+\label{MaxStep}}
+({\it real}),
+default value = {\tt 0.05} (steepest descent), {\tt -1} (BFGS),
+default unit = {\it bohr} (Bohr radii)
+
+If steepest-descent minimization is performed, this parameter sets the
+maximum displacement of atoms between two steps in relaxation.
+With BFGS, this defines the maximum displacement of atoms along
+each Cartesian component from their original position (if negative, no
+constraint in the movement of atoms is imposed). Ignored in all other
+circumstances.
+
+\subsubsection{\tt Min\_Step 
+\index{Min\_Step@{\tt Min\_Step}}
+\label{MinStep}}
+({\it real}),
+default value = {\tt 1.d-4 },
+default unit = {\it bohr} (Bohr radii)
+
+Minimum displacement of atoms between two steps in steepest-descent 
+relaxation. Relevant only if steepest descent is performed.
+
+\subsubsection{\tt BFGS\_Number\_Corr 
+\index{BFGS\_Number\_Corr@{\tt BFGS\_Number\_Corr}}
+\label{BFGSNumberCorr}}
+({\it integer}),
+default value = {\tt 7 }
+
+Number of variable metric corrections used to define the limited-memory
+matrix. Relevant only if BFGS relaxation is performed.
+
+\subsubsection{\tt Relax\_Restart 
+\index{Relax\_Restart@{\tt Relax\_Restart}}
+\label{RelaxRestart}}
+({\it boolean}),
+default value = {\tt false }
+
+Flag for the restart of a relaxation run. If true, the user must provide 
+information about previous run in file {\tt relax\_restart.dat}. No need 
+to provide input file {\tt parsec.dat}. If this option is used, the 
+atomic coordinates in {\tt parsec.in} are replaced with the ones in {\tt 
+relax\_restart.dat}. Appropriate warnings are written to output. If the 
+restart file is not found, this flag is ignored and no information from 
+previous relaxations is used.
+
+
+
+
+
+
+
+
+
+\subsection{Molecular dynamics}
+
+\subsubsection{\tt Molecular\_Dynamics 
+\index{Molecular\_Dynamics@{\tt Molecular\_Dynamics}}
+\label{MolecularDynamics}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables molecular dynamics. This feature can be used both for
+simulated annealing and for direct simulation of hot systems. Both
+canonical and micro-canonical ensembles are implemented. Symmetry
+operations are ignored if molecular dynamics is being performed.
+
+\subsubsection{\tt Cooling\_Method 
+\index{Cooling\_Method@{\tt Cooling\_Method}}
+\label{CoolingMethod}}
+({\it word}),
+default value = {\tt stair }
+
+Type of cooling (i.e.: change of ensemble temperature) used during molecular
+dynamics. Possible choices are: {\tt stair} (stair-case), {\tt log}
+(logarithmic cooling), and {\tt linear} (linear cooling). As the
+molecular dynamics simulation proceeds, the
+ensemble temperature changes according to the cooling method and to the
+choices of initial and final temperatures. At each step, the actual temperature
+is calculated from equipartition theorem and the kinetic energy (difference
+between the total energy and potential energy). In the first steps, the
+actual and ensemble temperatures may be very different, particularly if there
+are few atoms, when thermal fluctuations are enormous.
+
+\subsubsection{\tt Tinit 
+\index{Tinit@{\tt Tinit}}
+\label{Tinit}}
+({\it real}),
+default value = {\tt 500.0 },
+default unit = {\it K} (kelvins)
+
+Initial ensemble temperature in the system.
+
+\subsubsection{\tt T\_final 
+\index{T\_final@{\tt T\_final}}
+\label{Tfinal}}
+({\it real}),
+default value = {\tt 500.0 },
+default unit = {\it K} (kelvins)
+
+Final ensemble temperature.
+
+\subsubsection{\tt T\_Step 
+\index{T\_Step@{\tt T\_Step}}
+\label{TStep}}
+({\it real}),
+default value = {\tt 150.0 },
+default unit = {\it K} (kelvins)
+
+Step temperature used in the cooling. Used only with stair-case
+cooling method.
+
+\subsubsection{\tt Time\_Step 
+\index{Time\_Step@{\tt Time\_Step}}
+\label{TimeStep}}
+({\it real}),
+default value = {\tt 150.0 },
+default unit = {\it $\hbar$/hartrees} ($0.0242 fs = 2.42 \times 10^{-17}$ seconds)
+
+Time interval between two steps in molecular dynamics.
+The dynamical equations of motion are numerically integrated using a modified
+Verlet algorithm. 
+
+\subsubsection{\tt Friction\_Coefficient 
+\index{Friction\_Coefficient@{\tt Friction\_Coefficient}}
+\label{FrictionCoefficient}}
+({\it real}),
+default value = {\tt 0.0 }
+default unit = {\it hartrees/$\hbar$} ($41.3 PHz = 4.13 \times 10^{16} Hz$)
+
+Viscosity parameter in molecular dynamics, in atomic units (inverse time).
+If less than $10^{-6}$
+{\it $hartrees/\hbar$} ( approximately 41 GHz ), then a micro-canonical ensemble is used: total energy is assumed
+constant, and the atoms start moving with a velocity distribution consistent
+with the initial temperature. If more, then a canonical ensemble is used and
+true Langevin molecular dynamics is performed.
+
+\subsubsection{\tt Step\_num 
+\index{Step\_num@{\tt Step\_num}}
+\label{Stepnum}}
+({\it integer}),
+default value = {\tt 250 }
+
+Number of steps (iterations) in molecular dynamics. A successful
+simulation ends only after reaching the requested number of steps.
+
+\subsubsection{\tt Restart\_mode 
+\index{Restart\_mode@{\tt Restart\_mode}}
+\label{Restartmode}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables the restart of an aborted molecular dynamics simulation.
+With this feature, the last two
+sets of positions, velocities and accelerations stored in input file
+{\tt mdinit.dat} are used. The number of steps in that file is included in the
+current run as well. WARNING: make sure that the initial/final
+temperatures and other MD parameters are correct in the restarted run.
+
+
+
+
+
+
+
+
+
+
+\subsection{Polarizability}
+
+\subsubsection{\tt Polarizability 
+\index{Polarizability@{\tt Polarizability}}
+\label{Polarizability}}
+({\it boolean}),
+default value = {\tt false }
+
+Enables calculation of polarizability using a finite-field method. Available
+only with non-periodic boundary conditions. An uniform electric field is
+applied successively along the +x,-x,+y,-y,+z,-z directions, and dipole moments
+are calculated and collected and printed in output file {\tt polar.dat}. From
+dipole moments, the diagonal part of polarizability tensor is
+obtained. Symmetry operations are ignored if this flag is used.
+
+\subsubsection{\tt Electric\_Field 
+\index{Electric\_Field@{\tt Electric\_Field}}
+\label{ElectricField}}
+({\it real}),
+default value = {\tt 0.001},
+{\it default unit = ry/bohr/e} (rydbergs/Bohr radii/electron charge)
+
+Magnitude of external electric field to be applied.
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{MPI parallelization options}
+
+
+\subsubsection{\tt MPI\_Groups 
+\index{MPI\_Groups@{\tt MPI\_Groups}}
+\label{MPIGroups}}
+({\it integer}),
+default value = {\tt maximum valid value }
+
+Number of groups (or subsets) of processors. PARSEC allows for
+parallelization with respect to number of k-points $N_k$ (periodic systems
+only), of spin channels $N_s$ (spin-polarized systems only) and of
+symmetry representations $N_r$, besides the standard parallelization
+with respect to grid points. Each triplet $(k,s,r)$ of k-point,
+spin channel and representation is assigned to a single
+group. Processors belonging to the same group work together in the
+calculation of eigenvalues for the Hamiltonian $H_{k,s,r}$ assigned to
+this group. The number of groups must be a factor of the total number
+of processors ($N_p$) and of $N_k * N_s * N_r$, so that all groups have the
+same number of processors. By default, the number of groups is chosen
+to be the highest common factor between $N_p$ and $N_k * N_s *
+N_r$. If a lower number is specified at input, the actual number of
+groups may be reduced so that proper load balance is present.
+
+
+
+
+
+
+
+\subsection{Flags for additional input/output}
+
+\subsubsection{\tt Output\_All\_States 
+\index{Output\_All\_States@{\tt Output\_All\_States}}
+\label{OutputAllStates}}
+({\it boolean}),
+default value = {\tt false }
+
+Forces output of all wave-functions up to requested number of states to file
+{\tt parsec.dat}, instead of only the occupied ones (default).
+
+\subsubsection{\tt Save\_Wfn\_Bands 
+\index{Save\_Wfn\_Bands@{\tt Save\_Wfn\_Bands}}
+\label{SaveWfnBands}}
+({\it block}),
+default value = {\tt no default } (optional)
+
+By default, file {\tt parsec.dat} contains wave-functions of all occupied
+energy levels. Alternatively, the user can select specific
+wave-functions to be printed by giving a list of energy bands (levels,
+for non-periodic systems) inside the block. For example, this:
+
+\begin{verbatim}
+begin save_wfn_bands
+1
+2
+4
+end save_wfn_bands
+\end{verbatim}
+
+will result in only bands 1,2, and 4 being printed out. The user can
+also specify a range of bands by giving the initial and final
+levels. This:
+
+\begin{verbatim}
+begin save_wfn_bands
+2 8
+end save_wfn_bands
+\end{verbatim}
+
+will result in all levels between 2 and 8 being printed. If no
+wave-functions are to be printed, leave the block empty:
+
+\begin{verbatim}
+begin save_wfn_bands
+end save_wfn_bands
+\end{verbatim}
+
+This option is ignored if the input {\tt Output\_All\_States  .true. }
+is used. 
+
+\subsubsection{\tt Save\_Intermediate\_Charge\_Density 
+\index{Save\_Intermediate\_Charge\_Density@{\tt Save\_Intermediate\_Charge\_Density}}
+\label{SaveIntermediateChargeDensity}}
+({\it boolean}),
+default value = {\tt false }
+
+Causes wave-functions to be written to output after each self-consistent
+iteration, instead of only after self-consistency is reached. Previous
+wave-functions are over-written. This is useful for debugging purposes or
+if diagonalization is too demanding.
+
+\subsubsection{\tt Output\_Eigenvalues 
+\index{Output\_Eigenvalues@{\tt Output\_Eigenvalues}}
+\label{OutputEigenvalues}}
+({\it boolean}),
+default value = {\tt false }
+
+Saves eigenvalues to file {\tt eigen.dat} after self-consistency in density
+function is achieved. This is useful for debugging purposes.
+
+\subsubsection{\tt Save\_Intermediate\_Eigenvalues 
+\index{Save\_Intermediate\_Eigenstates@{\tt Save\_Intermediate\_Eigenvalues}}
+\label{SaveIntermediateEigenvalues}}
+({\it boolean}),
+default value = {\tt false }
+
+Saves eigenvalues after each SCF iteration, instead of after the last one.
+Useful for debugging purposes.
+
+\subsubsection{\tt Output\_Level 
+\index{Output\_Level@{\tt Output\_Level}}
+\label{OutputLevel}}
+({\it integer}),
+default value = {\tt 0 }
+
+Output flag for additional info in parsec.out. With default value,
+only the basic output is written. Positive values cause additional
+information to be printed out:
+
+\begin{verbatim}
+> 0 : print out local/non-local components of force
+> 1 : print out all symmetry data and additional eigensolver output
+> 2 : print out more BFGS output
+> 3 : print out all BFGS output
+> 4 : print out all g-stars (warning: _lots_ of data)
+> 5 : print out local potentials (warning: _lots_ of data)
+\end{verbatim}
+
+\subsubsection{\tt Output\_File\_Name 
+\index{Output\_File\_Name@{\tt Output\_File\_Name}}
+\label{OutputFileName}}
+({\it word}),
+default value = {\tt parsec.out }
+
+Choice of output filename. Any name is valid, but spaces must not be
+included, as well as some special symbols.
+
+\subsubsection{\tt Restart\_From\_Wfndat 
+\index{Restart\_From\_Wfndat@{\tt Restart\_From\_Wfndat}}
+\label{RestartFromWfndat}}
+({\it boolean}),
+default value = {\tt false }
+
+Makes possible to reuse an old file {\tt wfn.dat} in a PARSEC
+run. Notice that file {\tt parsec.dat} is still being written, and
+file {\tt wfn.dat} is not modified.
+
+
+
+
+
+
+
+
+
+\section{Post-processing tools}
+
+%\subsection{PVOX}
+%
+%PVOX (parsec visualization toolbox) is a set of matlab/python scripts,
+%with graphical user interface. It was developed in 2005 by Michael
+%Frasca, Lee Ballard, and Nick Voshell. It reads
+%parsec output directly and extracts the density of states, makes plots of
+%electron charge density, self-consistent potential, and selected
+%wave-functions. It has been tested with \href{http://www.mathworks.com/products/matlab/}{Matlab 7.0} and Python 2.4.1.
+
+\subsection{Other tools}
+
+There are additional tools that read parsec output and perform specific
+tasks. Some of them are: {\tt angproj}, for calculation of angle-projected
+density of states; {\tt plotdx}, interface with
+{Data Explorer}{http://www.opendx.org} for visualization
+of charge density, wave-functions, etc.
+
+
+
+
+
+
+
+
+
+\section{Problems, unfinished work, etc.}
+\label{KnownProblems}
+
+
+
+
+
+
+
+
+
+\section{Troubleshooting}
+
+\begin{enumerate}
+\item Diagla occasionally shows bad performance if periodic boundary
+  conditions are used. If you get error messages related to this
+  eigensolver, change it.
+
+\item Missing symmetry operations: only symmetry operations belonging
+  to the cubic system are tested for existence. That is because the
+  finite grid spacing breaks all other symmetries (for example, the
+  five-fold rotational symmetry in icosahedral molecules). In the
+  Hamiltonian, only some of the present operations are used, and the
+  selection is very stringent. If you feel not all possible symmetry
+  operations are included in the Hamiltonian, try rotating or
+  translating the whole system.
+
+\item Unrecognized chemical element: Parsec has an internal periodic
+  table (file {\tt ptable.f}), and it checks for the existence of
+  input elements. If the
+  calculation stops with "unknown element", edit the periodic table.
+
+\item Current pseudopotential generator does not support asymptotically
+   corrected functionals (LB, CS).
+
+\item The EDSL library sometimes screws up when identifying
+certain features with certain atom types. All the relevant information
+about pseudopotentials is written to file {\tt parsec.out}. The user
+should search that file for inconsistencies in input data.
+\end{enumerate}
+
+
+
+
+
+
+
+
+\section{Modifications}
+
+\subsection{Modifications in version 1.2v1}
+
+Version 1.2 is unstable and should be replaced with 1.2v1.
+This is a list of modifications in version 1.2v1 compared to
+version 1.1:
+
+\begin{enumerate}
+\item Two new eigensolvers are available: thick-restart Lanczos and
+  Chebyshev-Davidson filtering. Eigensolvers implemented by Yunkai
+  Zhou and tested by Yunkai and Murilo Tiago.
+
+\item Chebyshev subspace filtering has been implemented. 
+This feature should be always used since it improves considerably 
+the solution of Kohn-Sham
+equations at each SCF iteration. This was also implemented by Yunkai
+  Zhou, and tested by Yunkai and Murilo Tiago.
+
+\item Numerical tolerance in the search for symmetry operations has
+  increased. Previous tolerance was causing crashes.
+
+\item The output on file parsec.out has been modified in various places,
+with minor changes.
+
+\item Usage of "stop" statements was replaced with calls to exit\_err. This
+avoids sudden crashes without any meaningful error message.
+\end{enumerate}
+
+\subsection{Modifications in version 1.2.7.2}
+
+Compared to versions 1.2v1 and 1.2.7.1, this version has minor bug fixes and some
+features added. The most important ones are:
+
+\begin{enumerate}
+\item Embedding of classical point charges ({\tt
+  Add\_Point\_Charges} {AddPointCharges}.
+
+\item Initial spin polarization for each chemical element ({\tt
+  Initial\_Spin\_Polarization} {InitialSpinPolarization}.
+\end{enumerate}
+
+In addition, support for complex algebra is added to all eigensolvers
+except TRLANC (version 1.2.7.1 also has it). This is a first step towards full support of k-point
+sampling.
+
+\subsection{Modifications in version 1.2.8}
+
+Version 1.2.8 is an early merge of versions 1.2.4, 1.2.7.1 and
+1.2.7.2. Compared to version 1.2.7.2, these are the most important
+modifications:
+
+\begin{enumerate}
+\item Support for non-orthogonal unit cells (periodic systems) is
+  implemented. Non-orthogonal unit vectors can be defined at input
+  with the block {\tt Cell\_Shape} {CellShape} (notice that
+  three lines must be given in the block, instead of one!). Some
+  additional testing must be done for this feature.
+\item Option for name of output file. See {\tt
+ Output\_File\_Name} {OutputFileName}.
+\item Wavefunctions are now printed out in file {\tt parsec.dat}
+  instead of {\tt wfn.dat}. This modification is necessary because
+  additional information must be saved, such as coordinates of unit
+  lattice vectors. The user can still restart a calculation from
+  a previous {\tt wfn.dat} file by using the input option {\tt
+  Restart\_From\_Wfndat} {RestartFromWfndat}.
+\item Choice of printing out some wave-functions to file {\tt
+  parsec.dat}. See {\tt Save\_Wfn\_Bands} {SaveWfnBands}.
+\end{enumerate}
+
+Support for k-point sampling is not yet finished, but input variables
+are already defined. See section ``Wave functions and k-points''.
+
+Unresolved issue: the ARPACK eigensolver seems to occasionally miss eigenvalues
+if complex algebra is turned on ({\tt Complex\_Wfn .true.}
+{ComplexWfn}).
+
+\subsection{Modifications in version 1.2.8.2}
+
+Version 1.2.8.2 is a bug-fix branch that was created from
+1.2.8. Modifications from version 1.2.8:
+
+\begin{enumerate}
+\item Double grid is implemented. See {\tt
+ Double\_Grid\_Order} {DoubleGridOrder}.
+
+\item Support for pseudopotential formats {\tt Martins\_Wang} and {\tt
+  FHIPP} is added. See { input of pseudopotential files}
+{InputPseudopotentials}.
+
+\item Support for the ``LDA+U'' approximation is added. See
+  {\tt LDAplusU\_U LDAplusU\_J }{LDAplusUU}.
+
+\item Support for spin-orbit calculations. This is still in development stage.
+
+\end{enumerate}
+
+\subsection{Modifications in version 1.2.9}
+
+Version 1.2.9 is the first version of this code with support for k-points
+different from the $\Gamma$ point. More details about the input of
+k-points is found in section
+{``Wave functions and k-points'' }{KpointMethod}. Support for
+spin-orbit calculations, multiple k-points and LDA+U is still under
+tests.
+
+\subsection{Modifications in version 1.2.9.2}
+
+Version 1.2.9.2 has more stable support for spin-orbit calculations,
+multiple k-points and LDA+U. In addition, it has two new input
+options: {\tt Kpoint\_Unit}{KpointUnit} and {\tt
+  Boundary\_Mask}{BoundaryMask}.
+
+\subsection{Modifications in version 1.2.9.3}
+
+Version 1.2.9.3 has an alternative choice for the parallelization:
+besides the standard parallelization with respect to grid points, this
+version can also work with parallelization with respect to number of
+k-points, of spin channels and of symmetry representations. See {\tt
+  MPI\_Groups}{MPIGroups}. In addition, the option of interrupting
+``smoothly'' a calculation is added. See section { ``Interrupting
+  calculation''} {StopSCF}.
+
+\subsection{Modifications in version 1.2.9.4}
+
+Wire boundary conditions are implemented. See {\tt
+  Boundary\_Conditions}{BoundaryConditions}. Also, all source files
+  were converted to free form, except for the LBFGS library.
+
+\subsection{Modifications in version 1.3}
+
+\begin{itemize}
+\item Inclusion of multi-secant mixing methods, as developed by Haw-ren Fang
+and Yousef Saad, from EECS, Univ. of Minnesota.
+
+\item Addition of restart from previous spin-orbit calculation. Fixed a bug
+in the write-out of spin-orbit wavefunctions. Older versions do not write
+correct spin-orbit wavefunctions.
+
+\item Removal of old/unused input flags: skip\_rr\_rotation, skip\_force,
+spinorbit, old\_pseudopotential\_format.
+
+\item Addition of a gfortran makefile. Removal of unused variables and
+commented-out old coding.
+
+\item Inclusion of time-reversal symmetry in Monkhorst-Pack k-grid.
+\end{itemize}
+
+\subsection{Modifications in version 1.3.4}
+
+\begin{itemize}
+\item A number of bugs were fixed:
+
+\begin{enumerate}
+\item Definition of non-orthogonal directions in periodic systems has
+  been modified. This is an attempt to fix the problem with incorrect
+  ground state in BCC crystals.
+
+\item Bugs related to the definition of grid spacing in periodic
+  systems, reading of old charge density (it used to crash in wires),
+  calculation of total energy in wires, and array-out-of-bound errors
+  in BFGS relaxation were all fixed.
+\end{enumerate}
+
+\item A cubic spline interpolation was implemented. See
+  \ref{CubicSpline}.
+
+\item Functional Perdew-Zunger spin-polarized (LSDA) was added. For
+  the sake of back-compatibility, the default LSDA functional is still
+  Perdew-Wang.
+\end{itemize}
+
+\addcontentsline{toc}{section}{Index}
+
+\end{document}

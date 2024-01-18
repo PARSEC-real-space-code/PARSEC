@@ -1,0 +1,348 @@
+#include "mycomplex.h"
+!===================================================================
+! 
+! Subroutine orth_normal applies the block DGKS ortho-normalization
+! technique to ortho-normalize  v_basis(:, vsize+1:vsize+augsize) against
+! v_basis(:, 1:vsize) and against itself. 
+! On output, v_basis(:,1:vsize+augsize) should be orthonormal.
+!
+! It is important that the input vectors in v_basis(:, 1:vsize) are already 
+! ortho-normal if the input vorth is 1 (since no re-orthogonalization
+! will be performed to the  v_basis(:, 1:vsize) if vorth ==1).
+!
+! Author: Yunkai Zhou  (2005)
+!
+!-------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine zorth_normal(parallel, ldn, ndim, vsize, augsize, &
+#else
+subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
+#endif
+     v_basis, vorth, info)
+
+  use constants
+  use parallel_data_module
+  implicit none
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif
+  !
+  !  Input/Output variables:
+  !
+  type (parallel_data), intent(in) :: parallel
+
+  integer, intent(in) ::  &
+      ldn,        & ! leading dimension of v_basis
+      ndim,       & ! dimension of each vectors in v_basis
+      vsize,      & ! if vsize>0 and vorth=1, the first vsize columns 
+                    ! in v_basis are required to be orthonormal on input
+
+      augsize,    & ! The number of columns in v_basis to be orothonormalized 
+                    ! against the first vsize columns in v_basis; 
+                    ! v_basis(:,1:vsize) is augmented by augsize vectors into 
+                    ! an orthonormal matrix.
+
+      vorth         ! Integer to tell if the vectors in v_basis(:, 1:vsize)
+                    ! are orthonormal on input.
+
+  SCALAR, intent(inout) :: v_basis(ldn, vsize+augsize)
+          ! On input, v_basis(:, 1:vsize) is ortho-normal if (vorth == 1);
+          ! if (vorth /= 1), v_basis(:, 1:vsize) is orothonormalized first.
+          ! on output,v_basis(:, 1:vsize+augsize) contains orthonormal vectors.
+
+  integer,  intent(out) :: info
+
+  !
+  !  Work variables:
+  !
+  real(dp)  :: eps, epsbig, reorth1, reorth2
+  parameter(eps=2.22044605D-16, epsbig=2.221D-16, reorth1=0.1, reorth2=0.68)
+
+  integer :: k, izero
+#ifdef ITAC
+  integer :: ierr    !itac error info
+#endif
+
+  !... irandom counts how many random vectors have been constructed
+  integer :: irandom
+
+  real(dp) :: norm(1), normproj(1)
+  SCALAR :: invnorm
+
+  SCALAR :: h(vsize+augsize)
+
+  !
+  !  Internal and external functions:
+  !
+  !real(dp), external :: dnrm2
+
+!  real(dp), intrinsic :: abs
+  SCALAR, external :: Zdot
+  !
+  !  Internal and external functions:
+  !
+#ifdef CPLX
+  external  Zscal, Zgemv, zrandom_array
+#else
+  external  Zscal, Zgemv, random_array
+#endif
+
+  !
+  !-------------------------------------------------------------------
+  !
+  if (parallel%ndim < vsize+augsize) then
+     write(7,*) "in subroutine:  orth_normal.F "
+     write(7,*) "more #cols than #rows, cannot get #cols basis"
+     info = 1
+     return
+  endif
+
+#ifdef ITAC
+     ierr=0
+     call VTBEGIN(vt_orthnormal,ierr)
+#endif
+  !
+  ! If vorth /= 1, orothonormalization in v_basis is necessary, 
+  ! call dgks() for this task.
+  !
+  if (vorth /= 1) then
+#ifdef DEBUG
+               if(parallel%iammaster) then
+               write(9,*) "orth_normal: vorth is not 1, doing the enitre v_basis"
+                 endif
+#endif
+
+#ifdef CPLX
+     call zdgks(parallel, ldn, ndim, vsize+augsize, v_basis, info)
+#else
+     call dgks(parallel, ldn, ndim, vsize+augsize, v_basis, info)
+#endif
+
+     if (info /= 0)  return
+  endif
+
+  irandom = 0
+  izero   = 0
+  
+  do k = vsize+1, vsize+augsize
+
+10  continue
+
+
+#ifdef DEBUG
+     if (parallel%iammaster) write (9,*) "orth- k=",k
+#endif
+!     if (k==86) write(9,*) v_basis(ndim/4:ndim-10,k)
+
+     ! calculate the norm. mainly to see that its not zero
+#ifdef CPLX
+     norm(1) = real(Zdot(ndim, v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+#else
+     norm(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+#endif
+
+! !$OMP BARRIER
+! !$OMP MASTER
+     call psum(norm(1), 1, parallel%group_size, parallel%group_comm)
+! !$OMP END MASTER
+
+     norm(1) = sqrt(norm(1))
+
+#ifdef DEBUG
+     if (parallel%iammaster) write (9,*) "norm                      ",norm(1)
+#endif
+
+     if (norm(1) >= epsbig) then
+     !
+     !  Do the following computations only when v_basis(:,k) is non-zero; 
+     !  otherwise, replace v_basis(:,k) with a random vector to restart.
+     !
+        !
+        !  compute  h(1:k-1) = v_basis(:,1:k-1)'*v_basis(:,k)
+        !
+        call  Zgemv(Conjg, ndim, k-1, Zone, v_basis(1,1), ldn, v_basis(1,k), 1, Zzero, h, 1)
+! !$OMP BARRIER
+! !$OMP MASTER
+        call Zpsum(h, k-1, parallel%group_size, parallel%group_comm)
+! !$OMP END MASTER
+        !
+        !  Compute the projection:
+        !   v_basis(:,k) = v_basis(:,k) - v_basis(:,1:k-1)*h.
+        !
+        call  Zgemv('N', ndim, k-1, -Zone, v_basis(1,1), ldn, h, 1, Zone, v_basis(1, k), 1)
+
+
+! AJB: http://dx.doi.org/10.1016/j.camwa.2005.08.009 :
+! The suggestion is just do the projection twice, don't bother with testing
+! this way we save two Zdots and one psum 
+!
+! but although we want to preserve orthogonality we do not want to sepnd extra time here
+! so unless we there is an accute faliure we just do the one projection here:
+
+
+#ifdef CPLX
+         normproj(1) = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+#else
+         normproj(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+#endif
+         call psum(normproj(1), 1, parallel%group_size, parallel%group_comm)
+         normproj(1) = sqrt(normproj(1))
+
+#ifdef DEBUG
+         if (parallel%iammaster) write (9,*) "norm after 1st projection:",normproj(1)
+#endif
+
+       if (normproj(1) > reorth1*norm(1)) then
+           !
+           !  Pass the reorthogonalization test, no need to refine.
+           !
+#ifdef DEBUG
+                 if(parallel%iammaster) then
+                 write(9,*) "PASSED 1st with ratio ",normproj(1)/norm(1)
+                 endif
+#endif
+
+           if (abs(normproj(1)-one) >= eps) then
+              invnorm = Zone/normproj(1)
+              call Zscal(ndim, invnorm, v_basis(1,k), 1)
+           endif
+
+       else
+#ifdef ITAC
+     call VTEND(vt_orthnormal,ierr)
+     call VTBEGIN(vt_gemv,ierr)
+#endif
+           !
+           !  Fail the reorthogonalization test - maybe linearly dep.
+           !  Refinement necessary:
+           !
+#ifdef DEBUG
+               if(parallel%iammaster) then
+             write(9,*) "FAILED 1st with ratio",normproj(1)/norm(1)
+                endif
+#endif
+
+!AJB: Now we just project again
+           !
+           !  Compute  h = v_basis(:,1:k-1)'*v_basis(:,k).
+           !  
+           ! 
+           call  Zgemv(Conjg, ndim, k-1, Zone, v_basis(1,1), ldn, v_basis(1,k), 1, Zzero, h, 1)
+
+! !$OMP BARRIER
+! !$OMP MASTER
+           call Zpsum(h, k-1, parallel%group_size, parallel%group_comm)
+! !$OMP END MASTER
+
+           !
+           !  Compute the projection:
+           !  v_basis(:,k) = v_basis(:,k) - v_basis(:,1:k-1)*h.
+           !
+           ! 
+           call  Zgemv('N', ndim, k-1, -Zone, v_basis(1,1), ldn, h, 1, Zone, v_basis(1, k), 1)
+
+! if the vector is lin. dep. then the norm will surely go down now.
+           norm(1) =  normproj(1)
+#ifdef CPLX
+        normproj(1) = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+#else
+        normproj(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+#endif
+
+! !$OMP BARRIER
+! !$OMP MASTER
+           call psum(normproj(1), 1, parallel%group_size, parallel%group_comm)
+
+! !$OMP END MASTER
+           normproj(1) = sqrt(normproj(1))  
+
+#ifdef DEBUG
+         if (parallel%iammaster) write (9,*) "norm after 2nd projection:",normproj(1)
+           ! 2nd and final test - if you fail this then the new vector probably is lin. dep.
+#endif
+
+            if (normproj(1) > reorth2*norm(1)) then
+             !
+             !  Pass the 2nd reorthogonalization test.
+             !  It was probably numerical noise/nothing
+             !
+#ifdef DEBUG
+                 if(parallel%iammaster) then
+                 write(9,*) "PASSED 2nd with ratio ",normproj(1)/norm(1)
+                 endif
+#endif
+
+               if (abs(normproj(1)-one) >= eps) then
+                  invnorm = Zone/normproj(1)
+                  call Zscal(ndim, invnorm, v_basis(1,k), 1)
+               endif
+
+            else
+            !  Fail the 2nd reorthogonalization test,
+            !  v_basis(:,k) is numerically in v_basis(:, 1:k-1), need to
+            !  replace v_basis(:,k) by a random vector, and re-project.
+            !
+#ifdef DEBUG
+               if(parallel%iammaster) then
+             write(9,*) "FAILED 2nd with ratio",normproj(1)/norm(1)
+               endif
+#endif
+
+#ifdef CPLX
+               call zrandom_array(ldn * 2, ndim * 2, 1, v_basis(1,k), info)
+#else
+               call random_array(ldn, ndim, 1, v_basis(1,k), info)
+#endif
+               irandom = irandom+1
+               goto 10
+
+            endif
+#ifdef ITAC
+     call VTEND(vt_gemv,ierr)
+     call VTBEGIN(vt_orthnormal,ierr)
+#endif
+        endif
+     else
+#ifdef DEBUG
+             write(9,*) "Someone gave me a zero vector!" , k
+#endif
+        !
+        ! v_basis(:,k) is a numerically zero vector, replace it with a
+        ! random vector.
+        !
+#ifdef CPLX
+        !call random_array(ldn * 2, ndim * 2, 1, v_basis(1,k))
+        call zrandom_array(ldn, ndim, 1, v_basis(1,k),info)
+#else
+        call  random_array(ldn, ndim, 1, v_basis(1,k),info)
+#endif
+        irandom = irandom+1
+        izero = izero+1
+        goto 10
+     endif
+
+  enddo
+
+  if (irandom > 0) then
+     write(9,*) "**** In subroutine:  orth_normal, irandom >0"
+     write(9,*) "**** number of vectors replaced with random =", irandom
+     if (izero > 0)  then
+        write(9,*)"**** of which # of zero vectors replaced =",izero
+     end if
+     write(9,*)
+  endif
+
+#ifdef ITAC
+     call VTEND(vt_orthnormal,ierr)
+#endif
+
+#ifdef CPLX
+end subroutine zorth_normal
+#else
+end subroutine orth_normal
+#endif
+!
+!===================================================================
+ 

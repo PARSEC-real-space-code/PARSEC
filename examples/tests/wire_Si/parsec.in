@@ -1,0 +1,50 @@
+# Wire of Si atoms
+
+boundary_conditions wire
+
+spin_polarization true
+
+output_level 3
+
+begin Cell_shape
+  4.64306
+end Cell_shape
+
+Boundary_Sphere_Radius:  6.0
+
+kpoint_method mp
+begin monkhorst_pack_grid
+ 8
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+ 0.5
+end monkhorst_pack_shift
+
+Grid_Spacing:  0.6
+
+States_Num:  6
+
+Coordinate_Unit: lattice_vectors
+
+Atom_Types_Num:  1
+ 
+#------------ new atom type ---------------- 
+Atom_Type: Si
+
+Pseudopotential_Format: martins_old
+Core_Cutoff_Radius:  2.5
+Local_Component: p
+Potential_Num:  2
+
+begin Electron_Per_Orbital
+# S P D F
+2 2 0
+end Electron_Per_Orbital
+
+begin Atom_Coord
+   -0.25895   -0.14345    0.00000
+    0.25895    0.14345    0.00000
+end Atom_Coord
+
+#------------ end of atom type ------------- 

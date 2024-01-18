@@ -1,0 +1,543 @@
+#include "mycomplex.h"
+!===================================================================
+! 
+! PLESa  -- block Preconditioned Lanczos Eigen-problem Solver:
+! the Abridged version.
+! 
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Version 1.1
+! 
+! Revision history
+! Initial version: November 1994, K. Wu
+! 
+! Nov. 29, 1995: change convergence test to
+! || res_i || * (ned+1-i) < tol
+! 
+! April 11, 1995: change convergence condition to
+! || res_i || * i^2 < tol
+! 
+! Main features:
+! Computes only the lower-end of the spectrum
+! Work on many eigen-pairs simultaneously (5)
+! Add a few preconditioned residual vectors at a time (1)
+! Locking out converged eigenvectors
+! Converged Ritz pairs are accepted in order of their Ritz
+! value
+! Always target the smallest eigenvector for improvement
+! Full re-orthogonalization with Daniel test
+! Use lower bound of the smallest Ritz value as shift for
+! preconditioning
+! Restart only to work on a new set of eigen-pairs
+! Reuse some of the Krylov subspace basis vectors when
+! restart
+! 
+! n     -- (input) dimension of the matrix
+! ned   -- (input) number of smallest eigen-pairs desired
+! nec   -- (input/output) number of eigen-pairs converged, if on
+! input NEC > 0, the first NEC elements of EVAL, RES and
+! first NEC columns of EVEC are assume to have converged
+! eigen-pairs and corresponding residual norms.
+! kss   -- (input) the Krylov subspace size
+! maxmvs-- (input/output) maximum number of matrix-vector
+! multiplications allowed, on exit reset to actual number
+! of MATVECs used.
+! eval  -- (output) eigenvalues
+! evec  -- (input/output) eigenvectors (on input, it is assumed
+! to have a valid initial guesses)
+! res   -- (output) the residual norms
+! info_out  -- (output) status of the solver
+! 1 -- exceeded number of MATVECs specified
+! 0 -- sucessfully completed the reqest eigen-pairs
+! -1 -- orthogonalization failure
+! -2 -- LAPACK/ESSL failed to solver the small system
+! bv    -- (work space) the Krylov subspace basis vectors
+! ww    -- (work space) W = A V
+! wk    -- (work space) used by LAPACK/ESSL in solving small systems
+! hh    -- (work space) H = V^T * W
+! yy    -- (work space) H y = lambda y, eigenvectors of the small
+! system
+! 
+! .. Parameters ..
+! winsiz = window size, number of eigenvalues computed
+! simultaneously
+! blksiz = block size, number of vector added to BV when expanding
+! zero   = 0
+! one    = 1
+! reorth = constant used in Daniel's test
+! eps    = a small number, machine's unit round off error preferred
+! tol    = tolerance on the residual norm of the eigen-pairs
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine zdiagla_diag(kplp,parallel,ned,nec,kss, &
+#else
+subroutine diagla_diag(kplp,parallel,ned,nec,kss, &
+#endif
+     maxmvs,eval,evec,res,tol,winsiz,ipr,info_out)
+
+  use constants
+  use parallel_data_module
+  use matvecB_interface
+
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! parallel computation related data
+  type (parallel_data), intent(in) :: parallel
+
+  integer, intent(in) :: ned
+  integer, intent(in) :: kss
+  integer, intent(inout) :: nec
+  integer, intent(inout) :: maxmvs
+  integer, intent(inout) :: info_out
+  ! printout flag
+  integer, intent(in) :: ipr
+  ! k-point index
+  integer, intent(in) :: kplp
+
+  integer, intent(in) :: winsiz
+  real(dp), intent(in) :: tol
+
+  real(dp), intent(out) :: eval(ned+winsiz)
+  SCALAR, intent(inout) :: evec(parallel%ldn*parallel%mxwd,ned+winsiz)
+  ! residual norms
+  real(dp), intent(inout) :: res(ned+winsiz)
+  !
+  ! Work variables:
+  !
+  integer, parameter :: blksiz = 1
+  real(dp), parameter :: reorth = 0.25d0, eps = 2.2d-16
+
+  integer ilong, ioffset, ldn, mydim, nwedge, ddim
+  integer  blk,i,ii,ird,iw,j,jnd,jpb,kp1,lwin,mv,nconv,alcstat
+  real(dp) :: s0, s1, tmp
+  ! Stupid work around for stupid problems because of stupid Fortran conventions
+  !   .... from really smart people. Life, huh?
+  real(dp), dimension(1) :: psumvec
+
+  ! Work space
+#ifdef CPLX
+  real(dp), dimension (kss*10) :: wk
+#else
+  real(dp), dimension (kss*6) :: wk
+#endif
+  SCALAR :: yy(kss,kss)
+  SCALAR, allocatable :: ww(:,:)
+  SCALAR, allocatable :: bv(:,:)
+  SCALAR :: hh(kss,kss)
+  !
+  ! External functions:
+  !
+  SCALAR, external :: Zdot
+  !
+  ! External subroutines
+  !
+#ifdef CPLX
+  external Zgemm, Zgemv, zswap, zfdo5scl, my_zheev
+#else
+  external Zgemm, Zgemv, dswap, fdo5scl, my_dsyev
+#endif
+
+  !-------------------------------------------------------------------
+
+  ddim = parallel%mxwd
+  nwedge = parallel%nwedge*parallel%mxwd
+  ldn = parallel%ldn*parallel%mxwd
+  mydim = parallel%mydim*parallel%mxwd
+  allocate(ww(ldn,kss),stat=alcstat)
+  call alccheck('diagla_ww',ldn*kss,alcstat)
+  allocate(bv(ldn,kss),stat=alcstat)
+  call alccheck('diagla_bv',ldn*kss,alcstat)
+
+  ww(:,:) = Zzero
+  res(:) = zero
+  wk(:) = zero
+  bv(:,:) = Zzero
+
+  ! MV    = number of matrix vector multiplication used
+  ! jnd   = index for inner loop
+  ! nconv = number of eigen-pairs converged at this step
+  ! kp1   = kss + 1
+  mv = 0
+  ird = 0
+  jnd = 0
+  info_out = 0
+  nconv = 0
+  kp1 = kss + 1
+  hh(:,:) = Zzero
+  ! 
+  ! Some MPI definitions
+  ioffset = ddim*parallel%irows(parallel%group_iam)-ddim
+  !
+  ! -- beginning of the outer loop; start/restart
+  !
+10 if (nec >= ned .or. mv >= maxmvs) go to 90
+  lwin = min(winsiz, kss/2)
+  if (jnd <= lwin) then
+     ! .. start from beginning
+     blk = lwin
+  else
+     ! .. restart to work on another set of eigen-pairs
+     blk = min(kss/2, jnd)
+  endif
+  jnd = 0
+  ! .. copy next set of Ritz vector/initial guesses to BV
+  do i = 1, lwin
+     do j = 1, mydim
+        bv(j, i) = evec(j, i+nec)
+     enddo
+  enddo
+  !
+  ! -- beginning of the inner loop: the Davidson loop
+  !
+20 jpb = jnd + blk
+  ! .. orthogonalization -- Classic Gram-Schmidt with
+  ! Daniel's test for (full) re-orthogonalization
+  do i = jnd + 1, jpb
+     iw = 0
+     j = i - 1
+
+30   if (iw > 4) then
+#ifdef CPLX
+        write(9,*) ' Orthogonalization failure in zdiagla'
+#else
+        write(9,*) ' Orthogonalization failure in diagla'
+#endif
+        info_out = -1
+        go to 90
+     endif
+     ! this incr is new --as
+     iw = iw + 1
+     !
+     ! Find initial norm. Only if iw=1. Otherwise we returned here
+     ! from a goto with some existing s0.
+
+     if (iw == 1) s0 = real(Zdot(mydim,bv(1,i),1,bv(1,i),1),dp)
+     !
+     ! The following have been rearranged  (2d and 3rd sgemv) so that 
+     ! all communication is performed in one gsum step 
+     !
+     ! .. The first two are the dot product that need gsumming
+     call Zgemv(Conjg, mydim, nec, Zone, evec, ldn, bv(1,i), 1, &
+          Zzero, ww(1,jnd+1), 1)
+     call Zgemv(Conjg, mydim, j, Zone, bv, ldn, bv(1,i), 1, &
+          Zzero, ww(nec+1,jnd+1), 1)
+     !
+     ! DO all the global sums -- include also the norm s0
+     !
+     ww(nec+j+1,jnd+1) = s0
+
+     call Zpsum(ww(1,jnd+1), nec + j + 1, parallel%group_size, &
+          parallel%group_comm)
+     !
+     ! .. The following two are the daxpys that are done in parallel
+     call Zgemv('N',mydim, nec, -Zone, evec, ldn, ww(1,jnd+1), 1 &
+          ,Zone, bv(1,i), 1)
+     call Zgemv('N',mydim, j, -Zone, bv, ldn, ww(nec+1,jnd+1), 1 &
+          ,Zone, bv(1,i), 1)
+     !
+     ! Compute old and new norms  s0, s1. s1 requires one more gsum.
+     !
+     if (iw == 1) s0 = sqrt( real(ww(nec+j+1,jnd+1),dp) )
+     s1 = real(Zdot(mydim,bv(1,i),1,bv(1,i),1),dp)
+     psumvec = s1
+     call psum(psumvec,1,parallel%group_size, parallel%group_comm)
+     s1 = sqrt(psumvec(1))
+     !
+     if (s1 == zero) then
+        ! .. the vector is zero after orthogonalization, use whatever is in
+        ! BV or generate a random vector to replace it
+        if (iw == 1 .and. mv > 0) then
+           do ii = 1, mydim
+              bv(ii, i) = ww(ii, i)
+           enddo
+           !
+           s1 = real(Zdot(mydim,ww(1,i),1,ww(1,i),1),dp)
+     psumvec = s1
+     call psum(psumvec,1,parallel%group_size, parallel%group_comm)
+     s1 = sqrt(psumvec(1))
+
+        endif
+        if (s1 == zero) then
+           ird = mod(ird*137+i*207+71, parallel%nwedge )+1
+           if (ird <= 0) ird = ird + nwedge
+           ! notice that this is done for the local vector of EACH processor
+           if (ddim*parallel%irows(parallel%group_iam) <= ird .and. ird < &
+                ddim*parallel%irows(parallel%group_iam+1)) then
+              bv( ird-ioffset, i) = Zone 
+           endif
+           s0 = one 
+        else
+           s0 = s1
+        endif
+        go to 30
+     else if (s1 <= reorth*s0) then
+        ! .. failed the Daniel test, full reorthogonalization is necessary
+        if (s1 <= eps) then
+           ! .. also scale the vector if the vector norm is extremely small
+           ird = ird + 1
+           tmp = one / s1
+           do ii = 1, mydim
+              bv(ii, i) = tmp*bv(ii, i)
+           enddo
+           if (iw > 2) then
+              ! .. if we have scaled/randomized it before, perturb it by
+              ! placing a 1 at a random location
+              ird = mod(ird*391+mv*199+141,parallel%nwedge)+1
+              if (ird <= 0) ird = ird + nwedge
+              ! notice that this is done for the local vector of EACH processor
+              if (ddim*parallel%irows(parallel%group_iam) <= ird .and. ird < &
+                   ddim*parallel%irows(parallel%group_iam+1)) then
+                 bv(ird-ioffset, i) = Zone
+              endif
+              s0 = real(Zdot(mydim,bv(1,i),1,bv(1,i),1),dp)
+              psumvec = s0
+              call psum(psumvec,1,parallel%group_size, parallel%group_comm)
+              s0 = sqrt(psumvec(1))
+
+           else
+              s0 = one
+           endif
+        else
+           s0 = s1
+        endif
+        go to 30
+     endif
+
+     tmp = one / s1
+     if (s1 > zero .and. tmp > zero) then
+        ! .. completed the orthogonalization phase, scale the vector to
+        ! have norm 1
+        do ii = 1, mydim
+           bv(ii, i) = tmp*bv(ii, i)
+        enddo
+     else
+        do ii = 1, mydim
+           bv(ii, i) = Zzero
+        enddo
+        ird = mod(ird*87+191, parallel%nwedge) + 1
+        if (ird <= 0) ird = ird + nwedge
+        if (ddim*parallel%irows(parallel%group_iam) <= ird .and. ird < &
+             ddim*parallel%irows(parallel%group_iam+1)) then
+           bv(ird-ioffset, i) = Zone
+           s0 = one
+        endif
+        goto 30
+     endif
+  enddo
+
+  ! matrix-vector multiplication (use FDO5MVS -- the workstation
+  ! version of the matrix-vector multiplication)
+  call ZmatvecB (kplp,blk,bv(1,jnd+1),ww(1,jnd+1),ldn)
+
+  mv = mv + blk
+
+  ! forming the last LWIN rows of HH = V^T A V
+  do i = jnd + 1, jpb
+     call Zgemv(Conjg, mydim, i, Zone, bv, ldn, ww(1,i), 1, &
+          Zzero, hh(1,i), 1)
+  enddo
+  !
+  ! Global summing of the partially computed HH over procs.
+  ! Summation of the lower part is also performed since kss is small
+  ! to avoid repeated calls of gsum
+  !
+  call Zpsum( hh(1,jnd+1), (jpb-jnd)*kss, parallel%group_size, &
+       parallel%group_comm)
+  !
+  !
+  ! .. generate Ritz values and Ritz vectors, solving the small
+  ! system using LAPACK/ESSL
+  do i = 1, jpb
+     do ii = 1, kss
+        yy(ii, i) = hh(ii, i)
+     enddo
+  enddo
+#ifdef CPLX
+  call my_zheev('U', jpb, yy, kss, wk, i)
+#else
+  call my_dsyev('U', jpb, yy, kss, wk, i)
+#endif
+  if (i /= 0) then
+     info_out = -2
+     go to 90
+  endif
+  ! .. the Ritz values are approximate eigenvalues, store them
+  do i = 1, lwin
+     eval(i+nec) = wk(i)
+  enddo
+  ! .. computing only the Ritz vectors necessary to continue
+  ! the iterations
+  if (jpb+blksiz <= kss .and. mv < maxmvs) then
+     ! .. compute only BLKSIZ Ritz vectors and corresponding residuals
+     call Zgemm('N', 'N', mydim, blksiz, jpb, Zone, bv, ldn, yy, &
+          kss, Zzero, evec(1,nec+1), ldn)
+     call Zgemm('N', 'N', mydim, blksiz, jpb, Zone, ww, ldn, yy, &
+          kss, Zzero, ww(1,jpb+1), ldn)
+     do i = 1, blksiz
+        tmp = wk(i)
+        do ii = 1, mydim
+           ww(ii, jpb+i) = ww(ii, jpb+i) - tmp*evec(ii, nec+i)
+        enddo
+        res(nec+i) =  &
+             real(Zdot(mydim,ww(1,jpb+i),1,ww(1,jpb+i),1),dp)
+     enddo
+     ! ..Global sums take place outside loop for all residuals
+
+     call psum(res(nec+1), blksiz,parallel%group_size, &
+          parallel%group_comm)
+
+     do i = 1, blksiz
+        res(nec+i) = sqrt( res(nec+i))
+     enddo
+     !
+     ! .. special case: if the first Ritz pair has converged, computed
+     ! all Ritz vectors and the residual norms -- we need the most
+     ! up to date eigenvectors to restart.
+     if (res(nec+1)*ned < tol*(nec+1)) then
+        call Zgemm('N', 'N', mydim, lwin-blksiz, jpb, Zone, bv, ldn, &
+             yy(1,blksiz+1), kss, Zzero, evec(1,nec+blksiz+1), ldn)
+        call Zgemm('N', 'N', mydim, lwin-blksiz, jpb, Zone, ww, ldn, &
+             yy(1,blksiz+1), kss, Zzero, bv(1,blksiz+1), ldn)
+        do i = blksiz + 1, lwin
+           tmp = wk(i)
+           do j = 1, mydim
+              ww(j, i) = bv(j, i) - tmp*evec(j, nec+i)
+           enddo
+           res(nec+i) = real(Zdot(mydim,ww(1,i),1,ww(1,i),1),dp)
+        enddo
+        ! ..Global sums take place outside loop for all residuals
+        ilong = lwin - blksiz 
+
+        call psum(res(nec+blksiz+1),ilong,parallel%group_size, &
+             parallel%group_comm)
+
+        do i = blksiz + 1, lwin
+           res(nec+i) = sqrt( res(nec+i))
+        enddo
+
+     endif
+     jnd = jpb
+  else
+     ! .. collapses the basis vectors into Ritz vectors, append with the
+     ! residual vectors, so that the iteration can continue without
+     ! change (all LWIN Ritz pairs computed)
+     call Zgemm('N','N', mydim, lwin, jpb, Zone, bv, ldn, yy, kss,  &
+          Zzero, evec(1,nec+1), ldn)
+     call Zgemm('N','N', mydim, lwin, jpb, Zone, ww, ldn, yy, kss, &
+          Zzero, bv, ldn)
+     do i = 1, lwin
+        do j = 1, mydim
+           ww(j, i) = bv(j, i)
+           bv(j, i) = evec(j, nec+i)
+           ww(j, lwin+i) = ww(j, i) - wk(i)*bv(j, i)
+        enddo
+
+        res(nec+i) =  &
+             real(Zdot(mydim,ww(1,lwin+i),1,ww(1,lwin+i),1),dp)
+     enddo
+     ! ..Global sums take place outside loop for all residuals
+
+     call psum(res(nec+1), lwin,parallel%group_size,parallel%group_comm)
+
+     do i = 1, lwin
+        res(nec+i) = sqrt( res(nec+i))
+     enddo
+
+     ! .. forming the first LWIN rows of HH = V^T A V
+     do i = 1, lwin
+        call Zgemv(Conjg, mydim, i, Zone, bv, ldn, ww(1,i), 1, &
+             Zzero, hh(1,i), 1)
+     enddo
+     !
+     ! Again: global summing of the partially computed HH.
+     ! Summation of the lower part is also performed since kss is small
+     ! to avoid repeated calls of gsum.
+     !
+     call Zpsum( hh(1,1), (lwin)*kss,parallel%group_size, &
+          parallel%group_comm)
+     !
+     ! .. reset the index of the inner loop
+     jnd = lwin
+  endif
+  ! .. the actual block size is defined here
+  blk = blksiz
+  !
+  ! -- store converged eigen-pairs in the order of the eigenvalues
+  ! The convergence test will stop if one Ritz pair is found to
+  ! be not converged. Each converged eigen-pair is swapped to its
+  ! appropriate place when it is determined to be converged.
+  i = nec
+  nconv = 0
+50 if (i < nec+winsiz-1) then
+     i = i + 1
+     if (res(i)*ned < tol*i) then
+        nconv = nconv + 1
+        j = i
+60      if (j > 1) then
+           if (eval(j-1) > eval(j)) then
+              tmp = eval(j-1)
+              eval(j-1) = eval(j)
+              eval(j) = tmp
+              tmp = res(j-1)
+              res(j-1) = res(j)
+              res(j) = tmp
+#ifdef CPLX
+              call zswap(mydim, evec(1,j), 1, evec(1,j-1), 1)
+#else
+              call dswap(mydim, evec(1,j), 1, evec(1,j-1), 1)
+#endif
+              j = j - 1
+              go to 60
+           endif
+        endif
+        go to 50
+     endif
+  endif
+  ! .. if any eigen-pair has converged here, restart
+  if (nconv > 0 .or. mv >= maxmvs) then
+     nec = nec + nconv
+     if (jpb+blksiz > kss)jnd = jpb
+     if (ipr >= 2) write(9,*) &
+          ' DIAGLA convergence, nec = ',nec,' maxmvs = ',mv
+     go to 10
+  endif
+  ! -- call preconditioner with the lower bound of the trust region
+  ! of the first Ritz value as the shift (tmp)
+  j = nec + 1
+  tmp = eval(j+1) - eval(j)
+  do i = 1, nec
+     s1 = abs(eval(i)-eval(j))
+     if (tmp > s1)tmp = s1
+  enddo
+  if (tmp > res(j)) then
+     tmp = eval(j) - res(j)*res(j) / tmp
+  else
+     tmp = eval(j) - res(j)
+  endif
+#ifdef CPLX
+  call zfdo5scl(parallel, ww(1,jnd+1), bv(1,jnd+1), blk)
+#else
+  call fdo5scl(parallel, ww(1,jnd+1), bv(1,jnd+1), blk)
+#endif
+  ! .. end of Davidson loop
+  go to 20
+  ! .. terminating: set appropriate info_out flag, reset maxmvs to actual
+  ! number of MATVEC used
+90 if (nec < ned .and. maxmvs <= mv .and. info_out >= 0) then
+     info_out = 1
+  endif
+  maxmvs = mv
+
+  if (allocated(ww)) deallocate(ww)
+  if (allocated(bv)) deallocate(bv)
+
+#ifdef CPLX
+end subroutine zdiagla_diag
+#else
+end subroutine diagla_diag
+#endif
+!===================================================================

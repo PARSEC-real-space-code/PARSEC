@@ -1,0 +1,1139 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Matrix-vector multiplication. For a distributed set of input
+! vectors p(1:mydim,1:m), calculate the vectors q(1:mydim,1:m)
+! given by q(i,k) = Sum_j H(i,j) p(j,k), where i and j run over
+! all grid points in the irreducible wedge. H(i,j) is the real-space
+! Hamiltonian, H = H_local + H_non-loc.
+!
+!      H_local (i,j) = solver%adiag(i)          if i = j,
+!                    = 0                        otherwise
+!
+!      H_non-loc (i,j) = (non-local kinetic energy) +
+!                        (non-local pseudopotential)
+!
+! Non-local pseudopotentials are written in Kleinman-Bylander form:
+!   V_non-loc = Sum_tlm | f_tlm > < f_tlm |
+!
+! The operation q = H * p is done in three steps: non-local
+! pseudopotential part first, local part, and then non-local part
+! of kinetic energy. For the non-local pseudopotential, do a simple
+! summation over grid points inside the non-local sphere around each
+! atom site. Since we calculate q vectors inside the irreducible
+! wedge only, we can drop points that lie outside the IW.
+!
+! Vectors p,q are assumed to be transformed upon a symmetry operation
+! according to characters stored in solver%chi.
+!
+!---------------------------------------------------------------------
+
+#ifndef CPLX
+module matvecB_interface 
+contains
+#endif
+
+subroutine ZmatvecB(kplp, blksize, v, w, ldn, ext_lap_buffer)
+
+use parsec_global_data
+use matvec_module
+use Zbuffer_module
+
+#ifdef OMPFUN
+!     include omp functions
+use omp_lib
+#endif
+
+implicit none
+!
+!  Input/Output variables:
+!
+
+#ifdef ITAC
+include 'VT.inc'
+include 'vtcommon.inc'
+#endif
+
+integer, intent(in) :: kplp
+integer, intent(in) :: blksize
+integer, intent(in) :: ldn
+SCALAR, intent(in) :: v(ldn,blksize)
+SCALAR, intent(out) :: w(ldn,blksize)
+type(lap_buffer), intent(inout), optional :: ext_lap_buffer(blksize)
+
+integer :: k,i
+integer :: almost_mydim,chunk,almost_inter,chunk_inter
+integer :: my_lapstart,my_lapend
+integer :: lap_leftovers
+integer :: num_lap_buffers,num_prebuffer
+integer :: prebuff_index,current_buffer,next_buffer
+
+#ifdef ITAC
+integer :: mvierr
+#endif
+
+logical :: buffer_ext
+
+#ifdef OMPFUN
+!     include omp functions
+integer :: omp_threads
+integer :: lap_quota
+integer :: mythread_id
+#endif
+
+!!BUFFERS
+type(lap_buffer) :: lap_buffers(parallel%max_lap_buffers)
+type(nloc_buffer) :: nloc_buff
+
+! -------------------------------------------------------------------
+
+!  if (blksize > 1) write(9,*) 'Hello, doing matvecB  blksize=',blksize
+
+if (parallel%mxwd == 2) then 
+        ! This will be worked at later on.
+        ! call the old matvec instead
+        call zmatvec_so(kplp, nloc_p_pot, u_pot,solver, parallel, &
+                pot%vnew, v, w, blksize, ldn)
+
+        return
+endif
+
+#ifdef ITAC
+call VTBEGIN( vt_buffer, mvierr)
+#endif
+
+
+
+! for parallel%mxwd == 1
+!{{{ Setup buffers and prebuffer
+if (present(ext_lap_buffer)) then
+        buffer_ext = .true.
+        !skip the buffer init and prebuffering - assume it was already done
+        num_lap_buffers=blksize
+        num_prebuffer=blksize
+else
+        buffer_ext = .false.
+
+        !get buffer number, hardcoded, capped by 5
+        if (blksize == 1) then
+                num_lap_buffers=2 !temporary fix 
+        else
+                num_lap_buffers=min(parallel%max_lap_buffers,blksize)
+        endif
+
+        ! write(9,*) "matvecB: num_lap_buffers",num_lap_buffers
+
+        !init buffers up to num_lap_buffers
+        do k=1,num_lap_buffers
+                call init_lap_buffer(lap_buffers(k))
+                call allocate_lap_buffer(lap_buffers(k),parallel)
+        enddo
+
+        !prebuffer, all but the last one:
+        num_prebuffer=num_lap_buffers-1
+        num_prebuffer=max(1,num_prebuffer)
+        ! write(9,*) "matvecB: num_prebuffer",num_prebuffer
+        !start getting buffers
+        do k=1,num_prebuffer
+                prebuff_index=mod(k,num_lap_buffers)+1
+
+                call Zbuff_lap_pack(parallel, &
+                        lap_buffers(prebuff_index), v, k, k, blksize, ldn)
+                call Zbuff_lap_comm(parallel, lap_buffers(prebuff_index))
+        enddo
+endif
+
+! write(9,*) "matvecB: finished buffering"
+
+#ifdef ITAC
+call VTEND( vt_buffer, mvierr)
+#endif
+
+!shoot them off as a burst, thrash the network
+! do k=1,num_prebuffer
+!     prebuff_index=mod(k,num_lap_buffers)+1
+!     call Zbuff_lap_comm(parallel,lap_buffers(prebuff_index)) 
+! end do
+!}}}
+!i do not believe in the global Zwvec, but what the heck
+!  Zwvec(:) = Zzero
+
+!Im not a fan of zeroing such a large array, but right now its nothing to worry about
+!    w(:,:)=Zzero
+! but really,  i'm already initing mydim points in the diagonal part,
+!and  since this is what I'm returning it should be okay.
+
+!{{{do nonloc buffers for later
+
+!initialize nloc_buff
+!basic protection against 1 PE jobs
+! write(9,*) "matvecB: init nloc buffer"
+call init_nloc_buffer(nloc_buff)
+! write(9,*) "matvecB: allocating nloc buffer"
+call allocate_nloc_buffer(nloc_buff,nloc_p_pot%nlm,blksize)
+
+#ifdef ITAC
+mvierr=0
+call VTBEGIN( vt_matvec_ps, mvierr)
+#endif
+
+
+
+! write(9,*) "matvecB: computing kbdots"
+!compute the kb dot products
+do k=1,blksize
+        if (nloc_p_pot%nkpt == 0) then
+                call Zmatvec_nloc_kbdotsB_1D(nloc_buff%kbdots(:,k), &
+                        nloc_p_pot, solver, v(1:ldn,k), ldn)
+        else
+                call Zmatvec_nloc_kbdotsB_kpt_1D(nloc_buff%kbdots(:,k), &
+                        nloc_p_pot, solver, v(1:ldn,k), ldn, kplp)
+        endif
+enddo
+
+! write(9,*) "matvecB: done computing kbdots"
+
+#ifdef ITAC
+call VTEND( vt_matvec_ps, mvierr)
+#endif
+
+
+
+! do the communication part of matvec_nlocB
+#ifdef IALLREDUCE
+!use (potentially nonblocking) allreduce for the kb dot products
+!this is here in case you are feeling adventurous. I find that it
+!works for intelMPI, and helps load balancing.
+call Zbuff_nloc_allreduce(parallel,nloc_buff)
+#endif
+
+!}}}
+!
+!{{{ Buffered matvec part
+! write(9,*) 'matvecB: inter1 = ',parallel%inter1
+#ifdef ITAC
+call VTBEGIN( vt_matvec, mvierr)
+#endif
+
+!write(9,*) "almost,mydim:,chunk",parallel%mydim,almost_mydim,chunk
+!==============OMP PARALLEL CONSTRUCT================!
+!$OMP PARALLEL &
+!$OMP& SHARED(Zwvec,blksize,num_lap_buffers,num_prebuffer,parallel) &
+!$OMP& SHARED(lap_buffers,v,w,ldn,solver, ext_lap_buffer,buffer_ext,nloc_p_pot,i) &
+!$OMP& PRIVATE(omp_threads,mythread_id,lap_quota,my_lapstart,my_lapend,lap_leftovers,current_buffer,k,next_buffer,chunk,chunk_inter)
+!lets do some warm-up and finish the diagonal part with a parallel do
+!right now this inits the w elements also up till mydim. 
+call Zmatvec_diagonal(parallel%mydim,solver%adiag,v,w,ldn,blksize)
+
+!now lets do the kinetic energy part
+
+!first we plan how to divide the work over threads !{{{
+!this is not particularly good for load balancing, 
+!also the master thread is forced to do an equal share of the work, which is bad
+!maybe we'll switch to dynamic schedule do loop later
+#ifdef OMPFUN
+omp_threads = omp_get_num_threads()
+mythread_id = omp_get_thread_num()
+! lap_quota = parallel%mydim/omp_threads
+! my_lapstart = mythread_id*lap_quota + 1
+! my_lapend = my_lapstart + lap_quota - 1
+! lap_leftovers = mod(parallel%mydim,omp_threads)
+!
+! I HAVE YET TO THINK ABOUT CHUNKING SMARTLY
+! MAYBE:
+!    chunk=parallel%mydim/((parallel%inter1+1)*2*(omp_threads-1))
+!chunk = parallel%mydim/(omp_threads*10)
+!chunk_inter
+#else
+! my_lapstart = 1
+! my_lapend = parallel%mydim
+! lap_leftovers = 0
+! chunk=min(parallel%inter1+10,parallel%mydim/10)
+#endif
+
+! !}}}
+
+
+
+do k = 1, blksize
+        current_buffer = mod(k,num_lap_buffers) + 1
+
+        !$OMP MASTER
+        if (k+num_lap_buffers-1 > blksize) then
+                ! write(9,*) 'DEBUG MatvecB: not buffering k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
+        else
+                next_buffer = mod(k+num_lap_buffers+num_prebuffer, &
+                        num_lap_buffers) + 1
+                ! still need to buffer
+                ! write(9,*) 'DEBUG MatvecB: buffering of k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
+                if (.not. buffer_ext) then
+                        call Zbuff_lap_pack(parallel, &
+                                lap_buffers(next_buffer), &
+                                v, k, k+num_lap_buffers-1, blksize, ldn)
+                        call Zbuff_lap_comm(parallel, &
+                                lap_buffers(next_buffer))
+                !else
+                        ! call Zbuff_lap_pack(parallel,ext_lap_buffer(next_buffer),v,k,k+num_lap_buffers-1,blksize,ldn) 
+                        ! call Zbuff_lap_comm(parallel,ext_lap_buffer(next_buffer))
+                endif
+        endif
+        !$OMP END MASTER
+
+        !$OMP SINGLE
+        Zwvec(parallel%nwedge+1) = Zzero
+        !$OMP END SINGLE NOWAIT
+
+        !$OMP DO &
+        !$OMP& SCHEDULE(RUNTIME) & 
+        !$OMP& PRIVATE(i)
+        do i=1,parallel%mydim
+                Zwvec(i) = v(i,k)
+        end do
+        !$OMP END DO
+        ! write(9,*) 'MatvecB: finished copying Zwvec for k',k,'id:',mythread_id
+
+        !$OMP MASTER
+        ! write(9,*) 'DEBUG MatvecB: checking on buffer -',current_buffer
+        if (parallel%group_size > 1) then
+                if (buffer_ext) then
+                        call buff_lap_check_comm( &
+                                ext_lap_buffer(k), k, parallel)
+                        call Zbuffer_lap_unpack(parallel, Zwvec, &
+                                ext_lap_buffer(k))
+                else
+                        call buff_lap_check_comm( &
+                                lap_buffers(current_buffer), k, parallel)
+                        call Zbuffer_lap_unpack(parallel, Zwvec, &
+                                lap_buffers(current_buffer))
+                endif
+        endif
+        ! write(9,*) 'MatvecB: finsihed unpacking to Zwvec'
+
+        !$OMP END MASTER
+
+        !AJB: check to see whether  master thread is sometimes not assigned any work if using dynamic/guided!
+        if (parallel%inter1 > 0) then
+                if (nloc_p_pot%nkpt == 0) then
+                        call Zmatvec_ke_1D(1, parallel%inter1, &
+                                solver, parallel, Zwvec, w(:,k), ldn)
+                else
+                        call Zmatvec_ke_kpt_1D(1, parallel%inter1, kplp, &
+                                solver, parallel, Zwvec, w(:,k), ldn)
+                endif
+
+                ! write(9,*) 'MatvecB: thread',mythread_id,': my middle i was:', i
+        endif
+
+        ! probably uneeded now
+        !$OMP BARRIER 
+        ! write(9,*) 'DEBUG MatvecB: k-',k,' buffer',current_buffer,'thread',mythread_id
+
+        if (nloc_p_pot%nkpt == 0) then
+                call Zmatvec_ke_1D(parallel%inter1+1, parallel%mydim, &
+                        solver, parallel, Zwvec, w(:,k), ldn)
+        else
+                call Zmatvec_ke_kpt_1D(parallel%inter1+1, parallel%mydim, &
+                        kplp, solver, parallel, Zwvec, w(:,k), ldn)
+        endif
+
+        !write(9,*) 'MatvecB: thread',mythread_id,': my final i was:', i
+
+        !write(9,*) 'MatvecB: thread',mythread_id,': finished do loop'
+enddo !k=1,blksize
+
+!$OMP END PARALLEL 
+
+
+
+
+!{{{ Finally , the last part of the non_local work,
+#ifdef ITAC
+call VTEND( vt_matvec,mvierr )
+call VTBEGIN( vt_matvec_ps, mvierr)
+#endif
+
+#ifndef IALLREDUCE
+!moved here in order to support mpi2 as well
+!use (potentially nonblocking) allreduce for the kb dot products
+call Zbuff_nloc_allreduce(parallel,nloc_buff)
+#endif
+
+
+
+!not in OMP right now
+!  MASTER
+! write(9,*) "check x2 iallreduce nloc",k
+!   write(9,*) "buffer%request",nloc_buffers(k)%request
+
+call buff_nloc_allreduce_check(nloc_buff)
+!debug:
+! do k=1,blksize
+!  write(9,*) "kbdots for k=",k
+!  write(9,*) nloc_buff%kbdots(:,k)
+! enddo
+
+do k = 1, blksize
+        !   write(9,*) "after check 1 request ==",nloc_buffers(k)%request
+        !   call buff_nloc_iallreduce_check(nloc_buffers(k))
+        !   write(9,*) "after check 2 request == ",nloc_buffers(k)%request
+        !  END MASTER
+        !  BARRIER
+        if (nloc_p_pot%nkpt == 0) then
+                call Zmatvec_nlocB_1D(nloc_buff%kbdots(:,k), &
+                        nloc_p_pot, w(1:ldn,k), ldn)
+        else
+                call Zmatvec_nlocB_kpt_1D(nloc_buff%kbdots(:,k), &
+                        nloc_p_pot, w(1:ldn,k), ldn, kplp)
+        endif
+
+        ! write(9,*) "DEBUG: got nonloc for vector",k
+enddo !k=1,blksize
+
+#ifdef ITAC
+call VTEND( vt_matvec_ps, mvierr)
+#endif
+
+
+!!! CLEANUP !{{{
+call destroy_nloc_buffer(nloc_buff)
+!write(9,*) '*** MatvecB: destroyed nloc buffer',k
+! this might not be here for long, since I want to merge the internal and external buffers
+if (.not. buffer_ext) then
+        do k = 1, num_lap_buffers
+                call destroy_lap_buffer(lap_buffers(k))
+                !write(9,*) '*** MatvecB: destroyed lap buffer',k
+        enddo
+endif
+
+
+
+!{{{ +U
+! Last but not least , the onsite Coulomb interaction, if any.
+! However, no one has checked this subroutine in years!
+if (u_pot%maxnloc > 0) then
+        do k = 1, blksize
+                ! ..for each vector     
+#ifdef CPLX
+                call zplusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
+#else
+                call plusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
+#endif
+        enddo
+endif
+  !}}}
+
+
+
+
+end subroutine ZmatvecB
+
+
+
+
+!===================================================================
+subroutine Zmatvec_diagonal(mydim,diag,p,q,ldn,m) !{{{
+  use constants
+  use parallel_data_module
+  implicit none
+  integer, intent(in):: mydim
+  integer, intent(in):: m
+  integer, intent(in):: ldn
+  real(dp),dimension(mydim),intent(in) :: diag
+  SCALAR, intent(in) :: p(ldn,m)
+  SCALAR, intent(inout) :: q(ldn,m)
+  integer :: i,k
+!$OMP DO COLLAPSE (2)  &
+!$OMP& SCHEDULE(RUNTIME) & 
+!$OMP& PRIVATE(i,k)
+  do k = 1, m
+      do i = 1, mydim
+         q(i,k) = diag(i) * p(i,k)
+      enddo
+  enddo
+!$OMP END DO
+end subroutine Zmatvec_diagonal !}}}
+!===================================================================
+subroutine Zmatvec_nloc_kbdotsB_1D(kbdots,nloc_p_pot,solver,p,ldn) !{{{
+  use constants
+  use non_local_psp_module
+  use eigen_solver_module
+  use Zbuffer_module
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! non local pseudopotential related data
+  type (nonloc_pseudo_potential), intent(in) :: nloc_p_pot 
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+  SCALAR, intent(inout) :: kbdots(nloc_p_pot%nlm)
+  ! solver related data
+  type (eigen_solver), intent(in) :: solver
+  !
+  ! length of vectors
+  integer, intent(in) :: ldn
+  ! input vectors in IW, distributed accross PEs
+  SCALAR, intent(in) :: p(ldn)
+  !
+  ! Work variables:
+  !
+  ! local scalars
+  integer :: i, ja, lm, ilm, ii, mpinfo
+  SCALAR :: ulm, cf
+  ! characters, chi = solver%chi
+  real(dp) :: chi(solver%nrep)
+  !-------------------------------------------------------------------
+
+  ! initialize variables
+  chi(:) = solver%chi(:)
+
+       kbdots(:) = Zzero
+       ilm = 0
+
+     ! Calculate K-B dot products over all atoms, and all angular
+     ! components (l,m).
+       if (solver%nrep > 1) then
+        ! if there is more than one representation, include characters
+          do ja = 1, nloc_p_pot%atom_num
+             do lm = 1, nloc_p_pot%nlmatm(ja)
+                ulm = Zzero
+                !AJB: need to unravel this in order to do efficent threading. right now can only do inner loop.
+                ilm = ilm + 1
+! also remember !$OMP& REDUCTION(+:ulm)
+                do i = 1, nloc_p_pot%nlatom(ja)
+                   ulm = ulm + p(nloc_p_pot%indw(i,ja)) * &
+                        chi(nloc_p_pot%tran(i,ja)) * &
+                        nloc_p_pot%anloc(i,ilm)
+                enddo
+                kbdots(ilm) = ulm * nloc_p_pot%skbi(ilm)
+             enddo
+          enddo
+       else
+        ! otherwise, ommit characters (this saves floating point operations)
+          do ja = 1, nloc_p_pot%atom_num
+             do lm = 1, nloc_p_pot%nlmatm(ja)
+                ulm = Zzero
+                !AJB: need to unravel this in order to do efficent threading. right now can only do inner loop.
+                ilm = ilm + 1
+! !$OMP& REDUCTION(+:ulm) 
+                do i = 1, nloc_p_pot%nlatom(ja)
+                   ulm = ulm + p(nloc_p_pot%indw(i,ja)) * &
+                        nloc_p_pot%anloc(i,ilm)
+                enddo
+                kbdots(ilm) = ulm * nloc_p_pot%skbi(ilm)
+             enddo
+          enddo
+       endif
+
+end subroutine Zmatvec_nloc_kbdotsB_1D !}}}
+!===================================================================
+subroutine Zmatvec_nloc_kbdotsB_kpt_1D(kbdots,nloc_p_pot,solver,p,ldn,kplp) !{{{
+  use constants
+  use non_local_psp_module
+  use eigen_solver_module
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! non local pseudopotential related data
+  type (nonloc_pseudo_potential), intent(in) :: nloc_p_pot 
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+  SCALAR, intent(inout) :: kbdots(nloc_p_pot%nlm)
+  ! U potential related data
+  type (eigen_solver), intent(in) :: solver
+  !
+  ! k-point index
+  integer, intent(in) :: kplp
+
+  ! length of vectors
+  integer, intent(in) :: ldn
+  ! input vectors in IW, distributed accross PEs
+  SCALAR, intent(in) :: p(ldn)
+  !
+  ! Work variables:
+  !
+  ! local scalars
+  integer :: i, ja, lm, ilm, ii, mpinfo
+  SCALAR :: ulm, cf
+  ! characters, chi = solver%chi
+  real(dp) :: chi(solver%nrep)
+  !-------------------------------------------------------------------
+       kbdots(:) = Zzero
+       ilm = 0
+
+     ! Calculate K-B dot products over all atoms, and all angular
+     ! components (l,m).
+       if (solver%nrep > 1) then
+        ! if there is more than one representation, include characters
+          do ja = 1, nloc_p_pot%atom_num
+             do lm = 1, nloc_p_pot%nlmatm(ja)
+                ulm = Zzero
+                ilm = ilm + 1
+                do i = 1, nloc_p_pot%nlatom(ja)
+                   ulm = ulm + p(nloc_p_pot%indw(i,ja)) * &
+                        chi(nloc_p_pot%tran(i,ja)) * &
+                        nloc_p_pot%anloc(i,ilm) * &
+                        nloc_p_pot%right(i,kplp,ja)
+                enddo
+                kbdots(ilm) = ulm * nloc_p_pot%skbi(ilm)
+             enddo
+          enddo
+       else
+        ! otherwise, ommit characters (this saves floating point operations)
+          do ja = 1, nloc_p_pot%atom_num
+             do lm = 1, nloc_p_pot%nlmatm(ja)
+                ulm = Zzero
+                ilm = ilm + 1
+                do i = 1, nloc_p_pot%nlatom(ja)
+                   ulm = ulm + p(nloc_p_pot%indw(i,ja)) * &
+                        nloc_p_pot%anloc(i,ilm) * &
+                        nloc_p_pot%right(i,kplp,ja)
+                enddo
+                kbdots(ilm) = ulm * nloc_p_pot%skbi(ilm)
+             enddo
+          enddo
+       endif
+end subroutine Zmatvec_nloc_kbdotsB_kpt_1D !}}}
+!===================================================================
+subroutine Zmatvec_nlocB_1D(kbdots,nloc_p_pot,q,ldn) !{{{
+    use constants
+    use non_local_psp_module
+    implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! non local pseudopotential related data
+  type (nonloc_pseudo_potential), intent(in) :: nloc_p_pot 
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+  SCALAR, intent(in) :: kbdots(nloc_p_pot%nlm)
+  ! length of vector
+  integer, intent(in) :: ldn
+  ! output vector in IW, distributed accross PEs
+  SCALAR, intent(inout) :: q(ldn)
+
+  ! Work variables:
+  !
+  ! local scalars
+  integer :: i, ja, lm, ilm, ii
+  SCALAR :: cf
+  !-------------------------------------------------------------------
+!write(9,*) nloc_buff%kbdots
+!write(9,*) ""
+
+       ilm = 0
+     ! Multiply the nonlocal vectors by the dot product.
+       do ja = 1, nloc_p_pot%atom_num
+          do lm = 1, nloc_p_pot%nlmatm(ja)
+             ilm = ilm + 1
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+             cf = kbdots(ilm)
+             do i = 1, nloc_p_pot%nlatom(ja)
+                ii = nloc_p_pot%indw(i,ja)
+              ! Add to vector only if this grid point is in the irreducible
+              ! wedge (i.e. identity operation is needed to bring it to IW).
+                if (nloc_p_pot%tran(i,ja) == 1) &
+                     q(ii) = q(ii) + cf*nloc_p_pot%anloc(i,ilm) 
+             enddo
+          enddo
+       enddo
+
+end subroutine Zmatvec_nlocB_1D !}}}
+!===================================================================
+subroutine Zmatvec_nlocB_kpt_1D(kbdots,nloc_p_pot,q,ldn,kplp) !{{{
+    use constants
+    use non_local_psp_module
+    use Zbuffer_module
+    implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! k-point index
+  integer, intent(in) :: kplp
+  ! non local pseudopotential related data
+  type (nonloc_pseudo_potential), intent(in) :: nloc_p_pot 
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+  SCALAR, intent(in) :: kbdots(nloc_p_pot%nlm)
+  ! length of vector
+  integer, intent(in) :: ldn
+  ! output vector in IW, distributed accross PEs
+  SCALAR, intent(inout) :: q(ldn)
+
+  ! Work variables:
+  !
+  ! local scalars
+  integer :: i, ja, lm, ilm, ii
+  SCALAR :: cf
+  !-------------------------------------------------------------------
+
+       ilm = 0
+
+     ! Multiply the nonlocal vectors by the dot product.
+       do ja = 1, nloc_p_pot%atom_num
+          do lm = 1, nloc_p_pot%nlmatm(ja)
+             ilm = ilm + 1
+  ! Kleinman-Bylander dot product: < f_tlm | p >
+             cf = kbdots(ilm)
+             do i = 1, nloc_p_pot%nlatom(ja)
+                ii = nloc_p_pot%indw(i,ja)
+              ! Add to vector only if this grid point is in the irreducible
+              ! wedge (i.e. identity operation is needed to bring it to IW).
+                if (nloc_p_pot%tran(i,ja) == 1) &
+                     q(ii) = q(ii) + cf*nloc_p_pot%anloc(i,ilm) * &
+                        nloc_p_pot%left(i,kplp,ja)  
+             enddo
+          enddo
+       enddo
+
+end subroutine Zmatvec_nlocB_kpt_1D !}}}
+!=====================================================================
+subroutine Zmatvec_ke_1D(lap_start,lap_end,solver, parallel, workvec, q, ldn) !{{{
+  use constants
+  use matvec_module
+  use eigen_solver_module
+  use parallel_data_module
+  implicit none
+
+  integer, intent(in) :: lap_start,lap_end
+
+  type (eigen_solver), intent(in) :: solver
+  type (parallel_data), intent(in) :: parallel
+
+  integer, intent(in) :: ldn
+  SCALAR, intent(in) :: workvec(parallel%nwedge+1)
+  SCALAR, intent(inout) :: q(ldn)
+
+  SCALAR :: coef,chi1,chi2,tmp1
+  integer idx1,idx2,i,j,jj,ish,irow,term1,term2
+  integer jj2,term3,even,idx3,idx4
+  integer norder !for some reason laplacian is slow fetching this from solver
+  SCALAR :: chi3,chi4,coef2
+
+  integer ii, mpinfo, reps, leftover, start
+even = mod(solver%norder, 2)
+norder=solver%norder
+
+
+
+  if (parallel%lap_dir_num == 0) then
+     term1 = 6 !{{{
+     if (even == 0) then 
+        if (solver%nrep == 1) then 
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) & 
+!$OMP& PRIVATE(i,irow,ish,term2,term3,j,jj,jj2,idx1,idx2,idx3,idx4,coef,coef2,tmp1) 
+           do i = lap_start, lap_end !{{{
+              irow = parallel%pint(i)
+              tmp1 = Zzero
+              do ish = 1, norder, 2
+                 term2 = -1+(ish-1)*term1
+                 term3 = -1+(ish)*term1
+                 do j = 1, 3
+                    jj = j*2+term2
+                    jj2 = j*2+term3
+                    idx1 = parallel%neibs(jj,irow)
+                    idx2 = parallel%neibs(jj+1,irow)
+                    idx3 = parallel%neibs(jj2,irow)
+                    idx4 = parallel%neibs(jj2+1,irow)
+                    coef = solver%coe2(ish,j)
+                    coef2 = solver%coe2(ish+1,j)
+                    tmp1 = tmp1+coef *(workvec(idx1)+workvec(idx2)) + &
+                                coef2*(workvec(idx3)+workvec(idx4))
+                 enddo
+              enddo
+              q(irow) = q(irow) + tmp1
+              enddo  !}}} 
+!$OMP END DO
+        else
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) &
+!$OMP& PRIVATE(i,irow,ish,term2,term3,j,jj,jj2,idx1,idx2,idx3,idx4,chi1,chi2,chi3,chi4,coef,coef2,tmp1) 
+           do i = lap_start, lap_end !{{{
+              irow = parallel%pint(i)
+              tmp1 = Zzero
+              do ish = 1, norder,2
+                 term2 = -1+(ish-1)*term1
+                 term3 = -1+(ish)*term1
+                 do j = 1, 3
+                    jj = j*2+term2
+                    jj2 = j*2+term3
+                    idx1 = parallel%neibs(jj,irow)
+                    idx2 = parallel%neibs(jj+1,irow)
+                    idx3 = parallel%neibs(jj2,irow)
+                    idx4 = parallel%neibs(jj2+1,irow)
+                    chi1 = solver%chi(parallel%tneibs(jj,irow))
+                    chi2 = solver%chi(parallel%tneibs(jj+1,irow))
+                    chi3 = solver%chi(parallel%tneibs(jj2,irow))
+                    chi4 = solver%chi(parallel%tneibs(jj2+1,irow))
+                    coef = solver%coe2(ish,j)
+                    coef2 = solver%coe2(ish+1,j)
+                    tmp1 = tmp1+coef *(workvec(idx1)*chi1+workvec(idx2)*chi2) + &
+                                coef2*(workvec(idx3)*chi3+workvec(idx4)*chi4)
+                 enddo
+              enddo
+              q(irow) = q(irow) + tmp1
+           enddo !}}}
+!$OMP END DO
+        endif
+     else 
+        if (solver%nrep == 1) then
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) &
+!$OMP& PRIVATE(i,irow,ish,term2,j,jj,idx1,idx2,coef,tmp1) 
+           do i = lap_start, lap_end !{{{
+              irow = parallel%pint(i)
+              tmp1 = Zzero
+              do ish = 1, norder
+                 term2 = -1+(ish-1)*term1
+                 do j = 1, 3
+                    jj = j*2+term2
+                    idx1 = parallel%neibs(jj,irow)
+                    idx2 = parallel%neibs(jj+1,irow)
+                    coef = solver%coe2(ish,j)
+                    tmp1 = tmp1+coef*(workvec(idx1)+workvec(idx2))
+                 enddo
+              enddo
+              q(irow) = q(irow) + tmp1
+              enddo !}}}
+!$OMP END DO
+        else
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) &
+!$OMP& PRIVATE(i,irow,ish,term2,j,jj,idx1,idx2,chi1,chi2,coef,tmp1) 
+           do i = lap_start, lap_end !{{{
+              irow = parallel%pint(i)
+              tmp1 = Zzero
+              do ish = 1, norder
+                 term2 = -1+(ish-1)*term1
+                 do j = 1, 3
+                    jj = j*2+term2
+                    idx1 = parallel%neibs(jj,irow)
+                    idx2 = parallel%neibs(jj+1,irow)
+                    chi1 = solver%chi(parallel%tneibs(jj,irow))
+                    chi2 = solver%chi(parallel%tneibs(jj+1,irow))
+                    coef = solver%coe2(ish,j)
+                    tmp1 = tmp1+coef*(workvec(idx1)*chi1+workvec(idx2)*chi2)
+                 enddo
+              enddo
+              q(irow) = q(irow) + tmp1
+              enddo !}}}
+!$OMP END DO
+        endif
+     endif
+!}}}
+  else 
+    term1 = 6+2*parallel%lap_dir_num !{{{
+    if (solver%nrep == 1) then
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) &
+!$OMP& PRIVATE(i,irow,ish,term2,j,jj,coef,tmp1) 
+           do i = lap_start, lap_end !{{{
+          irow = parallel%pint(i)
+          tmp1 = Zzero
+          do ish = 1, norder
+             term2 = -1+(ish-1)*term1
+             do j = 1, 3+parallel%lap_dir_num
+                jj = j*2+term2
+                coef = solver%coe2(ish,j)
+                tmp1 = tmp1+coef*(workvec(parallel%neibs(jj,irow))+workvec(parallel%neibs(jj+1,irow)))
+             enddo
+          enddo
+          q(irow) = q(irow) + tmp1
+      enddo !}}}
+!$OMP END DO
+    else
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) &
+!$OMP& PRIVATE(i,irow,ish,term2,j,jj,coef,tmp1) 
+           do i = lap_start, lap_end !{{{
+          irow = parallel%pint(i)
+          tmp1 = Zzero
+          do ish = 1, norder
+             term2 = -1+(ish-1)*term1
+             do j = 1, 3+parallel%lap_dir_num
+                jj = j*2+term2
+                coef = solver%coe2(ish,j)
+                tmp1 = tmp1+coef*(workvec(parallel%neibs(jj,irow))*solver%chi(parallel%tneibs(jj,irow))+ &
+                     workvec(parallel%neibs(jj+1,irow))*solver%chi(parallel%tneibs(jj+1,irow)))
+             enddo
+          enddo
+          q(irow) = q(irow) + tmp1
+          enddo !}}}
+!$OMP END DO
+    endif !}}}
+  endif
+
+end subroutine Zmatvec_ke_1D !}}}
+!===================================================================
+subroutine Zmatvec_ke_kpt_1D(lap_start,lap_end,kplp,solver,parallel,workvec,q,ldn) !{{{
+
+  use constants
+  use matvec_module
+  use eigen_solver_module
+  use parallel_data_module
+  implicit none
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif
+
+  !
+  ! Input/Output variables:
+  integer, intent(in) :: lap_start,lap_end
+  !
+  ! solver related data
+  type (eigen_solver), intent(in) :: solver
+  ! parallel computation related data
+  type (parallel_data), intent(in) :: parallel
+  ! k-point index
+  integer, intent(in) :: kplp
+  ! length of vectors
+  integer, intent(in) :: ldn
+  ! input vectors in IW, distributed accross PEs
+  SCALAR, intent(in) :: workvec(parallel%nwedge+1)
+  ! output vectors in IW, distributed accross PEs
+  SCALAR, intent(inout) :: q(ldn)
+  !
+  ! Work variables:
+  !
+  ! local scalars
+  integer i, jj, k, ish
+  ! temporary array for the operator Laplacian - i*k*Gradient
+  ! used if k-vector is not zero
+  complex(dpc) :: kecoe(2,6,solver%norder)
+  integer irow, mpinfo
+  ! characters, chi = solver%chi
+  real(dp) :: chi(solver%nrep)
+
+  !-------------------------------------------------------------------
+
+  ! initialize variables
+  chi(:) = solver%chi(:)
+
+     do ish = 1, solver%norder
+        do jj = 1, 3 + parallel%lap_dir_num
+           kecoe(1,jj,ish) = solver%coe2(ish,jj) - solver%kecoe1(kplp,jj,ish)
+           kecoe(2,jj,ish) = solver%coe2(ish,jj) + solver%kecoe1(kplp,jj,ish)
+        enddo
+     enddo
+
+       if (solver%nrep > 1) then 
+        ! if there is more than one representation, include characters
+          select case (parallel%lap_dir_num) !{{{
+          case (0) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+             do i=lap_start,lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) * &
+                                        chi(parallel%tneibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) * &
+                                        chi(parallel%tneibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) * &
+                                        chi(parallel%tneibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) * &
+                                        chi(parallel%tneibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) * &
+                                        chi(parallel%tneibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) * &
+                                        chi(parallel%tneibs(jj+6,irow) )
+                   jj = jj + 6
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (1) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+             do i=lap_start,lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) * &
+                                        chi(parallel%tneibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) * &
+                                        chi(parallel%tneibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) * &
+                                        chi(parallel%tneibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) * &
+                                        chi(parallel%tneibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) * &
+                                        chi(parallel%tneibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) * &
+                                        chi(parallel%tneibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) * &
+                                        chi(parallel%tneibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) ) * &
+                                        chi(parallel%tneibs(jj+8,irow) )
+                   jj = jj + 8
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (2) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+             do i=lap_start,lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) * &
+                                        chi(parallel%tneibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) * &
+                                        chi(parallel%tneibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) * &
+                                        chi(parallel%tneibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) * &
+                                        chi(parallel%tneibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) * &
+                                        chi(parallel%tneibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) * &
+                                        chi(parallel%tneibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) * &
+                                        chi(parallel%tneibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) ) * &
+                                        chi(parallel%tneibs(jj+8,irow) ) + &
+                        kecoe(1,5,ish)*workvec(parallel%neibs(jj+9,irow) ) * &
+                                        chi(parallel%tneibs(jj+9,irow) ) + &
+                        kecoe(2,5,ish)*workvec(parallel%neibs(jj+10,irow) ) * &
+                                        chi(parallel%tneibs(jj+10,irow) )
+                   jj = jj + 10
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (3) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+             do i=lap_start,lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) * &
+                                        chi(parallel%tneibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) * &
+                                        chi(parallel%tneibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) * &
+                                        chi(parallel%tneibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) * &
+                                        chi(parallel%tneibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) * &
+                                        chi(parallel%tneibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) * &
+                                        chi(parallel%tneibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) * &
+                                        chi(parallel%tneibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) ) * &
+                                        chi(parallel%tneibs(jj+8,irow) ) + &
+                        kecoe(1,5,ish)*workvec(parallel%neibs(jj+9,irow) ) * &
+                                        chi(parallel%tneibs(jj+9,irow) ) + &
+                        kecoe(2,5,ish)*workvec(parallel%neibs(jj+10,irow) ) * &
+                                        chi(parallel%tneibs(jj+10,irow) ) + &
+                        kecoe(1,6,ish)*workvec(parallel%neibs(jj+11,irow) ) * &
+                                        chi(parallel%tneibs(jj+11,irow) ) + &
+                        kecoe(2,6,ish)*workvec(parallel%neibs(jj+12,irow) ) * &
+                                        chi(parallel%tneibs(jj+12,irow) )
+                   jj = jj + 12
+                enddo
+             enddo !}}}
+!$OMP END DO
+          end select !}}}
+       else
+        ! otherwise, ommit them, they are all unity.
+          select case (parallel%lap_dir_num) !{{{
+          case (0) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+           do i = lap_start, lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) )
+                   jj = jj + 6
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (1) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+           do i = lap_start, lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) )
+                   jj = jj + 8
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (2) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+           do i = lap_start, lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) ) + &
+                        kecoe(1,5,ish)*workvec(parallel%neibs(jj+9,irow) ) + &
+                        kecoe(2,5,ish)*workvec(parallel%neibs(jj+10,irow) )
+                   jj = jj + 10
+                enddo
+             enddo !}}}
+!$OMP END DO
+          case (3) !{{{
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) 
+           do i = lap_start, lap_end
+                irow = parallel%pint(i)
+                jj = 0
+                do ish = 1,solver%norder
+                   q(irow) = q(irow) + &
+                        kecoe(1,1,ish)*workvec(parallel%neibs(jj+1,irow) ) + &
+                        kecoe(2,1,ish)*workvec(parallel%neibs(jj+2,irow) ) + &
+                        kecoe(1,2,ish)*workvec(parallel%neibs(jj+3,irow) ) + &
+                        kecoe(2,2,ish)*workvec(parallel%neibs(jj+4,irow) ) + &
+                        kecoe(1,3,ish)*workvec(parallel%neibs(jj+5,irow) ) + &
+                        kecoe(2,3,ish)*workvec(parallel%neibs(jj+6,irow) ) + &
+                        kecoe(1,4,ish)*workvec(parallel%neibs(jj+7,irow) ) + &
+                        kecoe(2,4,ish)*workvec(parallel%neibs(jj+8,irow) ) + &
+                        kecoe(1,5,ish)*workvec(parallel%neibs(jj+9,irow) ) + &
+                        kecoe(2,5,ish)*workvec(parallel%neibs(jj+10,irow) ) + &
+                        kecoe(1,6,ish)*workvec(parallel%neibs(jj+11,irow) ) + &
+                        kecoe(2,6,ish)*workvec(parallel%neibs(jj+12,irow) )
+                   jj = jj + 12
+                enddo
+             enddo !}}}
+!$OMP END DO
+          end select !}}}
+       endif 
+
+end subroutine Zmatvec_ke_kpt_1D !}}}
+!=====================================================================
+#ifdef CPLX
+endmodule matvecB_interface
+#endif

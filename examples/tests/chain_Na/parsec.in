@@ -1,0 +1,41 @@
+# Wire boundary conditions, Na5 with manual relaxation
+
+Boundary_conditions wire
+
+begin Cell_shape
+ 10.00
+end Cell_shape
+ 
+Boundary_Sphere_Radius:  15.0
+
+Grid_Spacing:  0.7
+ 
+States_Num:  6
+
+Eigensolver: chebff
+Chebyshev_Filtering: .true.
+
+Coordinate_Unit: Cartesian_Bohr
+
+Mixing_Method: Anderson
+ 
+Correlation_Type: pb
+
+Minimization: Manual
+Movement_Num:  2
+
+Atom_Types_Num:  1
+ 
+#------------ new atom type ---------------- 
+Atom_Type: Na
+Pseudopotential_Format: Martins_Wang
+Core_Cutoff_Radius:  3.1
+ 
+begin Atom_Coord
+      .000000     2.931429      .000000
+      .000000    -2.931429      .000000
+      .000000      .000000     5.890929
+      .000000      .000000    -5.890929
+end Atom_Coord
+ 
+#------------ end of atom type ------------- 

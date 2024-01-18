@@ -1,0 +1,117 @@
+#
+# Architecture name
+#
+KSEIG_ARCH = ubuntu
+##### config/make.<thisfile> documentation: ##########
+#  
+# This config file has been tested on a virtual machine with Ubuntu and also a Oden Institute workstation of UT Austin, 2020
+# -- For an Oden institute workstation of UT Austin, load the following modules:
+#    module load ubt18 gcc/8.2 mpich fftw3
+# -- For your own computer running linux, you should install: 1. gfortran compiler, 2. mpich library for MPI parallization, 3. FFTW3 for fast fourier transform
+#    If you uses ubuntu, you can use "apt get install [packagename]" to install all these.
+#####
+
+##### REQUIRED: BLAS & LAPACK
+# BLAS & LAPACK source is included with PARSEC - but you must compile it separately!
+#   It is HIGHLY RECOMMENDED that you use an optimized BLAS & LAPACK library (like Intel's MKL)
+#   that has been tuned for your hardware.
+#####
+YOUR_BLAS_LIB   = /usr/lib/x86_64-linux-gnu/
+YOUR_LAPACK_LIB = /usr/lib/x86_64-linux-gnu/
+LIBBLAS =  -L$(YOUR_BLAS_LIB) -lblas
+LIBLAPA =  -L$(YOUR_LAPACK_LIB) -llapack
+
+######### RECOMMENDED: FFTW3
+# FFTW libraries should be downloaded from
+# www.fftw.org
+# the default for this code is fftw ver 3.x
+# if you wish to use fftw ver 2.x, add
+# -DFFTW2 in the DEF command (please just use 3)
+#####
+YOUR_FFTW_LIBDIR = /usr/lib/x86_64-linux-gnu/
+CPPOPT+=-DUSEFFTW3
+LIBFFTW = -L$(YOUR_FFTW_LIBDIR) -lfftw3
+
+########### OPTIONAL: TRLANC
+# TRLAN libraries are included with PARSEC - but you must compile them separately
+#   and indicate that you're using them with the -DUSETRLANC flag in CPPOPT
+##########
+#CPPOPT+=-DUSETRLANC
+#TRLAN_MOD_PATH =-I$(YOUR_TRLAN_MOD_PATH)
+#LIBTRLAN =  -L$(YOUR_TRLAN_LIBDIR) [ -ltrlan | -lptrlan ]
+
+########### OPTIONAL: BerkeleyGW 
+# BerkeleyGW should be acquired and installed separately. It is NOT included with PARSEC.
+#   PARSEC makes use of .mod files generated from BerkeleyGW. This path tells it where to look.
+####
+#CPPOPT+=-DGW
+#BGW_MOD_PATH =-I$(YOUR_BGW_MOD_PATH)
+#LIBBGW       =
+
+########### OPTIONAL: HDF5
+# HDF5 should be downloaded and installed separately from PARSEC. It is NOT included with PARSEC
+#   PARSEC makes use of .mod files generated from HDF5, as well as Libraries. This path tells it where to look.
+####
+#CPPOPT+=-DUSEHDF5
+#HDF5_INC = /usr/include/hdf5/mpich 
+#HDF5_LIB = /usr/lib/x86_64-linux-gnu
+#HDF5_MOD_PATH =-I$(HDF5_INC)
+#LIBHDF5       =-L$(HDF5_LIB) -lhdf5_mpich_fortran
+
+######## OPTIONAL: ARPACK
+# ARPACK libraries should be download from the net
+#   As of this edit, Rice University is no longer actively updating ARPACK.
+#   It is being continued as ARPACK-NG and is available freely. Build it separately
+########
+#CPPOPT+=-DUSEARPACK
+#LIBARPACK1 = -L$(YOUR_ARPACK_LIBDIR) [ -larpack | -lparpack ]
+#LIBARPACK2 =
+
+######## ESOTERIC: EXTERNAL MPI LIB
+# message passing interface libraries
+# These are usually linked automatically through your mpif90 compiler.
+# You will almost certainly *not* need this
+#######
+CPPOPT+=-DMPI
+#LIBMPI = /usr/lib/x86_64-linux-gnu/
+
+######## REQUIRED: Fortran Compilers [mpi or serial]
+# See documentation regarding known quirks and gotchas for various compilers
+########
+FC	= mpifort.mpich
+F90	= mpifort.mpich
+
+######## REQUIRED: Preprocessor command (automatically invoked)
+# This rarely changes, so I've included it as per how it always seems to be
+########
+CPP = /usr/bin/cpp -P -traditional
+CPPOPT += -DNEIGHCOLLETIVE -DIALLREDUCE
+
+######## REQUIRED: Corresponding Fortran Compiler Flags
+# These are important. After our most recent update, PARSEC is completely clear of errors according to valgrind.
+# That being said, we can overwhelm the stack in many default terminal sessions. There are commands to change
+# the allowed stack size in a terminal. Contact your system administrator (or turn to google) to find your appropriate command
+# for optimal performance.
+# You may find previously used flags in other make.<files> in this directory
+#
+# For optimal performance, knowledge of the specific hardware PARSEC will run on is required.
+########
+# compilation flags...
+# FFLAGS2 = -ffree-line-length-500 -O2 -fcheck=all
+FFLAGS2 = -ffree-line-length-500 -O2 # -fcheck=all # if you got segmentation fault, turn on check=all to see the explicit reason
+FFLAGS = $(FFLAGS2)
+
+#library archiver
+AR	 = ar
+
+######## OPTIONAL: Change the extension for the named PARSEC executable
+# This does what you think it would. In the Chelikowsky lab, we like to use .ser
+#  for config files that use non-mpi components, and .mpi for the mpi variants.
+#  This is entirely up to you, though.
+#######
+EXT     = .linux_ubuntu.mpi
+
+##### 
+# machine-dependent options
+# CPPOPT += -DUSEFFTW3 -DUSEARPACK -DUSETRLANC
+

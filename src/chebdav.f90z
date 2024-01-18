@@ -1,0 +1,1474 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! Block version of the Chebyshev-Davidson method for real symmetric
+! eigenvalue problem: 
+!
+!   (OP)*v_basis(:,1:nwant) = v_basis(:,1:nwant)*diag(eval(1:nwant))
+!
+! where nwant is the number of wanted eigen-pairs. Note that nwant
+! smallest eigenvalues and their eigenvectors are computed.
+! The operator (OP) is provided by a user supplied matrix-vectors
+! multiplication subroutine (in PARSEC it is matvec).
+!
+! Tailored for PARSEC, at the later stage of the Chebyshev-Davidson 
+! iteration, Chebyshev-filtered subspace iteration is employed to 
+! compute an approximate eigen-basis. This saves CPU over computing 
+! true eigenvectors.
+!
+! Author: Yunkai Zhou  (v1. Oct.--Dec. 2005; v2. Jan 2006; v3. April 2014)
+#ifdef BETA
+! revised on april 2014: 
+! 1.  used improved filter bound estimator 
+! 2.  Utilize scaling in the filters 
+! 3.  reduce diagonalization max_iter and switch to subspace filtering earlier
+! comment: 
+!  'chebff' should now replace 'chebdav' as the default solver for the 1st 
+!   step diagonalization. ('chebff' does not compute exact eigenvectors,
+!   thus 'chebff' is more efficient and uses less memory than 'chebdav')
+#endif
+!-------------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine  zchebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &  
+#else
+subroutine  chebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &  
+#endif
+            v_basis, conv_tol, verbose, flag, nconvt, info, sizeblk)
+  use constants
+  use parsec_global_data
+  use matvec_module
+  use matvecB_interface
+  implicit none
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif
+  !
+  !.. Input/Output variables:
+  !
+  integer, intent(in) ::  max_spdim   !maximum subspace dimension
+  integer, intent(in) ::  kplp        !k-point index
+
+  integer, intent(in) ::  &
+       nwant,   & !number of wanted eigenpairs
+       verbose    !integer controlling how many messages to print out 
+
+  integer, intent(inout) :: &
+       nconv   !on input, nconv is number of initially converged eigenpairs,
+               !   nconv = 0 if flag = "new";
+               !   nconv > 0 if flag = "cont" or flag="appr". 
+               !on output, number of converged eigenpairs, 
+               !   nconv>=nwant if the algorithm converges normally;
+               !   the output nconv is saved to init_size to signal how many
+               !   vectors in v_basis are good initial guess for the possible
+               !   next iteration (for a perturbed eigenproblem).
+
+  integer, intent(inout) :: &
+       max_mv  !on input, maximum # of matrix-vector products
+               !on output, the actural # of matrix-vector products
+
+  real(dp), intent(out)  :: eval(max_spdim)
+                         !computed eigenvalues in non-increasing order;
+                         !on output, the eval(1:nconv) contains the 
+                         !converged eigenvalues
+
+  SCALAR, intent(out)  ::  v_basis(parallel%ldn * parallel%mxwd, max_spdim)   
+               ! v_basis is the basis of the projection subspace.
+               ! on output the first nconv columns of v_basis contain the
+               ! converged eigenvectors (which can be used as good initial
+               ! guesses for the next possible iteration in SCF loop).
+               ! It is REQUIRED that the columns in v_basis are always
+               ! ortho-normal.
+
+  real(dp) :: conv_tol  !convergence tolerance (may be adjusted)
+
+  character(len=4), intent(in) :: &
+       flag    !used to signal what type of computation in this call:
+               !flag="new"  --- new computation, nconv=0, start from scratch;
+               !flag="cont" --- continue from previously converged nconv >0
+               !                eigenpairs (i.e., no need to start from scratch);
+               !flag="appr" --- v_basis(:,1:nconv) are approximate eigenvectors,
+               !                in this case, allocate u_init, assign 
+               !                u_init = v_basis, and use u_init for filtering.
+
+  integer, intent(out) :: nconvt !number of truly converged eigenpairs
+
+  integer, intent(out) :: info   !error info
+
+
+  integer, optional  :: sizeblk  !input block size if present (may be adjusted)
+
+
+  !
+  !.. Work variables:
+  !
+  SCALAR, allocatable :: &
+       w_opv(:,:),         & !w_opv = (OP)*v_basis 
+       h_proj(:,:),        & !h_proj = V'*(OP)*V, the projected matrix
+                             !(where V is the active part of v_basis)
+       work(:),            & !work array
+       utmp(:,:),          & !work array of size (ldn, blksize)
+       matmul_tmp(:,:),    & !work array for matmul
+       u_init(:,:)         !used only when flag="appr", in this case
+                             !u_init= the available initial vectors in v_basis.
+!#ifndef MKLALLOC
+  SCALAR, allocatable :: &
+       matmul_tmp2(:,:),   &  !another work array for matmul
+       matmul_tmp3(:,:)      !another work array for matmul
+
+!#endif
+  real(dp), allocatable :: &
+       ritz_val(:)           !the eigenvalues of h_proj, called Ritz values
+
+  real(dp) ::  residual_norm(max_spdim)    !residual norm of each eigenpair
+
+  real(dp) ::     &
+       ritzmax,   & !maximum absolute value of computed ritz values
+       tol_loc,   & !local tolerance, tol_loc = conv_tol*ritzmax
+       upperb,    & !upper bound of all the eigenvalues
+       lowb,      & !lower bound of the unwanted portion of spectrum
+       lowb0        !estimate of the smallest eigenvalue       
+
+  integer  ::     &
+       ldn,       & !leading dimension
+       ndim,      & !actual dimension
+       polym,     & !degree of the Chebyshev polynomials used
+       blksize,   & !actual block size used
+       maxwsize,  & !maximum column size of w_opv
+       kactmax,   & !maxium active subspace dimension
+       init_size, & !size of good initial guesses in the leading
+                    !columns of v_basis (or u_init), init_size=the input nconv 
+       lwork,     & !length of work(:) array 
+       alcstat,   & !allocation test
+       nconvold,  & !used to save the old value of nconv
+       infolapack,& !output info for LAPACK calls
+       n_spdim      !internal value of max_spdim
+
+  logical  ::     &
+       noswap,    & !signal if swap is applied (needed to sort eval(:))
+       innerrst,  & !if inner-restart happens
+       outerrst     !if outer-restart happens  
+
+  !
+  !.. integers for subspace dimensions and deflation (important)
+  !
+  integer  ::     &
+       dim_subsp, & !subspace dimension (including deflated vectors)
+       hsize,     & !size of the active h_proj matrix
+       hsizerst,  & !size of the active h_proj matrix after restart
+       hrst1,     & !hrst1 = hsizerst+1
+       usize,     & !count the # of vectors in u_init that have been used
+       vorth,     & !used to tell if ortho-normalization is necessary
+       isorth       !this integer is only necessary for test_orthonormal
+
+  !.. integer for iteration and mat-vec counts
+  integer  ::     &
+       max_iter,  & !maximum iteration number
+       num_iter,  & !number of iteration
+       num_mv,    & !number of matrix-vector products
+       num_outrst,& !number of outer restarts
+       max_outrst,& !maximum number of outer restart allowed
+       num_restart  !number of restarts (count both inner and outer restarts)
+
+  !.. temporary integers
+  integer  ::  ic, iconv, jcol, ktmp, idim, imax, icache
+#ifdef ITAC
+  integer :: cheb_ierr    !itac error info
+#endif
+  
+
+  !.. tolerance parameter
+  real(dp), parameter :: eps = 2.221D-16
+
+  SCALAR, external :: Zdot
+  !
+  !.. BLAS Subroutine:
+  external   Zgemm
+  !.. intrinsic functions
+
+!#ifdef PGI
+!  intrinsic  max, min, abs, sqrt
+!#else
+!  intrinsic  max, min, abs, sqrt, ceiling
+!#endif
+!  integer :: ceiling
+
+   intrinsic  max, min, abs, sqrt
+
+
+  !.. local external subroutines
+#ifdef CPLX
+  external  zorth_normal,  zrandom_array 
+#else
+  external  orth_normal,  random_array 
+#endif
+
+  !.. user provided matrix-vector-product subroutine
+  !external  Zmatvec1  !this name is tailored to PARSEC 
+
+  Interface
+#ifdef CPLX
+  subroutine  zlancz_bound(kplp, upperb, n, k, ldn, lowb0, middle)
+#else
+  subroutine   lancz_bound(kplp, upperb, n, k, ldn, lowb0, middle)
+#endif
+    use constants
+    integer,  intent(in)  :: kplp   !which kpoint
+    real(dp), intent(out) :: upperb  !upper bound of the full spectrum
+    integer,  intent(in)  :: n       !dimension of the matrix
+    integer,  intent(in)  :: k      !how many Lanczos step to take
+    integer,  intent(in)  :: ldn     !leading dimension 
+    real(dp), intent(out), optional :: lowb0 !lower bound estimate of the full spectrum
+    real(dp), intent(out), optional :: middle !estimated middle point of the full spectrum
+
+#ifdef CPLX
+  end subroutine zlancz_bound
+#else
+  end subroutine lancz_bound
+#endif
+  End Interface
+
+  !
+  !-------------------------------------------------------------------
+  !
+!#ifndef MKLALLOC
+  ! init memory allocations, prevent small memory leak (?)
+  alcstat = 0 
+!#endif
+
+
+  ndim = parallel%mydim * parallel%mxwd
+  ldn  = parallel%ldn * parallel%mxwd
+
+  !.. for the 1st diagonalization, use polym >=15.
+  polym = solver%polym0
+
+!write(9,*) "sizeblk is",sizeblk
+
+  if (present(sizeblk)) then
+!     if (sizeblk > 2 .and. sizeblk <= 50) 
+     blksize=sizeblk
+  else
+!     blksize = 5  !default block size
+     blksize = 7  !default block size
+  end if
+
+!write(9,*) "blksize is",blksize
+
+  ! check consistency of the input variables
+  ! note that v_basis is declared as v_basis(ldn, max_spdim),
+  ! so it should contain enough columns if max_spdim is increased
+  ! n_spdim is the internal value aliased to max_spdim
+
+  n_spdim = max_spdim
+  if (n_spdim < nwant+blksize .or. n_spdim < 3*blksize) then
+     n_spdim = max(20, nwant + blksize)
+  endif
+
+  !
+  ! introduce a simple integer,  kactmax,  to let the chebyshev
+  ! filtering method not to use "n_spdim" during each restart. 
+  ! (the filtering method does not need this large "n_spdim"
+  ! to be efficient. actually at the beginning, the active 
+  ! subspace dimension can be relatively small.
+  !
+  if ( nwant >= 2000) then
+     kactmax = min(max(15*blksize, nwant/10), n_spdim)
+     kactmax = min(kactmax, 400)
+  elseif ( nwant >= 1000 ) then
+     kactmax = min(max(15*blksize, 150), n_spdim)
+  elseif ( nwant >= 500 )  then
+     kactmax = min(max(15*blksize, 80), n_spdim) 
+  elseif (nwant >= 300) then
+     kactmax = min(max(14*blksize, 70), n_spdim)
+  elseif (nwant >= 80) then
+     kactmax = min(max(10*blksize, 50), n_spdim)
+  elseif (nwant >= 36) then
+ !    blksize = 4  !re-default to 4 
+     kactmax = min(36, n_spdim)
+  else
+ !    blksize = 3  !re-default to 3 when nwant is small
+     kactmax = min(30, n_spdim)
+  end if
+
+
+  !... initializations:
+
+  !
+  ! Note during the iteration, nconv+1 is used to point to the 
+  ! beginning of the active vectors in v_basis, i.e.,
+  ! v_basis(:, 1:nconv) are locked converged eigenvectors
+  !
+  if (flag == "new") then
+     nconv = 0
+  elseif (flag == "cont") then
+     if (nconv <= 0) nconv = 0
+     if (nconv >= nwant) return
+  elseif (flag == "appr") then
+     !need to allocate u_init to store the approximate eigenvectors
+     allocate(u_init(ldn, nconv), stat=alcstat)
+     call alccheck('chebdav_u_init', ldn*nconv, alcstat)
+     u_init(:,:) = Zzero
+     u_init = v_basis(1:ldn,1:nconv)
+  else
+     nconv = 0  !start from scratch for all other cases
+  end if
+
+  init_size = nconv 
+  ritzmax = zero
+  num_mv  = 0
+  vorth   = 1
+
+  !
+  !.. allocate local arrays 
+  !
+  allocate(utmp(ldn,blksize),stat=alcstat)
+  call alccheck('chebdav_utmp',ldn*blksize,alcstat)
+  utmp(:,:) = Zzero
+
+  !..note that kactmax may be updated (increased) at the latter stage
+  !..of iterations when necessary, in this case one should allocate the 
+  !..largest size possible.  Not used in this subroutine.
+  !!maxwsize = max(nwant+blksize,kactmax)   
+
+  maxwsize = kactmax  !do not increase kactmax
+  allocate(w_opv(ldn, maxwsize),stat=alcstat)
+  call alccheck('chebdav_w_opv',ldn*maxwsize,alcstat)
+
+  allocate(h_proj(maxwsize, maxwsize),stat=alcstat)
+  call alccheck('h_proj',maxwsize*maxwsize,alcstat)
+  allocate(ritz_val(maxwsize),stat=alcstat)
+  call alccheck('ritz_val',maxwsize,alcstat)
+
+  lwork = max(ldn, 15*n_spdim)
+  allocate(work(lwork),stat=alcstat)
+  call alccheck('chebdav_work',lwork,alcstat)
+
+  !.. this method is quite stable, very small tol is not required, 
+  !.. 1e-9 should be fine; a too loose tol should also be avoided
+  ! AJB: Removing limits on conv!
+  ! if (conv_tol < 1e-9) then
+  !    conv_tol = 1e-9
+  ! elseif (conv_tol > 1e-4) then
+  !    conv_tol = 1e-4
+  ! end if
+  ! write(9,*) 'DEBUG: going into lancz_bound from chebdav'
+  !
+  !.. compute a suitable estimate of the upperb
+  !
+#ifdef CPLX
+  call zlancz_bound(kplp,upperb, ndim, 5, ldn, lowb0)
+#else
+  call lancz_bound(kplp,upperb, ndim, 5, ldn, lowb0)
+#endif
+!  write(9,*) 'DEBUG: finished lancz_bound from chebdav'
+  num_mv = num_mv + 5
+
+  !.. get an estimated of the lower bound by linear interpolation
+  lowb = (lowb0*1.4d0 + (lowb0+upperb)/two* 1.6d0)/three
+  lowb = max(0.d0, lowb)
+  if (flag == "cont" .and. nconv > 0) then
+     lowb = max(lowb,  eval(nconv))
+  end if
+
+  if (verbose > 1) write(9,*) 'CHEBDAV: computed upper bound=',  &
+       upperb,  ' lowb=', lowb
+
+  ! sanity check, see  if some inputs are wrong---important
+  if (lowb >= upperb) then
+     write(9, *) ' Unrecoverable error in chebdav: lowb >= upperb'
+     write(9, *) ' the  flag=cont  case has wrong eval inputs '
+     info = 777
+     return
+  end if
+
+  !
+  !.. filter the first blksize vectors to get v_basis(:,nconv+1:nconv+blksize)
+  !
+  if (flag == "appr") then
+     if (init_size >= blksize) then
+        utmp(:,:) = u_init(:,1:blksize)
+     else
+        utmp(:,:) = u_init(:,1:init_size)
+        ktmp = blksize - init_size
+#ifdef CPLX
+        call zrandom_array(ldn, ndim, ktmp, utmp(1,1+init_size), info)
+#else
+        call random_array(ldn, ndim, ktmp, utmp(1,1+init_size), info)
+#endif
+     end if
+  elseif (flag == "cont") then
+     utmp(:,:) =  v_basis(:,nconv+1:nconv+blksize)
+  else
+#ifdef CPLX
+     call zrandom_array(ldn, ndim, blksize, utmp, info)
+#else
+     call random_array(ldn, ndim, blksize, utmp, info)
+#endif
+  end if
+  if (info /= 0) then
+     write(9,*) ' ERROR IN RANDOM_ARRAY, info = ',info
+     return
+  endif
+#ifdef CPLX
+  call zcheby_filter2(kplp,ldn, blksize, utmp,   &
+#else
+  call cheby_filter2(kplp,ldn, blksize, utmp,   &
+#endif
+#ifdef BETA
+       v_basis(1,nconv+1), polym, lowb, upperb, lowb0)
+#else
+       v_basis(1,nconv+1), polym, lowb, upperb)
+#endif
+
+  !
+  !.. orthogonalization (make v_basis(:, 1:nconv+blksize) ortho-normal)
+  !
+  !!call dgks(parallel, ldn, ndim, blksize, v_basis(1,1), info)
+  !   vorth = 0
+
+#ifdef CPLX
+  call zorth_normal(parallel, ldn, ndim, nconv, blksize, v_basis(1,1), vorth, info)
+#else
+  call orth_normal(parallel, ldn, ndim, nconv, blksize, v_basis(1,1), vorth, info)
+#endif
+  ! vorth = 1
+  if (info /= 0) return
+  num_mv = num_mv + blksize*polym
+
+  ! usize counts number of vectors in u_init that have been filtered
+  ! and merged into v_basis
+  usize = blksize   
+
+#ifdef CPLX
+  if (verbose > 5) call ztest_orthnormal(parallel, ldn, ndim, nconv+blksize, v_basis, isorth, info)
+#else
+  if (verbose > 5)  call test_orthnormal(parallel, ldn, ndim, nconv+blksize, v_basis, isorth, info)
+#endif
+      
+  if (info /= 0) return
+
+  !
+  ! dim_subsp counts the current subspace dimension 
+  ! [including the deflated/locked vectors in v_basis(:,1:nconv)];
+  ! hsizerst is the active size of h_proj after restart,
+  !    dim_subsp = nconv+hsizerst
+  !
+  hsizerst = 0
+
+  num_iter = 0
+  !!max_iter = max(25000, ldn)
+  !!max_iter = min(max(nwant*5, 300), 450)  !no need to do too many iterations for the 1st SCF step
+  max_iter = max(min(nwant*5, 400), nwant*3) 
+  max_iter = max(kactmax+20*blksize, max_iter)
+  max_mv   = max(max_mv, ldn*nwant)
+  num_restart = 0
+  num_outrst  = 0
+  max_outrst  = 2   !exit after max_outrst # of outer-restarts.
+                    !if max_outrst is set to be very large, then the
+                    !method becomes the Chebyshev-Davidson method
+
+  !
+  !-------------------------------------------------------------------
+  !.... start of the main iteration
+  !-------------------------------------------------------------------
+  !
+  Outer_Loop: do while (num_iter <= max_iter)
+
+     num_iter = num_iter +1
+
+     !.. dim_subsp is the augmented subspace dimension
+     dim_subsp = nconv + hsizerst + blksize
+
+     hrst1 = hsizerst+1
+
+     !............................................................
+     !.......  Begin the Rayleigh-Ritz step
+     !............................................................
+
+     !
+     !.. compute w_opv(:,jindx:dim_subsp) = 
+     !                           (OP)*v_basis(:,jindx:dim_subsp)
+     !
+     call ZmatvecB(kplp,blksize,v_basis(1,nconv+hrst1), w_opv(1,hrst1),ldn)
+#ifdef ITAC
+  cheb_ierr=0
+  call VTBEGIN(vt_chebdav_MM,cheb_ierr)
+#endif
+     num_mv = num_mv + blksize
+
+     !
+     !.. compute the last blksize columns of h_proj.
+     !
+     hsize = hsizerst + blksize
+
+     !!! note that the last row of v_basis can be non-zero
+     !!! so, the last row can NOT be used for the dgemm V'HV,
+     !!! otherwise, eigenvalues become wrong immediately!
+     call Zgemm(Conjg, 'N', hsize, blksize, ndim, Zone,  &
+          v_basis(1,nconv+1), ldn, w_opv(1, hrst1), ldn,  &
+          Zzero, h_proj(1, hrst1), maxwsize )
+     call Zpsum(h_proj(1, hrst1), maxwsize*blksize,  &
+          parallel%group_size,  parallel%group_comm)
+
+#ifdef ITAC
+     call VTEND(vt_chebdav_MM,cheb_ierr)
+#endif
+
+     !
+     ! compute the eigen decomposition of h_proj:
+     !        h_proj * Hevec = Hevec * diag(ritz_val)
+     ! the Hevec is stored in h_proj.
+     ! Note the eigenvalues output from zheev/dsyev are in non-increasing
+     ! order, there is no need to sort them again.
+     !
+#ifdef ITAC
+     call VTBEGIN(vt_chebdav_decomp,cheb_ierr)
+#endif
+#ifdef CPLX
+     call my_zheev('U', hsize, h_proj, maxwsize, ritz_val, infolapack )
+    ! write(9,*) "chebdav: done zheev, info=", infolapack
+#else
+     call my_dsyev('U', hsize, h_proj, maxwsize, ritz_val, infolapack )
+    ! write(9,*) "chebdav: done dsyev, info=", infolapack
+#endif
+#ifdef ITAC
+     call VTEND(vt_chebdav_decomp,cheb_ierr)
+#endif
+     if (infolapack /= 0 ) then
+        write(9,*) 'Error in calling my_zheev/dsyev from chebdav.f90'
+        write(9,*) ' info = ',infolapack
+        info = infolapack
+        return
+     endif
+
+     if (verbose > 5) then
+        write(9,*) 'ritz_val(1:hsize):'
+        call print_array(1, 1, hsize, ritz_val(1))
+     end if
+      if (verbose > 3) then
+        write(9,*) 'Before V*Hevec:'
+#ifdef CPLX
+        call ztest_orthnormal(parallel, ldn, ndim, nconv+hsize, &
+#else
+        call test_orthnormal(parallel, ldn, ndim, nconv+hsize, &
+#endif
+             v_basis,isorth, info)
+        if (info /= 0) return
+      endif
+     innerrst = .false.
+     if (hsize+blksize > kactmax) then
+
+        !!hsizerst = max(kactmax/2, kactmax-2*blksize) 
+        hsizerst = min(max(kactmax/2, kactmax-2*blksize)+2, kactmax-blksize) 
+
+        num_restart = num_restart +1  
+        if (verbose > 2) then
+           write(9,*) ">>> CHEBDAV: Inner restart. num_restart=", num_restart
+           write(9,*)'hsize=',hsize,'hsizerst=',hsizerst, &
+                'dim_subsp=',dim_subsp
+        end if
+        innerrst = .true.
+     else
+        hsizerst = hsize
+     endif
+
+#ifdef ITAC
+     call VTBEGIN(vt_chebdav_Iupdate,cheb_ierr)
+#endif
+     !
+     ! do the Rayleigh-Ritz refinement:  !{{{
+     !
+     ! update the v_basis as the current Ritz vectors:
+     !    v_basis(:,nconv+1: nconv+hsizerst) =
+     !          v_basis(:,nconv+1:nconv+hsize)*Hevec(:,1:hsize)
+     !
+     ! v_basis(1:ndim,nconv+1:nconv+hsizerst)=matmul( &
+     !      v_basis(1:ndim,nconv+1:nconv+hsize),h_proj(1:hsize,1:hsizerst))
+     ! AJB: Now with MKL, I don't know if all these steps are necessary
+        allocate(matmul_tmp(ndim, hsizerst), stat=alcstat)
+        call alccheck('chebdav_matmul_tmp', ndim*hsizerst, alcstat)
+
+       call Zgemm('N','N',ndim,hsizerst,hsize,Zone,v_basis(1,nconv+1),ldn,h_proj,maxwsize,Zzero,matmul_tmp,ndim)
+
+        !v_basis(1:ndim,nconv+1:nconv+hsizerst)=matmul_tmp2(1:ndim,1:hsizerst)
+       do jcol = 1,hsizerst
+       call Zcopy(ndim,matmul_tmp(1,jcol),1,v_basis(1,nconv+jcol),1)
+       enddo
+
+
+     if (verbose > 3) then
+!     if ( .TRUE. ) then
+        write(9,*) 'After  RR refinement:  V*Hevec:'
+#ifdef CPLX
+        call ztest_orthnormal(parallel, ldn, ndim, nconv+hsizerst, &
+#else
+        call test_orthnormal(parallel, ldn, ndim, nconv+hsizerst, &
+#endif
+             v_basis, isorth, info)
+        if (info /= 0) return
+     endif
+
+     !
+     ! update the w_opv, this is required for computing residual vectors  !{{{
+     !
+     !   w_opv(1:ndim, 1:hsizerst) = matmul( &
+     !        w_opv(1:ndim, 1:hsize), h_proj(1:hsize,1:hsizerst))
+     !
+        call Zgemm('N','N',ndim,hsizerst,hsize,Zone,w_opv,ldn,h_proj,maxwsize,Zzero,matmul_tmp,ndim)
+       do jcol = 1,hsizerst
+       call Zcopy(ndim,matmul_tmp(1,jcol),1,w_opv(1,jcol),1)
+       enddo
+
+        deallocate(matmul_tmp)
+#ifdef ITAC
+     call VTEND(vt_chebdav_Iupdate,cheb_ierr)
+#endif
+
+     !}}}..................................................................
+     !....      End of the Rayleigh-Ritz step !}}}
+     !..................................................................
+
+     ! !{{{ projection basis modification:
+     ! In the following, we determine deflation and augmentation of 
+     ! the projection basis.
+     !
+     ritzmax = max(abs(ritz_val(hsize)), abs(ritz_val(1)), ritzmax)
+     tol_loc = conv_tol * ritzmax
+
+     if (verbose > 2) then
+        write(9,*) " % ===== num_iteration =",  num_iter 
+        write(9,*) 'ritzmax=', ritzmax, 'tol_loc=', tol_loc
+        call myflush(9)
+     end if
+     !if (verbose > 9) then  !..long printout, usually not used
+     !   write(9,*) "update, Hevec: h_proj(1:maxwsize, 1:hsize)"
+     !   call print_array(maxwsize, maxwsize, hsize, h_proj)
+     !endif
+
+     nconvold = nconv
+     noswap = .true.
+     
+     !.. for larger eigenvalues, reduce tolerance
+     !.. AJB: for higher eigenvalues, reduce tolerance
+     if (nconv > nwant/2)  tol_loc =  tol_loc*2*(nconv+1)/nwant
+
+     do jcol = nconvold+1,  nconvold+hsizerst
+        ic = jcol-nconvold
+
+        work(1:ndim) = w_opv(1:ndim, ic) - v_basis(1:ndim, jcol)*ritz_val(ic)
+#ifdef CPLX
+        residual_norm(jcol)=real(Zdot(ndim,work,1,work,1),dp)
+#else
+        residual_norm(jcol) = Zdot(ndim,work,1,work,1)
+#endif
+        call psum(residual_norm(jcol),1,parallel%group_size,  &
+             parallel%group_comm)
+        residual_norm(jcol)=sqrt(residual_norm(jcol))
+
+        if (verbose > 2)  then
+           write(9,101) 'residual_norm(',jcol,')=', residual_norm(jcol), &
+                'Ritz_Val(',ic,')=', ritz_val(ic)
+101        format(1x, a, i4, a, e12.5, 3x, a, i4, a, e12.5)
+        end if
+        if (residual_norm(jcol) < tol_loc ) then
+
+           nconv = nconv + 1
+           eval(nconv) = ritz_val(ic)
+
+           do ktmp = nconv-1, 1, -1  
+              if (ritz_val(ic) < eval(ktmp)) then
+                 noswap = .false.
+                 if (verbose > 1) then
+                    write(9,*) 'swap ', ktmp+1, ' with ', ktmp
+                 endif
+
+                 eval(ktmp+1) = eval(ktmp)
+                 eval(ktmp)= ritz_val(ic)
+
+                 !.. only assign once the temporary work array
+                 if (ktmp == nconv-1) work(1:ndim) = v_basis(1:ndim, nconv)
+
+                 v_basis(:,ktmp+1) =  v_basis(:,ktmp)
+
+                 !.. pre-determine if a further swap is required
+                 if (ktmp > 1) then
+                    if (ritz_val(ic) < eval(ktmp-1)) then
+                       cycle
+                    else ! swap the work(1:ndim) to the correct place
+                       call Zcopy(ndim,work(1),1,v_basis(1,ktmp),1)
+                       exit
+                    endif
+                 else ! swap the work(1:ndim) to the correct place
+                    call Zcopy(ndim,work(1),1,v_basis(1,ktmp),1)
+                    exit
+                 endif
+              else
+                 exit 
+              endif
+           enddo
+        else
+           exit
+        endif
+
+     enddo
+
+     !!}}}
+     !.. if all converged, exit outer-loop of the Davidson iteration  !{{{
+     !
+     if ((nconv >= nwant  .and. noswap) .or. nconv >= nwant+1) then
+        exit
+     end if
+
+     !     
+     ! }}}
+     !.. update upper triangular of h_proj, it is now diagonal  !{{{
+     !.. and contains only non-converged ritz values
+     !
+     iconv = nconv - nconvold
+     outerrst = .false.
+
+     if ( nconv+hsizerst >  n_spdim-blksize) then
+
+        if (num_outrst > max_outrst .and. dim_subsp >= nwant) then
+           if (verbose > 3) then
+              write(9,110)' ## exit outer-loop, dim_subsp= ',dim_subsp, &
+                          ', num_outrst= ',num_outrst
+           end if
+           exit
+        else  
+           ! continue the chebyshev-davidson iteration !{{{
+
+           ! the following min is very necessary (since if u_init contains
+           ! good initial vectors, sometimes many ritz pairs converged in 
+           ! one step). need to guarantee that dim_subsp <= it-originally-was.
+           dim_subsp = min(n_spdim- 2*blksize, dim_subsp)
+
+           hsizerst = dim_subsp - nconvold
+           num_restart = num_restart+1 
+           num_outrst  = num_outrst +1
+           if (verbose > 2) then
+              write(9,*) ' *** Outer-restart: num_outrst=', num_outrst, &
+                   ',  dim_subsp= ', dim_subsp, ' hsizerst= ', hsizerst 
+           end if
+           if ( iconv > 0 ) then
+              !..shift corresponding vectors in w_opv to correct positions.
+              do jcol = 1, hsizerst - iconv
+                 call Zcopy(ldn,w_opv(1,iconv+jcol),1,w_opv(1,jcol),1)
+              enddo
+              hsizerst = hsizerst - iconv
+           end if
+           outerrst=.true.
+           dim_subsp = nconv+hsizerst
+           if (verbose > 2) then
+              write(9,*) ' *** Outer-restart update: num_outrst=', num_outrst, &
+                   ',  dim_subsp= ', dim_subsp, ' hsizerst= ', hsizerst  
+           end if !}}}
+        end if
+     else
+        if ( iconv > 0 ) then
+           do jcol = 1, hsizerst - iconv
+              call Zcopy(ldn,w_opv(1,iconv+jcol),1,w_opv(1,jcol),1)
+           enddo
+           hsizerst = hsizerst - iconv
+        end if
+        dim_subsp = nconv+hsizerst
+     end if
+
+     do jcol = 1, hsizerst
+        h_proj(jcol, jcol) = ritz_val(iconv+jcol)
+        do ic = 1, jcol-1
+           h_proj(ic, jcol) = Zzero
+        end do
+     enddo
+#ifdef BETA
+     upperb = max(upperb, ritz_val(hsize)) 
+     lowb0 = min(lowb0, ritz_val(1))
+     if ( nconv >=1 ) then
+        lowb0 = min(lowb0, eval(1))
+     end if
+#endif
+     !..usually ndim >> hsize, it is reasonable to choose the
+     !..current largest ritz value as the lowb (now lowb is set inside the
+     !..following if-else-endif structure)
+
+     if (flag == "appr" .and. (iconv > 0 .or. innerrst .or. outerrst) &
+          .and.  (usize + blksize <= init_size) ) then
+        ! current subspace ietration approach: 
+        ! get vectors from u_init and filter them.
+        ! it may be useful to use a larger lowb since at this stage lowb
+        ! is often within the range of wanted eigenvalues (lowb larger
+        ! than all the wanted eigebvalues is better)
+        !! lowb = ritz_val(hsize)
+        lowb = (ritz_val(iconv+1)*three + ritz_val(hsize)*six)/nine
+        utmp = u_init(:,usize+1:usize+blksize)
+  
+     ! write(9,*) "chebdav: going into small filter 2 "
+#ifdef CPLX
+        call zcheby_filter2(kplp,ldn, blksize, utmp, &
+#else
+        call cheby_filter2(kplp,ldn, blksize, utmp, &
+#endif
+#ifdef BETA
+             v_basis(1,dim_subsp+1), polym, lowb, upperb,lowb0)
+#else
+             v_basis(1,dim_subsp+1), polym, lowb, upperb)
+#endif
+        usize  = usize + blksize
+        num_mv = num_mv + polym*blksize
+        !if (usize+blksize > init_size .and. verbose >= 3) then
+        if (usize+blksize > init_size) then
+           write(9,*) '=========================================='
+           write(9,*) '** Cryptic message #14 :               ***'
+           write(9,*) '** finished using u_init, nconv= ', nconv
+           write(9,*) '=========================================='
+        end if
+     else
+        !..make lowb > any converged eigenvalvalues
+        if (nconv > 0) then
+           lowb = max(ritz_val(iconv+1), eval(nconv))
+        else
+           lowb = ritz_val(iconv+1)
+        end if
+        lowb = (lowb + ritz_val(hsize-1)*six)/seven
+
+     !}}}
+        !.. filter the first blksize non-converged ritz vectors !{{{
+        utmp = v_basis(:,nconv+1:nconv+blksize)
+#ifdef CPLX
+        call zcheby_filter2(kplp,ldn, blksize, utmp, &
+#else
+        call cheby_filter2(kplp,ldn, blksize, utmp, &
+#endif
+#ifdef BETA
+             v_basis(1,dim_subsp+1), polym, lowb, upperb,lowb0)
+#else
+             v_basis(1,dim_subsp+1), polym, lowb, upperb)
+#endif
+     end if
+     num_mv = num_mv + polym*blksize
+     !}}}
+     !.. make the new basis vectors ortho-normal  !{{{
+      ! if (parallel%iammaster) then
+      ! write(9,*) "chebdav: now going into orth_normal after filter2"
+      ! endif
+     !supposedly previous orth_normal calls dealt with  the non augmented basis
+     !vorth = 1
+#ifdef CPLX
+     call zorth_normal(parallel, ldn, ndim, dim_subsp, blksize, v_basis(1,1), vorth, info)
+#else
+     call orth_normal(parallel, ldn, ndim, dim_subsp, blksize, v_basis(1,1), vorth, info)
+#endif
+
+     if (info /= 0) return
+
+     if (verbose > 1) then
+        write(9,117) 'lowb=', lowb, '  upperb=', upperb
+        write(9,116) 'nconv=',nconv,'   hsize=', hsize, &
+             '   dim_subsp=',dim_subsp,' current kactmax=',kactmax
+116     format(1x, a, i5, a, i5, a, i5, a, i5) 
+117     format(1x, a, f11.5, a, f11.5)
+     end if
+
+     if (verbose > 3) then
+!     if (.TRUE.) then
+        write(9,*) 'orth after expansion:'
+#ifdef CPLX
+        call ztest_orthnormal(parallel, ldn, ndim, dim_subsp+blksize, v_basis, isorth, info)
+#else
+        call test_orthnormal(parallel, ldn, ndim, dim_subsp+blksize, v_basis, isorth, info)
+#endif
+        if (info /= 0) return
+     end if
+
+  end do Outer_Loop
+  ! note down the number of truly converged eigen-pairs
+  nconvt = nconv
+
+  if (nconv < nwant .or.  num_iter > max_iter) then
+
+     dim_subsp = min(dim_subsp, n_spdim)
+     if (dim_subsp > nwant)  then
+        dim_subsp = nwant+1
+     else
+        dim_subsp = nwant
+     end if
+     !!dim_subsp = min(dim_subsp, n_spdim, nwant)
+     !
+     ! if exit from the Davidson iteration before full convergence, or
+     ! max_numrst has been reached,  then the v_basis(:, nconv+1:nwant) 
+     ! vectors are not eigenvectors. we make an orthonormal basis out of 
+     ! these vectors. this part is essentially the chebyshev-filtered 
+     ! subspace-iteration without doing further Davidson.
+     !
+     if (nconv > 0) then
+        lowb = max(ritz_val(iconv+1), eval(nconv))
+     else
+        lowb = ritz_val(iconv+1)
+     end if
+     lowb = (lowb + ritz_val(hsize-1)*six)/seven
+      ! write(9,*) "chebdav: filter1 begins. n1,n2=",nconv+1,dim_subsp
+#ifdef CPLX
+     call zcheby_filter1(kplp,ldn, nconv+1, dim_subsp, polym,  &
+#else
+     call cheby_filter1(kplp,ldn, nconv+1, dim_subsp, polym,  &
+#endif
+#ifdef BETA
+          lowb, upperb, num_mv,blksize,lowb0)
+#else
+          lowb, upperb, num_mv,blksize)
+#endif
+
+     hsize = dim_subsp - nconv
+     if (verbose > 2) then
+        write(9,110) 'hsize=',hsize,', dim_subsp=',dim_subsp, &
+                     ', nconv=',nconv
+     end if
+     ! if (parallel%iammaster) then
+      ! write(9,*) "chebdav: orth_normal begins. nconv,hsize=",nconv,hsize
+  ! endif
+     !.. make the new basis vectors ortho-normal
+     !vorth=1
+#ifdef CPLX
+     call zorth_normal(parallel, ldn, ndim, nconv, hsize, v_basis(1,1), vorth, info)
+#else
+     call orth_normal(parallel, ldn, ndim, nconv, hsize, v_basis(1,1), vorth, info)
+#endif
+     if (info /= 0) return       
+
+     !.. compute the projected V'HV corresponding to non-converged
+     !.. vectors in V(:,nconv+1:dim_subsp)
+
+      ! write(9,*) "chebdav: matvec using nconv+1,hsize=",nconv+1,hsize
+     call ZmatvecB(kplp,hsize,v_basis(1,nconv+1), w_opv(1,1),ldn)
+
+      ! write(9,*) "chebdav: gemm with hsize,ndim,maxwsize",hsize,ndim,maxwsize
+#ifdef ITAC
+  call VTBEGIN(vt_chebdav_MM,cheb_ierr)
+#endif
+     call Zgemm(Conjg, 'N', hsize, hsize, ndim, Zone,  &
+          v_basis(1,nconv+1), ldn, w_opv(1, 1), ldn,  &
+          Zzero, h_proj(1, 1), maxwsize )
+
+      ! write(9,*) "chebdav: psum of  maxwsize*hsize=",hsize*maxwsize
+     call Zpsum(h_proj(1, 1), maxwsize*hsize,  &
+          parallel%group_size,  parallel%group_comm)
+
+#ifdef ITAC
+  call VTEND(vt_chebdav_MM,cheb_ierr)
+#endif
+     !
+     ! compute the eigen decomposition of h_proj:
+     !        h_proj * Hevec = Hevec * diag(ritz_val)
+     ! the Hevec is stored in h_proj.
+     !
+#ifdef ITAC
+     call VTBEGIN(vt_chebdav_decomp,cheb_ierr)
+#endif
+#ifdef CPLX
+     call my_zheev('U', hsize, h_proj, maxwsize, ritz_val, infolapack )
+#else
+     call my_dsyev('U', hsize, h_proj, maxwsize, ritz_val, infolapack )
+#endif
+#ifdef ITAC
+     call VTEND(vt_chebdav_decomp,cheb_ierr)
+#endif
+
+     if (infolapack /= 0 ) then
+        write(9,*) 'Error in calling 2nd my_zheev/dsyev from chebdav.f90'
+        write(9,*) ' info = ',infolapack
+        info = infolapack
+        return
+     endif
+
+#ifdef ITAC
+     call VTBEGIN(vt_chebdav_IIupdate,cheb_ierr)
+#endif
+     !
+     ! update the v_basis as the current Ritz vectors:
+     !    v_basis(:,nconv+1: nconv+hsize) =
+     !          v_basis(:,nconv+1:nconv+hsize)*Hevec(:,1:hsize)
+     !
+
+      ! write(9,*) "chebdav: update gemm of ndim,hsize ",ndim,hsize
+     ! v_basis(1:ndim,nconv+1:nconv+hsize)=matmul( &
+     !      v_basis(1:ndim,nconv+1:nconv+hsize),h_proj(1:hsize,1:hsize))
+     ! AJB: Now with MKL, I don't know if all these steps are necessary
+     !#ifndef MKLALLOC
+        allocate(matmul_tmp(ndim, hsize), stat=alcstat)
+        call alccheck('chebdav_matmul_tmp', ndim*hsize, alcstat)
+
+        call Zgemm('N','N',ndim,hsize,hsize,Zone,v_basis(1,nconv+1),ldn,h_proj,maxwsize,Zzero,matmul_tmp,ndim)
+       !call gemm(matmul_tmp,matmul_tmp3,matmul_tmp2)
+
+     do jcol = 1,hsize
+     call Zcopy(ndim,matmul_tmp(1,jcol),1,v_basis(1,nconv+jcol),1)
+     enddo
+
+        deallocate(matmul_tmp)
+! #else
+
+!        call Zmygemm('N','N',ndim,hsize,hsize,Zone,&
+!                     v_basis(1:ndim,nconv+1:nconv+hsize),ndim,&
+!                     h_proj(1:hsize,1:hsize),hsize,&
+!                     Zzero,v_basis(1:ndim,nconv+1:nconv+hsize),ndim)
+! #endif
+#ifdef ITAC
+     call VTEND(vt_chebdav_IIupdate,cheb_ierr)
+#endif
+#ifdef ITAC
+     call VTBEGIN(vt_chebdav_reorder,cheb_ierr)
+#endif
+     ! reorder eigenvalues and eigenvectors. note that both eval()
+     ! and ritz_val() are already in non-increasing order; need to
+     ! merge ritz_val() into eval() and make eval() non-increasing
+     do ic = 1, hsize
+        if (ritz_val(ic) >= eval(nconv)) then
+           if (verbose > 2)  write(9,*) 'no swap necessary in subsp'
+           do jcol = ic, hsize
+              nconv = nconv+1
+              eval(nconv)=ritz_val(jcol)
+           end do
+           exit
+        else
+           if (verbose > 2)  write(9,*) 'need to swap in subsp, ic=',ic
+           call Zcopy(ndim,v_basis(1,nconv+1),1,work(1),1)
+           eval(nconv+1)= eval(nconv)
+           v_basis(1:ndim,nconv+1)=v_basis(1:ndim,nconv)
+           do jcol = nconv, 2, -1
+              if (ritz_val(ic) >= eval(jcol-1)) then
+                 eval(jcol) = ritz_val(ic)
+                 v_basis(1:ndim,jcol)=work(1:ndim)
+                 exit
+              else
+                 eval(jcol)=eval(jcol-1)
+                 v_basis(1:ndim,jcol)=v_basis(1:ndim,jcol-1)
+              end if
+              if (jcol == 2) then
+                 eval(1) = ritz_val(ic)
+                 call Zcopy(ndim,work(1),1,v_basis(1,1),1)
+              end if
+           end do
+           nconv=nconv+1
+        end if
+     end do
+#ifdef ITAC
+     call VTEND(vt_chebdav_reorder,cheb_ierr)
+#endif
+ end if ! if (nconv < nwant .or.  num_iter > max_iter)
+  
+  !! nconvt = nconv  (not particularly important to bookmark the true nconv, due to reduced max_iter)
+  nconvt = max(nconv, nwant)
+
+      ! write(9,*) "chebdav: deallocate h_proj"
+  deallocate(h_proj)
+      ! write(9,*) "chebdav: deallocate w_opv"
+  deallocate(w_opv)
+      ! write(9,*) "chebdav: deallocate ritz_val, work"
+  deallocate(ritz_val, work)
+      ! write(9,*) "chebdav: deallocate utmp"
+  deallocate(utmp)
+  if (allocated(u_init)) deallocate(u_init)
+      ! write(9,*) "chebdav: maybe deallocated u_init"
+
+!  if (verbose > 0) then
+     write(9,*)   '==================================================='
+     !if ( num_mv > max_mv .or. num_iter > max_iter) then
+     if (num_iter > max_iter) then
+        write(9,*)'****** chebdav: not all eigenpairs converged, max_iter reached' 
+     elseif (nwant > nconvt) then
+        write(9,*)'****** chebdav: exit before full convergence ******'
+     else
+        write(9,*)'---------  (approximate) Full convergence in chebdav ------------'  
+     endif
+     write(9,112) ' ndim=', ndim,',  blksize=',blksize, & 
+          ',  n_spdim=',n_spdim
+     write(9,110) " nwant  =", nwant,  ",  nconv=", nconv, &
+                  ",  true nconv= ", nconvt
+     write(9,115) " num_iter =", num_iter, ",  max_iter =", max_iter
+     write(9,115) ' num_mv  =',num_mv, ',   num_restart=', num_restart
+     write(9,110) ' num_outrst =',num_outrst,',   max_outrst =',max_outrst
+     write(9,113) ' conv_tol=',conv_tol,',   ritzmax=', ritzmax
+     write(9,110) ' kactmax =',kactmax, ',   polym=',polym
+     write(9,*)   '==================================================='
+110  format(1x, a, i5, a, i5, a, i5)
+112  format(1x, a, i8, a, i3, a, i5)
+113  format(1x, a, e11.4, a, e11.4)
+115  format(1x, a, i8, a, i8)
+!  endif
+
+  !
+  ! act as if full convergence has been achieved, since 
+  ! nconv should be >=nwant
+  !
+  info = 0
+  init_size = nconv
+  max_mv = num_mv  !max_mv returns the actural matrix-vect prod counts
+
+  write(9,*) "chebdav: done"
+  return
+!
+!---------------------------------------------------------------------
+!
+contains
+  !
+  !===================================================================
+  !
+  !   compute Chebyshev filtered vectors
+  !
+  !      v_basis(:,n1:n2) = (Filter)*v_basis(:,n1:n2)
+  !
+  !  * where v_basis is not passed  as function variable *
+  !    
+  !-------------------------------------------------------------------
+#ifdef CPLX
+  subroutine zcheby_filter1(kplp, ldn, n1, n2, pm, lowb, uppb, mvcount, blk,lowb0)
+#else
+  subroutine cheby_filter1(kplp, ldn, n1, n2, pm, lowb, uppb, mvcount, blk,lowb0)
+#endif
+    use constants
+    implicit none
+    !
+    !  Input/Output variables:
+    !
+    integer, intent(in) :: &
+         kplp, &       ! k-point index
+         ldn, &        ! linear dimension of eigenvectors
+         n1, &         ! lower bound of the filtered subspace
+         n2, &         ! upper bound of the filtered subspace
+         pm, &           ! degree of Chebyshev polynomial
+         blk         !  we use a small block-size blk, which uses at most three size
+                     !  (ldn,blk) work arrays
+                     !  (one can simply set blk=1 to save some memory if necessary)
+
+    !  lower and upper bounds of the full spectrum
+    real(dp),intent(in)  :: lowb, uppb
+    real(dp), intent(in), optional :: lowb0
+    !  count number of mat-vec products for the filtering step
+    integer, intent(inout)  :: mvcount
+    !
+    !  Work variables:
+    !
+    real(dp)  :: e, twoeinv, center, sigma, sigma1, sigma2, sigma1einv
+ 
+!    integer, parameter   :: blk=5
+    SCALAR :: vout(ldn,blk), vnew(ldn,blk), vtmp(ldn,blk)
+
+    integer  :: i, jc, jend, dimtmp, n2_almost
+
+    !
+    !  External subroutines:
+    !
+    intrinsic floor
+
+    !-----------------------------------------------------------------
+
+    e = (uppb - lowb)/two
+    twoeinv = two/e
+    center= (uppb+lowb)/two
+    ! this makes sure the subroutine fits both old and beta versions of chebdav
+    if (.NOT. present(lowb0)) then
+    sigma = e/(lowb - center)
+    else
+    sigma = e/(lowb0 - center)
+    endif
+    sigma1= sigma
+    sigma1einv = sigma1/e
+    vnew(:,:) = Zzero
+    vtmp(:,:) = Zzero
+    vout(:,:) = Zzero
+    !DEBUG:
+   ! ! write(9,*) "CHEBDAV FILTER1:"
+   ! write(9,*) "n1,n2,blk:", n1,n2,blk
+
+    !find how many block-worth of vectors there are
+    dimtmp = floor(real(n2-n1+1,dp)/blk)
+    !dimtmp = floor(real(n2,dp)/blk)
+    n2_almost= n1+dimtmp*blk - 1
+    jend = n2 - (n2 - n1 + 1) 
+        ! the rest go to leftover block down below
+    if(n2_almost > n2) then
+        write(9,*) "filter1: someone coded badly!"
+    endif
+
+    !DEBUG:
+   ! write(9,*) "dimtmp, n2_almost,jend:", dimtmp, n2_almost,jend
+    !in case all vectors are in the leftover block
+    do jc = n1, n2_almost, blk
+    ! write(9,*) "jc=",jc
+       jend = jc - 1 + blk
+
+       call ZmatvecB(kplp,blk,v_basis(1,jc), vout,ldn)
+       mvcount = mvcount+blk
+
+       vout = (vout-center*v_basis(:,jc:jend))*sigma1einv
+
+       vtmp = v_basis(:,jc:jend)
+
+       do i = 2, pm
+
+          sigma2 = one /(two/sigma1 - sigma)
+
+          call ZmatvecB(kplp,blk,vout,vnew,ldn)
+          mvcount = mvcount+blk
+
+          vnew = (vnew-center*vout)*twoeinv - sigma*vtmp
+          vnew = vnew*sigma2
+          vtmp = vout
+          vout = vnew
+          sigma = sigma2 
+
+       end do
+
+       v_basis(:,jc:jend)=vout
+
+    end do
+    
+    !leftover block:
+
+
+       dimtmp = n2 - jend 
+
+      ! write(9,*) "Done loop. jc(now), jend, dimtmp", jc, jend,dimtmp
+   ! write(9,*) "n2-dimtmp+1,n2", n2-dimtmp+1,n2
+    !  filter the remaining vectors (if any) 
+    if (dimtmp > 0) then
+       call ZmatvecB(kplp,dimtmp,v_basis(1,n2-dimtmp+1), vout(1,1),ldn)
+       mvcount  = mvcount+dimtmp
+
+       vout(:,1:dimtmp)=(vout(:,1:dimtmp) -  &
+                         center*v_basis(:,n2-dimtmp+1:n2))*sigma1einv
+
+       vtmp(:,1:dimtmp)= v_basis(:,n2-dimtmp+1:n2)
+
+       do i = 2, pm
+
+          sigma2 = one /(two/sigma1 - sigma)
+
+          call ZmatvecB(kplp,dimtmp,vout, vnew,ldn)
+
+          mvcount = mvcount+dimtmp
+
+          vnew(:,1:dimtmp) = (vnew(:,1:dimtmp) -   &
+                             center*vout(:,1:dimtmp))*twoeinv -   &
+                             sigma*vtmp(:,1:dimtmp)
+          vnew(:,1:dimtmp) = vnew(:,1:dimtmp)*sigma2
+          vtmp(:,1:dimtmp) = vout(:,1:dimtmp)
+          vout(:,1:dimtmp) = vnew(:,1:dimtmp)
+          sigma = sigma2 
+
+       end do
+       v_basis(:,n2-dimtmp+1:n2)=vout(:,1:dimtmp)
+    end if
+#ifdef CPLX
+  end subroutine zcheby_filter1
+#else
+  end subroutine cheby_filter1
+#endif
+  !
+  !===================================================================
+  !
+  !  compute Chebyshev filtered vectors
+  !
+  !     vout(:,1:blk) = (Filter)*vin(:,1:blk)
+  !
+  !-------------------------------------------------------------------
+#ifdef CPLX
+  subroutine zcheby_filter2(kplp, ldn, blk, vin, vout, pm, low, high, lowb0)
+#else
+  subroutine cheby_filter2(kplp, ldn, blk, vin, vout, pm, low, high, lowb0)
+#endif
+    use constants
+    implicit none
+    !
+    !  Input/Output variables:
+    !
+    integer, intent(in) :: &
+         kplp, &       ! k-point index
+         ldn, &        ! linear dimension of eigenvectors
+         blk, &        ! size of subspace (number of filtered vectors)
+         pm            ! degree of Chebyshev polynomial
+    !  lower and upper bounds of the full spectrum
+    real(dp),intent(in)  :: low, high
+    real(dp), intent(in), optional :: lowb0
+    !  input/output filtered vectors
+    SCALAR, intent(in)  :: vin(ldn, blk)
+    SCALAR, intent(out) :: vout(ldn, blk)
+    !
+    !  Work variables:
+    !
+    real(dp)  :: e, twoeinv, center, sigma, sigma1, sigma_new, sigma1einv
+    SCALAR  :: vnew(ldn, blk),  vtmp(ldn, blk)
+    integer   :: i
+
+    e = (high - low)/two
+    twoeinv = two/e
+    center= (high+low)/two
+    ! this makes sure the subroutine fits both old and beta versions of chebdav
+    if (.NOT. present(lowb0)) then
+    sigma = e/(low - center)
+    else
+    sigma = e/(lowb0 - center)
+    endif
+    sigma1= sigma
+    sigma1einv = sigma1/e
+    vnew(:,:) = Zzero
+    vtmp(:,:) = Zzero
+    vout(:,:) = Zzero
+
+    call ZmatvecB(kplp,blk,vin,vout,ldn)
+
+    vout = (vout - center*vin)* sigma1einv
+
+    vtmp = vin
+
+    do i = 2, pm
+
+       sigma_new = one /(two/sigma1 - sigma)
+
+       call ZmatvecB(kplp,blk,vout,vnew,ldn)
+
+       vnew = (vnew-center*vout)*twoeinv - sigma*vtmp
+       vnew = vnew*sigma_new
+       vtmp = vout
+       vout = vnew
+
+       sigma = sigma_new 
+
+    end do
+
+#ifdef CPLX
+  end subroutine zcheby_filter2
+  !
+end  subroutine zchebdav_diag
+#else
+  end subroutine cheby_filter2
+  !
+end  subroutine chebdav_diag
+#endif
+!
+!===================================================================
+!
+! Test if the input V(:, 1:vsize) is ortho-normal
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine ztest_orthnormal(  &
+#else
+subroutine test_orthnormal(  &
+#endif
+     parallel, ldn, ndim, vsize, V,  notorthnormal, info)
+
+  use parallel_data_module
+  implicit none
+
+  !
+  !  Input/Output variables:
+  !
+  !.. ldn          --- (input) leading dimension of V
+  !.. ndim         --- (input) dimension of vectors in V
+  !.. vsize        --- (input) column size of V
+  !.. V            --- (input) array of size (ndim, vsize)
+  !.. notorthnormal--- (output) notorthnormal =0 if V ortho-normal
+  !..                   if V not ortho-normal, notorthnormal counts
+  !..                   how many entries in the lower triangluar part 
+  !..                   of V'V are different from that of I 
+  !..
+
+  type (parallel_data), intent(in) :: parallel
+  integer,  intent(in) ::  ldn, ndim, vsize
+  SCALAR, intent(in) ::  V(ldn, vsize)
+  integer, intent(out) ::  notorthnormal
+  !..  error flag
+  integer, intent(out) :: info
+  !
+  !  Work variables:
+  !
+  real(dp), parameter :: eps=2.22044605D-16
+
+  integer  irow, jcol, notnormal, notorth, orth
+
+  SCALAR :: work(vsize, vsize)
+
+  !
+  !  Internal and external functions:
+  !
+  ! intrinsic  abs
+  external  Zgemm
+
+  !
+  !-------------------------------------------------------------------
+  !
+  !.... compute work = V(:,1:vsize)'* V(:,1:vsize)
+  call Zgemm(Conjg, 'N', vsize, vsize, ndim, Zone, V, ldn, &
+       V, ldn, Zzero, work, vsize)
+
+  call Zpsum(work, vsize*vsize, parallel%group_size,  &
+       parallel%group_comm)
+
+  !
+  !if fully ortho-normal to working precision, notorthnormal returns 0.
+  !notorthnormal returns how many vectors in V are not normal and not 
+  !orthogonal to other vectors (the number should have been separated, 
+  !but it is just a test of orthnormality so I just do it in a simple way)
+  !
+  notorthnormal =0
+  notnormal =0
+  notorth =0
+  do  jcol = 1, vsize
+
+     if (abs(work(jcol, jcol) - Zone) > eps*ndim) then
+        write(9,222) 'Not normal:  || v_', jcol,'||_2 =', &
+#ifdef CPLX
+             real(work(jcol, jcol),dp),aimag(work(jcol,jcol))
+#else
+             work(jcol,jcol)
+#endif
+        notnormal = notnormal +1
+     endif
+  enddo
+  do  jcol = 1, vsize
+     orth = 1
+     do irow = jcol+1, vsize
+        if (abs(work(irow,jcol)) > eps*ndim) then
+           orth = 0
+           write(9, 223) 'Not orthogonal: orthnrm(<', irow,',', &
+#ifdef CPLX
+                jcol,  ' >) =', real(work(irow,jcol),dp),aimag(work(irow,jcol))
+#else
+                jcol,  ' >) =', work(irow,jcol)
+#endif
+        endif
+     enddo
+     if (orth == 0) notorth = notorth +1
+  enddo
+
+#ifdef CPLX
+222 format(1x, A, i5, A, 2e13.6)
+223 format(1x, A, i5, A, i5, A, 2e13.6)
+#else
+222 format(1x, A, i5, A, e13.6)
+223 format(1x, A, i5, A, i5, A, e13.6)
+#endif
+
+  write(9,*) "  notnormal =", notnormal, ",  notorth =", notorth
+  notorthnormal = notnormal + notorth
+  if (notorthnormal == 0 ) then
+     info = 0
+     write(9,*) "  the tested basis is ortho-normal "
+  else
+     !..always exit when the basis is not ortho-normal because
+     !..there is no sense to continue
+     write(9,*) "*** the tested basis is *NOT* ortho-normal ***"
+     write(9,*) "*** must need an ortho-normal basis to continue ***"
+     info = -40
+     return
+  endif
+  write(9,*)
+
+#ifdef CPLX
+end subroutine ztest_orthnormal
+#else
+end subroutine test_orthnormal
+#endif

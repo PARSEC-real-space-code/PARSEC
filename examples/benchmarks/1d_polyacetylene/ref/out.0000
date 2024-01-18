@@ -1,0 +1,262 @@
+ Processor No            0   has started
+ Number of processors:            8
+ Number of threads/processor: *** No openMP support
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+  survived first allreduce
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is       17696
+  reduced size is        17696
+  maximum distance between grid points and their images is
+   0.4327E-15  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node            1
+ The local dimension is :        8848
+ INTERIOR POINTS Mvec, PreCond (           0        5760 ) 
+ WARNING, NO MATVEC INTERIOR POINTS
+ CURRENT SYSTEM SIZE/PE RATIO NOT RECOMMENDED
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ send PE            1  #rows:        8848
+ I communicate with            1  processors, a total of         8848  elements
+ Also, I receive from these procs:         8848  elements
+ 
+ topo_aware: I am now aware that I communicate with           1 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          580
+ 
+ Sizes of all non-local blocks 
+   580   580   372   372
+ 
+ Transform atoms           4
+ My number of non-local rows:          952  of total         1904
+ My number of rows in WS sphere:            0  of total            0
+# Poisson solver, return code =   0  convergence rate =   0.5876E-01
+ # reported residual norm:   1.230538227918574E-004
+ # euclidean norm of lap(pot):   8.685233560755223E-005
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.5296E-01
+ # reported residual norm:   8.892476089917116E-005
+ # euclidean norm of lap(pot):   6.284367216900415E-005
+ allocating both dwvec and zwvec of size (why!):       17697
+  eigval (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          16          16           0
+Chebdav flag=new , nec( 1)=    0
+ CHEBDAV: computed upper bound=   254.537177798164       lowb=
+   78.0023561316929     
+  % ===== num_iteration =           1
+ ritzmax=   5.70413869140465      tol_loc=  5.704138691404648E-004
+ residual_norm(   1)= 0.46065E+01   Ritz_Val(   1)= 0.26451E+01
+ lowb=    4.72018  upperb=  254.53718
+ nconv=    0   hsize=    5   dim_subsp=    5 current kactmax=   28
+  % ===== num_iteration =           2
+ ritzmax=   7.00851994689888      tol_loc=  7.008519946898879E-004
+ residual_norm(   1)= 0.51875E+00   Ritz_Val(   1)=-0.18061E+01
+ lowb=    5.32654  upperb=  254.53718
+ nconv=    0   hsize=   10   dim_subsp=   10 current kactmax=   28
+  % ===== num_iteration =           3
+ ritzmax=   7.55225306045433      tol_loc=  7.552253060454327E-004
+ residual_norm(   1)= 0.75673E-01   Ritz_Val(   1)=-0.18957E+01
+ lowb=    6.07364  upperb=  254.53718
+ nconv=    0   hsize=   15   dim_subsp=   15 current kactmax=   28
+  % ===== num_iteration =           4
+ ritzmax=   8.05692128672317      tol_loc=  8.056921286723166E-004
+ residual_norm(   1)= 0.13054E-01   Ritz_Val(   1)=-0.18976E+01
+ lowb=    6.45988  upperb=  254.53718
+ nconv=    0   hsize=   20   dim_subsp=   20 current kactmax=   28
+ >>> CHEBDAV: Inner restart. num_restart=           1
+ hsize=          25 hsizerst=          20 dim_subsp=          25
+  % ===== num_iteration =           5
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   1)= 0.20203E-02   Ritz_Val(   1)=-0.18976E+01
+ lowb=    6.68193  upperb=  254.53718
+ nconv=    0   hsize=   25   dim_subsp=   20 current kactmax=   28
+ >>> CHEBDAV: Inner restart. num_restart=           2
+ hsize=          25 hsizerst=          20 dim_subsp=          25
+  % ===== num_iteration =           6
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   1)= 0.28013E-03   Ritz_Val(   1)=-0.18976E+01
+ residual_norm(   2)= 0.49248E-01   Ritz_Val(   2)=-0.13609E+01
+ lowb=    3.16938  upperb=  254.53718
+ nconv=    1   hsize=   25   dim_subsp=   20 current kactmax=   28
+ >>> CHEBDAV: Inner restart. num_restart=           3
+ hsize=          24 hsizerst=          20 dim_subsp=          25
+  % ===== num_iteration =           7
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   2)= 0.57562E-02   Ritz_Val(   1)=-0.13615E+01
+ lowb=    2.92650  upperb=  254.53718
+ nconv=    1   hsize=   24   dim_subsp=   21 current kactmax=   28
+ >>> CHEBDAV: Inner restart. num_restart=           4
+ hsize=          25 hsizerst=          20 dim_subsp=          26
+  % ===== num_iteration =           8
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   2)= 0.49938E-03   Ritz_Val(   1)=-0.13615E+01
+ residual_norm(   3)= 0.50639E-03   Ritz_Val(   2)=-0.10995E+01
+ residual_norm(   4)= 0.10611E-03   Ritz_Val(   3)=-0.96844E+00
+ residual_norm(   5)= 0.22276E-03   Ritz_Val(   4)=-0.96421E+00
+ residual_norm(   6)= 0.69683E-01   Ritz_Val(   5)=-0.21373E+00
+  *** Outer-restart: num_outrst=           1 ,  dim_subsp=           18 
+  hsizerst=           17
+  *** Outer-restart update: num_outrst=           1 ,  dim_subsp=           18 
+  hsizerst=           13
+ lowb=    3.28908  upperb=  254.53718
+ nconv=    5   hsize=   25   dim_subsp=   18 current kactmax=   28
+  % ===== num_iteration =           9
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   6)= 0.13562E-01   Ritz_Val(   1)=-0.21494E+00
+ lowb=    3.28304  upperb=  254.53718
+ nconv=    5   hsize=   18   dim_subsp=   23 current kactmax=   28
+  % ===== num_iteration =          10
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   6)= 0.18312E-02   Ritz_Val(   1)=-0.21500E+00
+  *** Outer-restart: num_outrst=           2 ,  dim_subsp=           18 
+  hsizerst=           13
+  *** Outer-restart update: num_outrst=           2 ,  dim_subsp=           18 
+  hsizerst=           13
+ lowb=    5.01302  upperb=  254.53718
+ nconv=    5   hsize=   23   dim_subsp=   18 current kactmax=   28
+  % ===== num_iteration =          11
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   6)= 0.30021E-03   Ritz_Val(   1)=-0.21501E+00
+ residual_norm(   7)= 0.87231E-03   Ritz_Val(   2)=-0.56372E-01
+  *** Outer-restart: num_outrst=           3 ,  dim_subsp=           18 
+  hsizerst=           13
+  *** Outer-restart update: num_outrst=           3 ,  dim_subsp=           18 
+  hsizerst=           12
+ lowb=    2.53916  upperb=  254.53718
+ nconv=    6   hsize=   18   dim_subsp=   18 current kactmax=   28
+  % ===== num_iteration =          12
+ ritzmax=   8.45220572171668      tol_loc=  8.452205721716685E-004
+ residual_norm(   7)= 0.16268E-03   Ritz_Val(   1)=-0.56373E-01
+ residual_norm(   8)= 0.44301E-03   Ritz_Val(   2)= 0.94654E-01
+ residual_norm(   9)= 0.51519E-03   Ritz_Val(   3)= 0.10404E+00
+ residual_norm(  10)= 0.35359E-03   Ritz_Val(   4)= 0.16635E+00
+ residual_norm(  11)= 0.10497E-02   Ritz_Val(   5)= 0.23906E+00
+ hsize=    7, dim_subsp=   17, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    8848,  blksize=  5,  n_spdim=   28
+  nwant  =   16,  nconv=   17,  true nconv=    17
+  num_iter =      12,  max_iter =     128
+  num_mv  =    1405,   num_restart=       7
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.8452E+01
+  kactmax =   28,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         1405  nec =           17
+  nstate =           16  info =            0
+ 
+ symm_scalar fsym collection [sec]:       0.01
+ 
+ symm_scalar total time [sec]:       0.01
+# Poisson solver, return code =   0  convergence rate =   0.5232E-01
+ # reported residual norm:   4.922203027621996E-006
+ # euclidean norm of lap(pot):   3.557733885644537E-006
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.61432E+00  upperb= 0.25392E+03  maxritz= 0.16753E+01  polym=15
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5335E-01
+ # reported residual norm:   1.179730146770134E-006
+ # euclidean norm of lap(pot):   8.353644652974886E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.67142E+00  upperb= 0.25536E+03  maxritz= 0.14952E+01  polym=15
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5317E-01
+ # reported residual norm:   8.142713733105464E-007
+ # euclidean norm of lap(pot):   5.784229440279759E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.73445E+00  upperb= 0.25268E+03  maxritz= 0.14996E+01  polym=15
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5323E-01
+ # reported residual norm:   3.201923127286880E-007
+ # euclidean norm of lap(pot):   2.272118665270662E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.73445E+00  upperb= 0.25305E+03  maxritz= 0.14817E+01  polym=15
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5346E-01
+ # reported residual norm:   1.265189199444141E-007
+ # euclidean norm of lap(pot):   8.945730456621761E-008
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.74945E+00  upperb= 0.25753E+03  maxritz= 0.14895E+01  polym=15
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5293E-01
+ # reported residual norm:   5.331368976891951E-008
+ # euclidean norm of lap(pot):   3.760134323672792E-008
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          15          15          10
+  kssmax=  15  kssmax0=  15  ncomp=  15  ncompcnt=  15  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.74945E+00  upperb= 0.25378E+03  maxritz= 0.14872E+01  polym=14
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+# Poisson solver, return code =   0  convergence rate =   0.5281E-01
+ # reported residual norm:   1.504932840083657E-008
+ # euclidean norm of lap(pot):   1.063504477635263E-008
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =           58
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =          522
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

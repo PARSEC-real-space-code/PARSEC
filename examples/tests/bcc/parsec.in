@@ -1,0 +1,45 @@
+# Bulk vanadium
+
+Boundary_Conditions: Bulk
+
+begin Cell_shape
+ -0.5000    0.5000    0.5000
+  0.5000   -0.5000    0.5000
+  0.5000    0.5000   -0.5000
+end cell_shape
+
+lattice_vector_scale  5.71
+ 
+Coordinate_Unit: Cartesian_Ang
+
+kpoint_method none
+
+Grid_Spacing:  0.7
+
+States_Num: 10 
+
+Mixing_Method: Broyden
+
+spin_polarization .true.
+
+begin save_wfn_bands
+1 10
+end save_wfn_bands
+
+Atom_Types_Num:  1
+
+#------------ new atom type ---------------- 
+Atom_Type: V
+Pseudopotential_Format: Martins_new
+Local_Component: s
+
+initial_spin_polarization 0.2
+
+ldaplusu_u 1.0 eV
+output_level 3
+
+begin Atom_Coord
+ 0.00   0.00   0.00
+end Atom_Coord
+
+#------------ end of atom type ------------- 

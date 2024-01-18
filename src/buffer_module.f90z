@@ -1,0 +1,677 @@
+#include "mycomplex.h"
+
+!#ifndef MPI
+!Choked! you want serial parsec? (WHY??) let me know.
+!#endif
+
+module Zbuffer_module
+! insert proper header
+!
+!
+! Communication buffer for neighbor exchange in laplacian.
+! This could be supplemented with mpi_buffer_attach to allow 
+! optimization of communication
+!
+
+use constants
+implicit none
+
+! ============ Neighbors communication buffer  data structure ==========
+type lap_buffer
+        ! a communication buffer for the neighbor exchange in matvec
+        !send buffer
+        SCALAR, dimension(:), pointer :: send
+
+        !receive buffer
+        SCALAR, dimension(:), pointer :: receive
+
+        !  seems like pointers are better in this case
+        !  SCALAR, allocatable, dimension(:) :: send
+        !  SCALAR, allocatable, dimension(:) :: receive
+
+        ! crude write protect
+        logical :: protect
+
+        integer :: vec_num
+        integer :: request_number
+
+#ifdef NEIGHCOLLETIVE
+        integer :: request
+#else
+        integer, dimension(:), allocatable :: request
+#endif
+
+end type lap_buffer
+
+
+! ======= Non-local Kleinman-Bylander dot product buffer data structure =====
+type nloc_buffer
+        ! a communication buffer for the neighbor exchange in matvec
+        !single buffer (using MPI_IN_PLACE for the reduce)
+        SCALAR, dimension(:,:), pointer :: kbdots
+
+        ! crude write protect
+        !logical :: protect
+
+        !size of kbdots 
+        integer :: nlm
+
+        integer :: blksize
+        integer :: request
+
+end type nloc_buffer
+
+
+
+
+
+contains
+
+
+subroutine set_max_buffers(maxbuffers, parallel)
+        use parallel_data_module
+        implicit none
+        integer, intent(in) :: maxbuffers
+        type(parallel_data), intent(inout) :: parallel
+
+        if (maxbuffers > 0) then
+                parallel%max_lap_buffers = maxbuffers
+        else
+                parallel%max_lap_buffers = 2
+        endif
+end subroutine set_max_buffers
+
+
+
+
+subroutine init_lap_buffer(buffer)
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        type(lap_buffer), intent(inout) :: buffer
+
+        nullify(buffer%send) 
+        nullify(buffer%receive)
+        buffer%protect = .false.
+        buffer%request_number = 0
+        buffer%vec_num = 0
+end subroutine init_lap_buffer
+
+
+
+
+subroutine init_nloc_buffer(buffer)
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        type(nloc_buffer), intent(inout) :: buffer
+
+        nullify(buffer%kbdots)
+#ifdef MPI
+        buffer%request = MPI_REQUEST_NULL
+#endif
+        !buffer%protect = .false.
+        buffer%blksize = 0
+        buffer%nlm = 0
+end subroutine init_nloc_buffer
+
+
+
+
+subroutine destroy_lap_buffer(buffer)
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        type(lap_buffer), intent(inout) :: buffer
+        integer :: mpinfo
+
+        if (buffer%protect) then
+                write(*,*) 'CRITICAL!!! in: destroy_buffer - buffer &
+                        &write protected'
+                write(9,*) "destroy_buffer critical error: my buffer &
+                        &was write protected, num:",buffer%vec_num
+                call myflush(9)
+#ifdef MPI
+                call MPI_Abort(MPI_COMM_WORLD, -1, mpinfo)
+#endif
+        endif
+
+        if (associated(buffer%send)) deallocate(buffer%send)
+        if (associated(buffer%receive)) deallocate(buffer%receive)
+
+#ifndef NEIGHCOLLETIVE
+        if (allocated(buffer%request)) deallocate(buffer%request)
+#endif
+end subroutine destroy_lap_buffer
+
+
+
+
+
+subroutine destroy_nloc_buffer(buffer)
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        type(nloc_buffer), intent(inout) :: buffer
+        integer :: mpinfo
+
+        !write(9,*) "before destroying doing another mpi_wait"
+        !call buff_nloc_iallreduce_check(buffer)
+        !write(9,*) "OK"
+        !if (buffer%protect) then
+        ! write(*,*) 'CRITICAL!!! in: destroy_buffer - buffer write protected'
+        ! write(9,*) "destroy_buffer critical error: my buffer was write protected, num:",buffer%vec_num
+        !    call myflush(9)
+        !    call MPI_ABORT(MPI_COMM_WORLD,-1,mpinfo) 
+        ! endif
+
+        if (associated(buffer%kbdots)) deallocate(buffer%kbdots)
+end subroutine destroy_nloc_buffer
+
+
+
+subroutine allocate_lap_buffer(buffer,parallel)
+        use parallel_data_module
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+
+        type(lap_buffer), intent(inout) :: buffer
+        type(parallel_data), intent(in) :: parallel
+        integer :: alcstat
+
+        ! basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+        allocate(buffer%send (parallel%maxcomm),stat=alcstat)
+        call alccheck('buffersend', parallel%maxcomm,alcstat)
+        allocate(buffer%receive (parallel%maxcomm2),stat=alcstat)
+        call alccheck('bufferreceive', parallel%maxcomm2,alcstat)
+
+#ifndef NEIGHCOLLETIVE
+        allocate(buffer%request(0:2*parallel%group_size), stat=alcstat)
+        call alccheck('bufferrequest', 2*parallel%group_size+1 ,alcstat)
+#endif
+
+#ifdef MPI
+        buffer%request = MPI_REQUEST_NULL
+#endif
+
+end subroutine allocate_lap_buffer
+
+
+
+subroutine allocate_nloc_buffer(buffer,nlm,blksize)
+        implicit none
+        type(nloc_buffer), intent(inout) :: buffer
+        integer, intent(in) :: nlm
+        integer, intent(in) :: blksize
+        integer :: alcstat
+
+        allocate(buffer%kbdots(nlm,blksize), stat=alcstat)
+        call alccheck('kbdots', nlm*blksize, alcstat)
+
+        buffer%blksize = blksize
+        buffer%nlm = nlm
+end subroutine allocate_nloc_buffer
+     
+
+
+
+subroutine lap_buff_write_protect(buffer)
+        implicit none
+        type(lap_buffer), intent(inout) :: buffer
+        buffer%protect = .true.
+end subroutine lap_buff_write_protect
+
+
+
+
+
+subroutine lap_buff_write_release(buffer)
+        implicit none
+        type(lap_buffer), intent(inout) :: buffer
+        buffer%protect = .false.
+end subroutine lap_buff_write_release
+
+
+
+
+subroutine Zbuff_lap_pack_and_comm(parallel, lap_buff, p, current, &
+                tobuff, blksize, ldn)
+
+        use constants
+        use parallel_data_module
+        implicit none
+        !
+        !  Input/Output variables:
+        !
+        type (parallel_data), intent(in) :: parallel
+        type (lap_buffer), intent(inout) :: lap_buff
+        !
+        !
+        ! the column of p that is going to be calculated on
+        integer, intent(in) :: current
+
+        ! the column of p that we are exchanging data for
+        integer, intent(in) :: tobuff
+
+        ! width of p
+        integer, intent(in) :: blksize
+
+        ! length of a p vector
+        integer, intent(in) :: ldn
+
+        SCALAR, intent(in) :: p(ldn,blksize) ! p is p
+  
+        !basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+        call Zbuff_lap_pack(parallel,lap_buff,p,current,tobuff,blksize,ldn)
+        call Zbuff_lap_comm(parallel,lap_buff)
+
+end subroutine Zbuff_lap_pack_and_comm
+
+
+
+
+subroutine Zbuff_lap_pack(parallel,lap_buff,p,current,tobuff,blksize,ldn)
+        use constants
+        use parallel_data_module
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        !
+        !  Input/Output variables:
+        !
+        !
+        type (parallel_data), intent(in) :: parallel
+        type (lap_buffer), intent(inout) :: lap_buff
+        !
+        !
+        integer, intent(in) :: current !the column of p that is going to be calculated on
+        integer, intent(in) :: tobuff !the column of p that we are exchanging data for
+        integer, intent(in) :: blksize !total width of p
+        integer, intent(in) :: ldn !length of a p vector
+        !
+        SCALAR, intent(in) :: p(ldn,blksize) ! p is p
+        !
+        !
+        ! Work variables
+        !
+        integer :: inode,jst,jelem,j_comm,mpinfo
+
+        !basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+        if (lap_buff%protect) then
+                write(9,*) "buff_lap_pack error: my buffer was write &
+                        &protected (",lap_buff%vec_num, ")"
+                call myflush(9)
+#ifdef MPI
+                call MPI_ABORT(MPI_COMM_WORLD,-1,mpinfo) 
+#endif
+        endif
+
+        !Data packing - but only if needed based on the distance 
+        !between the current and next vectors in the buffer space
+        ! the check is done inside this routine so that the openmp block 
+        ! is well defined with no explicit branches
+        if (tobuff > blksize) then
+                write(9,*) "buff_lap_pack: I refuse to pack this buffer (",tobuff,")"
+                return
+        endif
+
+        do inode = 0,parallel%countcomm-1
+                jst   = parallel%jsendp(parallel%sources(inode))-1
+                jelem = parallel%jsendp(parallel%sources(inode)+1) - jst - 1
+
+                ! Manual packing
+                do j_comm = 1, jelem
+                        lap_buff%send(j_comm+parallel%sdispls(inode)) = &
+                                p(parallel%senrows(j_comm+jst),tobuff)
+                enddo
+        enddo
+        !
+        ! Add information about the tobuff that you just buffered
+        ! currently only within blksize. 
+        ! TODO/maybe : higher level awareness?
+        if (current > tobuff) then !ugly hack for labeling
+                lap_buff%vec_num=current
+        else
+                lap_buff%vec_num=tobuff
+        endif
+
+end subroutine Zbuff_lap_pack
+
+
+
+
+subroutine Zbuffer_lap_unpack(parallel,workvec,lap_buff)
+
+    use constants
+    use parallel_data_module
+    implicit none
+  !
+  !  Input/Output variables:
+  !
+  !
+  type (parallel_data), intent(in) :: parallel
+  type (lap_buffer), intent(in) :: lap_buff 
+  ! sorry, still huge vector since comm neigh can
+  SCALAR, intent(inout) :: workvec(parallel%nwedge+1)
+  !
+  !
+  ! Work variables
+  !
+  integer :: inode,jst,jelem,j_comm
+  !
+    !basic protection against 1 PE jobs
+  if (parallel%group_size == 1) return
+
+    do inode = 0,parallel%countcomm-1
+        jst   = parallel%irecvp(parallel%destinations(inode))-1
+        jelem = parallel%irecvp(parallel%destinations(inode)+1) - jst - 1
+        ! Manual unpacking
+        do j_comm = 1, jelem
+            workvec(parallel%irecvp(parallel%destinations(inode))+j_comm-1)=lap_buff%receive(parallel%rdispls(inode)+j_comm)
+        enddo
+    enddo
+
+     ! done unpacking
+end subroutine Zbuffer_lap_unpack
+
+
+
+
+
+subroutine Zbuff_lap_comm(parallel,lap_buff)
+        !========================Communication part======================!
+        use constants
+        use parallel_data_module
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+
+        type(parallel_data), intent(in) :: parallel
+        type(lap_buffer), intent(inout) :: lap_buff
+        integer :: mpinfo
+
+        !this ifdef could be switched to runtime check
+
+#ifdef NEIGHCOLLETIVE
+        integer :: nonblock_req
+#else
+        integer :: msgtype
+        integer :: icomm,inode
+        integer :: req(0:2*parallel%group_size)
+#endif
+
+         ! write(*,*) "sending", parallel%sendcounts
+         ! write(*,*) lap_buff%send
+
+        !basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+#ifdef MPI
+
+#ifdef NEIGHCOLLETIVE
+        ! Non-blocking mode:
+        call MPI_Ineighbor_alltoallv(lap_buff%send, parallel%sendcounts, &
+                parallel%sdispls, MPI_DOUBLE_SCALAR, &
+                lap_buff%receive, parallel%recvcounts, &
+                parallel%rdispls, MPI_DOUBLE_SCALAR,&
+                parallel%group_comm_topo, nonblock_req, mpinfo)
+
+        ! copy req to buffer struct
+        lap_buff%request = nonblock_req
+        lap_buff%request_number = 1
+
+        call lap_buff_write_protect(lap_buff)
+
+#else
+
+        icomm = 0
+        req(:) = 0
+
+        ! manually post receives
+        do inode = 0, parallel%countcomm-1
+                msgtype = 777 + parallel%destinations(inode)
+
+                call MPI_Irecv(lap_buff%receive(1+parallel%rdispls(inode)), &
+                        parallel%recvcounts(inode), MPI_DOUBLE_SCALAR, &
+                        parallel%destinations(inode), msgtype, &
+                        parallel%group_comm_topo, req(icomm), mpinfo)
+
+                icomm = icomm + 1
+        enddo
+
+        ! manually post sends
+        do inode = 0, parallel%countcomm-1
+                msgtype = 777 + parallel%group_iam
+
+                call MPI_Isend(lap_buff%send(1+parallel%sdispls(inode)), &
+                        parallel%sendcounts(inode), MPI_DOUBLE_SCALAR, &
+                        parallel%sources(inode), msgtype, &
+                        parallel%group_comm_topo, req(icomm), mpinfo)
+
+                icomm = icomm + 1
+        enddo
+
+        ! copy req to buffer struct
+        lap_buff%request = req
+        lap_buff%request_number = icomm
+
+        call lap_buff_write_protect(lap_buff)
+
+#endif
+
+#endif
+
+end subroutine Zbuff_lap_comm
+
+
+
+
+subroutine buff_lap_just_test_comm(lap_buff,parallel)
+        use parallel_data_module
+        use constants
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+        type(lap_buffer), intent(inout) :: lap_buff
+        type(parallel_data), intent(in) :: parallel
+
+        !  logical, intent(out) :: answer
+        logical :: answer
+
+#ifdef MPI
+
+#ifdef NEIGHCOLLETIVE
+        integer :: comm_status(MPI_STATUS_SIZE)
+#else
+        integer :: comm_status(MPI_STATUS_SIZE, lap_buff%request_number)
+#endif
+
+#endif
+
+        integer :: mpinfo
+
+        ! basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+#ifdef MPI
+
+#ifdef NEIGHCOLLETIVE
+        call MPI_Test(lap_buff%request, answer, comm_status, mpinfo)
+#else
+        call MPI_Testall(lap_buff%request_number, lap_buff%request, &
+                answer, comm_status, mpinfo)
+#endif
+
+#endif
+
+        if (answer) then
+                call lap_buff_write_release(lap_buff)
+        endif
+
+end subroutine buff_lap_just_test_comm
+
+
+
+
+subroutine buff_lap_check_comm(lap_buff, vec_num, parallel)
+!subroutine buff_lap_check_comm(lap_buff,answer,just_test)
+        use parallel_data_module
+        use constants
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+
+        ! does mpi test if check_mode is test
+        ! if done removes write protect from buffer
+        type(lap_buffer), intent(inout) :: lap_buff
+        type(parallel_data), intent(in) :: parallel
+
+        ! compare this number with the one in the buffer
+        integer, intent(in) :: vec_num
+
+        !  logical, intent(out) :: answer
+        !  logical, optional, intent(in) :: just_test
+        !
+        ! work variables:
+        !
+#ifdef MPI
+
+#ifdef NEIGHCOLLETIVE
+        integer :: comm_status(MPI_STATUS_SIZE)
+#else
+        integer :: comm_status(MPI_STATUS_SIZE,lap_buff%request_number)
+#endif
+
+#endif
+        integer :: mpinfo
+
+        ! basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+        ! if (present(just_test)) then
+        !     if (just_test) then
+        !         call MPI_TESTALL(lap_buff%request_number, lap_buff%request, answer, comm_status, mpinfo)
+        !         if (answer) then
+        !         call lap_buff_write_release(lap_buff)
+        !         endif
+        !         return
+        !     endif
+        ! endif
+
+        if (lap_buff%vec_num /= vec_num) then
+                write(9,*) "buff_lap_check_comm: got -", &
+                        lap_buff%vec_num, "while expecting", vec_num
+                write(9,*) "buff_lap_check_comm: I got a vector that &
+                        &I did not expect"
+                call myflush(9)
+                !call MPI_ABORT(MPI_COMM_WORLD,-1,mpinfo) 
+        endif
+
+#ifdef MPI
+
+#ifdef NEIGHCOLLETIVE
+        call MPI_Wait(lap_buff%request, comm_status, mpinfo)
+#else
+        call MPI_Waitall(lap_buff%request_number, lap_buff%request, &
+                comm_status, mpinfo)
+#endif
+
+#endif
+        !       write(9,*) "lap_buff_check_comm: mpinfo - ", mpinfo
+        !       write(9,*) "lap_buff_check_comm: status - ", comm_status
+        !    answer=.TRUE.
+        ! does mpi wait if check_mode is wait
+        ! removes write protect from buffer since done
+
+        call lap_buff_write_release(lap_buff)
+        !write(9,*) "lap_buff_check_comm: released buffer of vector", vec_num
+end subroutine buff_lap_check_comm
+
+
+
+
+
+subroutine buff_nloc_allreduce_check(buffer)
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+
+        type(nloc_buffer), intent(inout) :: buffer
+        integer :: mpinfo
+#ifdef MPI
+        integer, dimension(MPI_STATUS_SIZE) :: comm_status
+#endif
+
+        !wow! so simple! much code!
+        !write(9,*) "going to check request", buffer%request
+#ifdef MPI
+        call MPI_Wait(buffer%request, comm_status, mpinfo)
+#endif
+        !write(9,*) comm_status
+end subroutine
+
+
+
+
+subroutine Zbuff_nloc_allreduce(parallel, buffer)
+
+        use constants
+        use parallel_data_module
+#ifdef MPI
+        use mpi
+#endif
+        implicit none
+
+        type(parallel_data), intent(in) :: parallel
+        type(nloc_buffer), intent(inout) :: buffer
+
+        integer :: request
+        integer :: mpinfo
+
+        ! ------------------------------------------------------
+
+        ! basic protection against 1 PE jobs
+        if (parallel%group_size == 1) return
+
+#ifdef MPI
+
+#ifdef IALLREDUCE
+
+        call MPI_Iallreduce(MPI_IN_PLACE, buffer%kbdots(1,1), &
+                buffer%nlm*buffer%blksize, MPI_DOUBLE_SCALAR, MPI_SUM, &
+                parallel%group_comm, request, mpinfo)
+
+        buffer%request = request
+
+#else
+
+        call MPI_Allreduce(MPI_IN_PLACE, buffer%kbdots(1,1), &
+                buffer%nlm*buffer%blksize, MPI_DOUBLE_SCALAR, MPI_SUM, &
+                parallel%group_comm, mpinfo)
+
+        buffer%request = MPI_REQUEST_NULL
+
+#endif
+
+#endif
+
+end subroutine Zbuff_nloc_allreduce
+
+end module

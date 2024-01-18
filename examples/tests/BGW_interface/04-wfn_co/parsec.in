@@ -1,0 +1,87 @@
+# bulk silicon
+
+Boundary_Conditions: bulk
+
+begin Cell_shape
+   0.50000000000     0.500000000000     0.00000000000
+   0.50000000000     0.000000000000     0.50000000000
+   0.00000000000     0.500000000000     0.50000000000
+end cell_shape
+
+Lattice_Vector_Scale 10.2612
+
+kpoint_method mp
+begin monkhorst_pack_grid
+  5  5  5
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+  0.5  0.5  0.5
+end monkhorst_pack_shift
+
+begin nscf_kpoints
+     0.000000000  0.000000000  0.000000000   1.0   
+    -0.122464922  0.122464922  0.122464922   8.0   
+    -0.244929845  0.244929845  0.244929845   8.0   
+     0.000000000  0.000000000  0.244929845   6.0   
+    -0.122464922  0.122464922  0.367394767  24.0   
+    -0.244929845  0.244929845  0.489859689  24.0   
+    -0.367394767  0.367394767  0.612324612  12.0   
+     0.000000000  0.000000000  0.489859689   6.0   
+    -0.122464922  0.122464922  0.612324612  12.0   
+     0.000000000  0.244929845  0.489859689  24.0   
+end nscf_kpoints
+
+begin nscf_kgrid
+ 5 5 5
+end nscf_kgrid
+
+begin nscf_kgrid_shift
+ 0.0 0.0 0.0
+end nscf_kgrid_shift
+
+nscf_fermi_level 1.1519
+
+Grid_Spacing:  0.70
+
+States_Num:  10
+nscf_states_num:  100
+
+Max_Iter:  1
+Eigensolver: chebdav
+Diag_Tolerance: 1D-6
+Convergence_Criterion: 1D-5
+
+
+Mixing_Method: Anderson
+ 
+Correlation_Type: CA
+
+Coordinate_Unit: lattice_vectors
+
+Output_File_Name parsec.out
+
+Restart_Run: True
+
+Output_GW: True
+
+Atom_Types_Num:  1
+
+#------------ new atom type ---------------- 
+Atom_Type: Si
+Pseudopotential_Format: FHIPP
+Core_Cutoff_Radius:  2.50
+Local_Component: d
+Potential_Num:  3
+
+begin Electron_Per_Orbital
+# S P D F
+2 2 0 0
+end Electron_Per_Orbital
+
+begin Atom_Coord
+  -0.125000000000  -0.125000000000  -0.12500000000
+   0.125000000000   0.125000000000   0.12500000000
+end Atom_Coord
+
+#------------ end of atom type ------------- 

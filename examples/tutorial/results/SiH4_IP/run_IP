@@ -1,0 +1,13 @@
+
+for job in neutral charged
+do
+   cd $job
+   if [[ ! -f parsec.out ]]
+   then
+      pwd
+      parsec.ser
+      date
+   fi
+   cd ..
+done
+

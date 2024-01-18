@@ -1,0 +1,36 @@
+RUNNING THE L-BFGS-B CODE
+
+           * * *
+
+Machine precision = 1.084D-19
+ N =           15     M =            7
+RUNNING THE L-BFGS-B CODE
+
+it    = iteration number
+nf    = number of function evaluations
+nint  = number of segments explored during the Cauchy search
+nact  = number of active bounds at the generalized Cauchy point
+sub   = manner in which the subspace minimization terminated:
+        con = converged, bnd = a bound was reached
+itls  = number of iterations performed in the line search
+stepl = step length used
+tstep = norm of the displacement (total step)
+projg = norm of the projected gradient
+f     = function value
+
+           * * *
+
+Machine precision = 1.084D-19
+ N =           15     M =            7
+
+   it   nf  nint  nact  sub  itls  stepl    tstep     projg        f
+ This problem is unconstrained.
+
+At X0         0 variables are exactly at the bounds
+    0    1     -     -   -     -     -        -     2.174D-01 -8.618D+00
+
+At iterate    1    f= -9.12407D+00    |proj g|=  9.09499D-02
+    1    2     1     0  ---    0  1.3D+00  1.0D+00  9.095D-02 -9.124D+00
+
+At iterate    2    f= -9.27477D+00    |proj g|=  3.18833D-02
+    2    3     0     0  con    0  1.0D+00  7.2D-01  3.188D-02 -9.275D+00

@@ -1,0 +1,31 @@
+#
+# Intel TraceAnalyzer (Vamp Trace)
+#
+KSEIG_ARCH =chemfarm_itac_mpi3
+#
+# tested on chfsrv.weizmann.ac.il, Multiple vendor linux cluster
+#
+
+
+ARPK_DIR = /home/ariel/libs2014/arpack-ng-threadsafe-mpi/lib
+LIBARPACK1 = -L$(ARPK_DIR)/ -larpack
+LIBARPACK2 = -L$(ARPK_DIR)/ -lparpack
+
+FC	= mpiifort -openmp -trace -mkl -align array32byte -align rec32byte -I$(VT_ROOT)/include 
+F90	= mpiifort -openmp -trace -mkl -align array32byte -align rec32byte  -I$(VT_ROOT)/include 
+
+#library archiver
+AR	 = ar
+
+#file name extension
+EXT = .mpi
+
+DEF	= -DUSEFFTW3 -DUSEARPACK  -DMPI -DNEIGHCOLLETIVE -DIALLREDUCE -DOMPFUN -DITAC #-DDEBUG #ITAC is for the intel trace analyzer api hooks #2DEBUG2FURIOUS
+CPP = /usr/bin/cpp -C -P  -traditional
+CPPOPT = $(DEF)
+
+# compilation flags
+#FFLAGS = -O3 -xSSE4.2 -ip -traceback
+FFLAGS = -O3 -xAVX -ip -traceback
+
+LIBMPI= -L$(VT_LIB_DIR) -lVT  $(VT_ADD_LIBS)

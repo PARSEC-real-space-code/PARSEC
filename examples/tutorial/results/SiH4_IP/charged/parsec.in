@@ -1,0 +1,34 @@
+
+Boundary_Sphere_Radius:  5 ang
+Grid_Spacing:  0.20 ang
+
+States_Num:  8
+
+coordinate_unit cartesian_bohr
+
+eigensolver diagla
+
+Atom_Types_Num:  2
+
+#------------ new atom type ---------------- 
+Atom_Type: Si
+Local_Component: p
+
+begin Atom_Coord
+ 0.00  0.00  0.00
+end Atom_Coord
+ 
+#------------ new atom type ---------------- 
+Atom_Type: H
+Local_Component: s
+ 
+begin Atom_Coord
+   1.618365   1.618365   1.618365
+  -1.618365  -1.618365   1.618365
+  -1.618365   1.618365  -1.618365
+   1.618365  -1.618365  -1.618365
+end Atom_Coord
+
+Net_Charges +1
+spin_polarization true
+ 

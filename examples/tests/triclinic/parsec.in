@@ -1,0 +1,61 @@
+# NaAl, triclinic structure with spin polarization
+
+Boundary_Conditions: bulk
+
+begin Cell_shape
+   0.6000000    -0.866025403785     0.000000
+   0.4000000     0.866025403785     0.000000
+   0.0000000     0.100000000000     1.632993
+end cell_shape
+
+Lattice_Vector_Scale 3.21 ang
+
+kpoint_method mp
+begin monkhorst_pack_grid
+  2  2  2
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+  0.5  0.5  0.5
+end monkhorst_pack_shift
+
+Grid_Spacing:  0.60
+
+States_Num:  8
+Max_Iter:  20
+
+Mixing_Method: Broyden
+ 
+Correlation_Type: PBE
+
+Coordinate_Unit: lattice_vectors
+
+spin_polarization .true.
+
+Atom_Types_Num:  2
+
+#------------ new atom type ---------------- 
+Atom_Type: Na
+
+Pseudopotential_Format: Martins_Wang
+Core_Cutoff_Radius:  3.1
+
+begin Atom_Coord
+   -1.015971       3.3662105       2.139044
+    2.800929       3.8603135      -4.162935
+    5.886940       1.1625835       0.865330
+    0.850492      -3.8603135       0.480202
+   -5.886940      -2.1781735       4.162935
+end Atom_Coord
+#------------ end of atom type ------------- 
+
+#------------ new atom type ----------------
+Atom_Type: Al
+Pseudopotential_Format: Martins_new
+Local_Component: d
+
+begin Atom_Coord
+   0.000  0.400  0.000
+   0.400  0.000  0.000
+end Atom_Coord
+#------------ end of atom type -------------

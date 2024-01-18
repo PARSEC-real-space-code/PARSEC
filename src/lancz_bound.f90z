@@ -1,0 +1,268 @@
+#include "mycomplex.h"
+!=====================================================================
+!
+!  This subroutine applies k steps Lanczos to get the upper bound of 
+!  abs(eig(A)).
+!
+!  note that   AV=V*h_proj+fe'  ==>  AVQ = VQD+fe'Q  ==> ||r||<=||f||
+!  the theory says:
+!    for any mu (eigenvalue of h_proj), there exists a lam (eigenvalue of A)
+!    s.t.    | lam - mu | <= ||r||
+! 
+!  to be safe (since we really need an upper bound), we get the upperb
+!  as  max(eig(h_proj)) + ||f|| + (small correction if necessary)
+! 
+!  another way to look at it is:  
+!     AV = V*h_proj+fe' ==> ||A|| <= ||h_proj||+||f||  
+!     (almost always, under usual conditions)
+!
+!  Author: Yunkai Zhou (2005, 2014)
+!  revised on march 2014 to use the improved bound estimators, ref.
+!  Y. Zhou and R.-C. Li (http://dx.doi.org/10.1016/j.laa.2010.06.034)
+!---------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine zlancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
+#else
+subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
+#endif
+
+  use parsec_global_data
+  use matvec_module
+  use matvecB_interface
+  implicit none
+#ifdef ITAC
+    include 'VT.inc'
+    include 'vtcommon.inc'
+  integer vtierr
+#endif
+  !
+  !  Input/Output variables:
+  !
+  integer, intent(in) :: n      !   n: dimension of the matrix
+  integer, intent(in) :: ldn    ! ldn: leading dimension
+  integer, intent(in) :: kk     !  kk: how many Lanczos step to take; 
+                                !      usually  5 <= kk <=15,  say kk=10 should be good
+
+  real(dp), intent(out) :: upperb           !upper bound of the full spectrum
+  real(dp), intent(out), optional  :: lowb  !lower bound (use smallest ritz value as an estimate)
+  real(dp), intent(out), optional :: middle !estimated middle point of the full spectrum
+
+  integer, intent(in) :: kplp   !  k-point index
+
+  !
+  !  Work variables:
+  !
+  SCALAR, dimension(ldn) :: v, f, v0
+  real(dp), allocatable :: h_proj(:,:)
+
+#ifdef CPLX
+  real(dp), dimension(ldn) :: w0
+#endif
+  real(dp), parameter :: tol = 2.5e-16
+  real(dp) :: alpha(1), beta(1), nrmtmp(1)
+  integer  :: j, isbreak, info, k
+#ifndef BETA
+  integer jj
+#endif
+  !
+  !  External functions/subroutines:
+  !
+  intrinsic :: max, min, abs, maxval, minval
+  !.. User provided Subroutine for matrix-vector products:
+  !external   ZmatvecB
+  !.. BLAS routine:
+  SCALAR, external  :: Zdot
+
+  !-------------------------------------------------------------------
+#ifdef ITAC
+    call VTBEGIN(vt_lancz, vtierr)
+#endif
+#ifdef BETA
+  k = min(max(kk, 6), 12)    !no need to go over 12 steps
+#else
+  k = min(max(kk, 4), 8)    !do not go over 8 steps
+#endif
+
+  allocate(h_proj(k,k))
+  h_proj(:,:) = zero   !..initialize h_proj
+
+  !! v = 1.d0  !..all ones' may not be a good initial vector
+#ifdef CPLX
+  call zrandom_array(ldn, n, 1, v, info)
+#else
+  call random_number(v)  !in fact, the starting v can be real, no problem with that!
+#endif
+
+!!no need for this, dot_product() takes care of inner product of complex vectors
+#ifdef CPLX
+  nrmtmp(1) = real(dot_product(v(1:n), v(1:n)), dp)  
+#else
+  nrmtmp(1) = dot_product(v(1:n), v(1:n))
+#endif
+  call psum(nrmtmp(1), 1, parallel%group_size, parallel%group_comm)
+  nrmtmp(1) = sqrt(nrmtmp(1))
+
+  v = v/nrmtmp(1)
+
+  ! compute the matrix-vector product, f=A*v (A is the hamiltonian)
+  call ZmatvecB(kplp,1,v,f,ldn)
+
+  alpha(1) = zero
+#ifndef BETA
+  do jj = 1, n
+
+#ifdef CPLX
+     alpha(1) = alpha(1) + real( conjg(v(jj)) * f(jj) , dp)
+#else
+     alpha(1) = alpha(1) + v(jj) * f(jj)
+#endif
+  enddo
+
+
+#else
+
+  alpha(1) = real(dot_product(f(1:n), v(1:n)),  dp)
+#endif
+  call psum(alpha(1), 1,  parallel%group_size, parallel%group_comm)
+
+  f = f - alpha(1)*v
+  h_proj(1,1)= alpha(1)
+
+  isbreak = 0
+  do j = 2, k         !perform (at most) k steps Lanczos
+#ifdef CPLX
+     beta(1) = real(dot_product(f(1:n), f(1:n)),dp)
+#else
+     beta(1) = dot_product(f(1:n), f(1:n))
+#endif
+     call psum(beta(1), 1, parallel%group_size, parallel%group_comm)
+     beta(1) = sqrt(beta(1))
+
+     if (beta(1) > tol) then
+        v0 = v
+        v  = f/beta(1)
+        !.. call the matrix-vector product subroutine: f=A*v
+        call ZmatvecB(kplp,1,v,f,ldn)
+        f  = f - beta(1)*v0
+        alpha(1) = zero
+#ifndef BETA
+        do jj = 1, n
+#ifdef CPLX
+           alpha(1) = alpha(1) + real( conjg(v(jj)) * f(jj) , dp)
+#else
+           alpha(1) = alpha(1) + v(jj) * f(jj)
+#endif
+        enddo
+#else
+        alpha(1) = real(dot_product(f(1:n), v(1:n)),  dp) 
+#endif
+        call psum(alpha(1), 1,  parallel%group_size, parallel%group_comm)
+        f  = f - alpha(1)*v
+        h_proj(j,j-1) = beta(1)
+        h_proj(j-1,j) = beta(1)
+        h_proj(j,j)   = alpha(1)
+     else
+        isbreak = 1
+        exit
+     end if
+  end do
+#ifdef BETA
+  if (isbreak == 1)  k = k-1
+#else
+  if (isbreak /= 1) then
+#endif
+  !  use real(dp) w0 or v0 to store eigenvalues
+     !  it is assumed that n >> k, which should be the case
+#ifdef CPLX
+     call my_dsyev('U', k, h_proj, k, w0(1:k), info)
+#else
+     call my_dsyev('U', k, h_proj, k, v0(1:k), info)
+#endif
+     if (info /= 0) then
+        write(9,*) 'ERROR calling dsyev in lancz_bound.f90'
+        write(9,*) ' info = ',info
+        return
+     endif
+
+#ifdef CPLX
+  !  use alpha to store max(abs(w0(1:k))),   note: the new bound does not need the abs()
+     alpha(1)  = maxval(w0(1:k))
+#ifndef BETA
+  nrmtmp(1) = abs(minval(w0(1:k)))
+#endif
+#else
+  !  use alpha to store max(abs(v0(1:k))), note: the new bound does not need the abs()
+     alpha(1)  = maxval(v0(1:k))
+#ifndef BETA
+  nrmtmp(1) = abs(minval(v0(1:k)))
+#endif
+#endif
+#ifndef BETA
+  if (nrmtmp(1) > alpha(1))  alpha(1) = nrmtmp(1)  !!(the new bound means this is not necessary)
+#endif
+#ifdef CPLX
+     if (present(lowb))  lowb = minval(w0(1:k))
+#else
+     if (present(lowb))  lowb = minval(v0(1:k))
+#endif
+#ifndef BETA
+
+  else
+#ifdef CPLX
+     call my_dsyev('U', k-1, h_proj, k, w0(1:k-1), info)
+#else
+     call my_dsyev('U', k-1, h_proj, k, v0(1:k-1), info)
+#endif
+     if (info /= 0) then
+        write(9,*) 'error calling dsyev in lancz_bound.f90'
+        return
+     endif
+
+#ifdef CPLX
+     !  use alpha to store max(abs(w0(1:k-1)))
+     alpha(1)  = maxval(w0(1:k-1))
+     nrmtmp(1) = abs(minval(w0(1:k-1)))
+#else
+     !  use alpha to store max(abs(v0(1:k-1)))
+     alpha(1)  = maxval(v0(1:k-1))
+     nrmtmp(1) = abs(minval(v0(1:k-1)))
+#endif
+     if (nrmtmp(1) > alpha(1))  alpha(1) = nrmtmp(1)
+#ifdef CPLX
+     if (present(lowb))  lowb = minval(w0(1:k-1))
+#else
+     if (present(lowb))  lowb = minval(v0(1:k-1))
+#endif
+
+  end if
+#endif
+  if (present(middle))  middle = (alpha(1) + lowb)/2.d0
+
+  if (beta(1) < 1d-2) then
+     beta(1) = beta(1)*10d0
+  elseif (beta(1) < 1d-1) then
+     beta(1) = beta(1)*5d0
+#ifdef BETA
+  elseif (beta(1) < 1d0) then
+     beta(1) = beta(1)*2d0
+  elseif (beta(1) < 10d1) then
+     beta(1) = beta(1)*1.5d0
+  elseif (beta(1) < 10d2) then
+     beta(1) = beta(1)*1.01d0
+#endif
+  end if
+
+  upperb = alpha(1) + beta(1)
+  deallocate(h_proj)
+#ifdef ITAC
+    call VTEND( vt_lancz, vtierr)
+#endif
+
+#ifdef CPLX
+end subroutine zlancz_bound
+#else
+end subroutine lancz_bound
+#endif
+!
+!=====================================================================

@@ -1,0 +1,253 @@
+<html><head><title>Parsec development</title></head><body bgcolor="#ffffff">
+<hr>
+<h1><center>PARSEC DEVELOPMENT GUIDELINES</center></h1>
+
+This short document is intended to give a brief overview of the internal structure of PARSEC, and to establish a few guidelines for future development. The guidelines are not "set to stone", but they should be followed in order to keep source files clean and compatible with each other. <p></p>
+
+<!-------------------------------------------------------------------->
+
+<a name="parallelization"></a> <h2>1.  Parallelization</h2>
+
+In multi-processor machines, parallelization is done two layers: in the outer layer, k-points, spins and representations are distributed across processors and, in the inner layer, grid points are also distributed. This scheme is very flexible and especially efficient in large parallel machines. <p></p>
+
+<a name="groups"></a> <h3>1.1  Outermost parallelization: groups of processors</h3>
+
+First, some definitions: <p></p>
+
+<ul>
+<li> N<sub>p</sub> = total number of processors;
+</li><li> N<sub>k</sub> = number of k-points in the irreducible Brillouin zone (or 1, if the system is not periodic);
+</li><li> N<sub>s</sub> = 2 (if the system is spin-polarized and spin-orbit corrections are not included) or 1 (all other situations);
+</li><li> N<sub>r</sub> = number of symmetry representations (at most 8).
+</li> </ul>
+
+If the product n = N<sub>k</sub>*N<sub>s</sub>*N<sub>r</sub> is greater than 1 and if N<sub>p</sub>/n is integer, then we can distribute the triplets [representation,k-point,spin] across processors. This is done with the use of MPI Groups. We start by taking an integer N<sub>g</sub> such that S = N<sub>p</sub>/N<sub>g</sub> is integer and G = n/N<sub>g</sub> is integer. Now, we divide the pool of processors into N<sub>g</sub> groups, each one containing S processors. In order to take advantage of mixed architecture, we put processors with consecutive ranks in the same group: processors 0 to S-1 belong to group 0, processors S to 2*S-1 belong to group 1, and so on. Within a group, each processor has a subrank: the subranks of processors 0 to S-1 are 0 to S-1 in that sequence; the subranks of processors S to 2*S-1 are 0 to S-1 in that sequence; and so on. Also, each group has a group_master processor, which is the one with subrank 0. In the entire pool of processors, the master is processor 0, so it is also group_master in its group. In order to have ordered input/output, we also need to define a group of masters with all the group_masters (those processors with subrank 0 in their groups). By definition, the master processor also belongs to the group of masters. <p></p>
+
+The triplets [representation,k-point,spin] are also distributed so that each group is assigned G triplets. Processors are in charge of computing eigenvalues/eigenvectors only of the triplets assigned to their group. Each group works independently from the others during calls to eigensolvers, subspace filtering, and Poisson solver. <p></p>
+
+Information about the layout of MPI groups is stored in structure <tt>parallel</tt>:
+
+<ul>
+<li> <tt>parallel%procs_num</tt> = N<sub>p</sub>, number of processors in the pool (global);
+</li><li> <tt>parallel%masterid</tt> = 0, rank of master processor (global);
+</li><li> <tt>parallel%iam</tt> = rank of this processor (local);
+</li><li> <tt>parallel%iammaster</tt> = true for master processor, false otherwise (local);
+</li><li> <tt>parallel%comm</tt> = communicator for the processor pool (global);
+</li><li> <tt>parallel%groups_num</tt> = N<sub>g</sub>, number of groups (global);
+</li><li> <tt>parallel%group_size</tt> = S, number of processors in each group (global);
+</li><li> <tt>parallel%mygroup</tt> = label of the group to which this processor belongs, ranges from 0 to N<sub>g</sub>-1 (global within the group);
+</li><li> <tt>parallel%iamgmaster</tt> = true if this processor is group_master, false otherwise (local);
+</li><li> <tt>parallel%group_master</tt> = 0, subrank of the group_master in this group (global);
+</li><li> <tt>parallel%group_iam</tt> = subrank of this processor in the group (local);
+</li><li> <tt>parallel%group_comm</tt> = communicator of this group (global within the group);
+</li><li> <tt>parallel%gmaster_iam</tt> = subrank of this processor in the group of masters (local, defined only if <tt>parallel%iamgmaster</tt> = true);
+</li><li> <tt>parallel%gmaster_comm</tt> = communicator of the group of masters (defined only if <tt>parallel%iamgmaster</tt> = true, global within the group of masters);
+</li><li> <tt>parallel%gmap</tt> = two-dimensional array of size S x N<sub>g</sub>. It contains the plan of groups. All processors belonging to the j-th group have <tt>parallel%iam</tt> = <tt>parallel%gmap</tt>(<tt>parallel%group_iam</tt>,<tt>j</tt>).
+</li> </ul>
+
+Operations which involve quantities global to the groups (such as the electron charge density and potentials) are done across the group of masters only, since other processors do not need to participate. All the input and most of the output is done by the master processor. <p></p>
+
+<h4>Example</h4>
+
+This is one example of MPI group layout: we have a system with 2 spin channels, 1 representation and 3 k-points. 8 processors are available in the pool. This will be the values stored in structure <tt>parallel</tt>: <p></p>
+
+<tt>parallel%procs_num</tt> = 8 <p></p>
+<tt>parallel%masterid</tt> = 0 <p></p>
+<tt>parallel%groups_num</tt> = 2 <p></p>
+<tt>parallel%group_size</tt> = 4 <p></p>
+<tt>parallel%group_master</tt> = 0 <p></p>
+<tt>parallel%gmap</tt> = ( ( 0, 1, 2, 3 ),( 4, 5, 6, 7 ) ) <p></p>
+
+The values of local variables are:  <p></p>
+
+<table style="margin-left: auto; margin-right: auto; text-align: center; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> <tt>parallel%iam</tt> </td>
+ <td style="vertical-align: top"> <tt>parallel%iammaster</tt> </td>
+ <td style="vertical-align: top"> <tt>parallel%mygroup</tt> </td>
+ <td style="vertical-align: top"> <tt>parallel%iamgmaster</tt> </td>
+ <td style="vertical-align: top"> <tt>parallel%group_iam</tt> </td>
+ <td style="vertical-align: top"> <tt>parallel%gmaster_iam</tt> </td>
+</tr><tr>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> True </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> True </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> 0 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+ <td style="vertical-align: top"> 3 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 3 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+ <td style="vertical-align: top"> 4 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> True </td>
+ <td style="vertical-align: top"> 0 </td>
+ <td style="vertical-align: top"> 1 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 5 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+ <td style="vertical-align: top"> 6 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+ <td style="vertical-align: top"> 7 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> False </td>
+ <td style="vertical-align: top"> 3 </td>
+ <td style="vertical-align: top"> - </td>
+</tr><tr>
+</tbody>
+</table>
+
+The assignment of triplets [representation,k-point,spin] is done round-robin among groups. Information about the assignment is stored in variable <tt>elec_st%eig%group</tt>. In this example, the assignment will be like this: <p></p>
+
+<table style="margin-left: auto; margin-right: auto; text-align: center; vertical-align: top; width: 100%;" border="1" cellpadding="2" cellspacing="2">
+ <tbody>
+ <tr>
+ <td style="vertical-align: top"> representation <p></p> <tt>irp</tt> </td>
+ <td style="vertical-align: top"> k-point <p></p> <tt>kplp</tt> </td>
+ <td style="vertical-align: top"> spin <p></p> <tt>isp</tt> </td>
+ <td style="vertical-align: top"> group <p></p> <tt>elec_st%eig(irp,kplp,isp)%group</tt> </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 0 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 1 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 3 </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 0 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> 1 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> 0 </td>
+</tr><tr>
+ <td style="vertical-align: top"> 1 </td>
+ <td style="vertical-align: top"> 3 </td>
+ <td style="vertical-align: top"> 2 </td>
+ <td style="vertical-align: top"> 1 </td>
+</tr><tr>
+</tbody>
+</table>
+
+<a name="distr_grid"></a> <h3>1.1  Innermost parallelization: distributed real-space grid</h3>
+
+Real-space grid points are distributed within each group of processors in a "slice-stitching" manner. First, grid points are ordered in a one-dimensional array, going faster along the z direction, then y and then x (consecutive points in the array are most likely neighbors along the z direction). If N<sub>r</sub> is the number of grid points, then each processor receives a block of points with size approximately N<sub>r</sub>/S: processor with subrank 0 receives points 1 to N<sub>r</sub>/S, processor with subrank 1 receives points N<sub>r</sub>/S+1 to 2*N<sub>r</sub>/S, and so on. If N<sub>r</sub>/S is not integer, there is an imbalance of at most one grid point among processors. In order to account for the "exterior" of a confined system (region of space outside the grid), a null grid point is added to the array of grid points. These are the important variables (all global): <p></p>
+
+<ul>
+<li> <tt>grid%ndim</tt>, <tt>parallel%ndim</tt> = number of grid points in the entire volume;
+</li><li> <tt>grid%nwedge</tt> = N<sub>r</sub>, number of grid points in the irreducible wedge (the actual number of points used in the calculation);
+</li><li> <tt>parallel%ldn</tt> = upper bound for the number of grid points belonging to each processor, always a few units larger than N<sub>r</sub>/S;
+</li> </ul>
+
+Another important variable is <tt>parallel%mydim</tt>: the number of grid points belonging to this processor, of order of N<sub>r</sub>/S. This variable is local. Most distributed arrays defined on the grid (wave-functions, potentials, etc.) have size <tt>parallel%ldn</tt>, but only the block (<tt>1:parallel%mydim</tt>) is actually used. The block (<tt>parallel%mydim+1:parallel%ldn</tt>) is referenced only when points outside the grid are referenced. The only situation when they are referenced is in non-periodic systems, when the neighbor of some point happens to be outside the grid because the point itself is close to the boundary. Since wave-functions are zero outside the boundary, then the exterior block contains only zeros. <p></p>
+
+The distribution of grid points is done in subroutine <i>grid_partition</i>, executed by group_masters only. In subroutines <i>setup</i> and <i>comm_neigh</i>, the group_masters broadcast information about the grid layout to other processors in their group before each processor does the bookkeeping of neighbors. Look at subroutine <i>comm_neigh</i> for a description of the bookkeeping of neighbors. <p></p>
+
+Since the grid is distributed within each group, then reductions over the grid are done within the group only. For example, the "dot product" between two wave-functions < &Psi|&Phi > is peformed first with a local call to the <i>dot_product</i> fortran function, and then with a call to MPI_Allreduce, with operation MPI_Sum and communicator <tt>parallel%group_comm</tt>. <p></p>
+
+<!-------------------------------------------------------------------->
+
+<a name="input_output"></a> <h2>2.  Input/Output</h2>
+
+Most of the input/output is done by the master processor. Processors other than the master only write data to files out.*. All the input is done by the master processor. Subroutines <i>usrinputfile</i> (reading in of parsec.in) and <i>pseudo</i> (reading in of pseudopotential files) are performed by the master processor only. Information to be distributed to other processors is broadcasted in subroutine <i>init_var</i>, which is also where most structures are defined by non-master processors. <p></p>
+
+How to add new input options? You will need to work on at least 3 separate subroutines:
+
+<ul>
+<li> <i>esdf_key_mod</i> : This is where keywords are defined. Each keyword has a label (string written in lower cases), a type (block, integer, etc.), and a description (which is not really used anywere). Look at the documentation in <i>esdf_mod</i> for more information.
+</li><li> <i>usrinputfile</i> : This is where keywords are searched and information is extracted from parsec.in.
+</li><li> <i>init_var</i> : This is where the master processor broadcasts information to other processors. Alternatively, new input options may be broadcasted in the main program or in other subroutines.
+</li> </ul>
+
+<!-------------------------------------------------------------------->
+
+<a name="eigensolvers"></a> <h2>3.  Real/complex eigensolvers</h2>
+
+With the exception of the thick-restart Lanczos solver, all other eigensolvers implemented in parsec (including subspace filtering) handle real and complex (hermitian) Hamiltonians. Since the algorithm is very similar between real algebra and complex algebra, the source files for these solvers have real and complex options merged. Files with this feature have extension .f90z. At compile time, the preprocessor duplicates the information in those files and creates two sets of code: one for real algebra, and another for complex algebra. The macro used to select real versus complex algebra is CPLX. File mycomplex.h defines the rules for the duplication of code. As a rule of thumb, preprocessed subroutines/functions/variables whose name contains a capital Z have the Z replaced with lower-case z, for complex algebra, or droped, for real algebra. Occasionaly, the capital Z is replaced with lower-case d for real algebra. Variable type MPI_DOUBLE_SCALAR is expanded to MPI_DOUBLE_COMPLEX or MPI_DOUBLE_PRECISION during preprocessing <p></p>
+
+<!-------------------------------------------------------------------->
+
+<a name="guidelines"></a> <h2>4.  Guidelines in the source files</h2>
+
+Source files are written in Fortran 95, free-form style (except for the LBFGS library file). Non-standard constructions are avoided. Since it evolved from FORTRAN 77, numbered lines are seen frequently, many breaks in flow are done with <tt>go to</tt> statements, alternate returns are used frequently, and the code makes little use of modular programing. All structures and most modules are declared in <i>structures.f90p</i> file. Most of constants are defined in <i>const.f90</i> file. Successful exits of the MPI environment is done through subroutine <i>exit_err</i>, where arrays within structures are deallocated. <p></p>
+
+Subroutines always start with a header containing some description of its purpose, input and/or output, followed by declaration of variables and executable statements. Programers are strongly encouraged to write as much in-line documentation as possible, and to keep the overall "look" of subroutines: description, declaration of input/output variables, declaration of internal variables, and executable statements, in this sequence. Most structures are defined on all processors, and many of them have global values. Names of variables are written in lower case. Names of constants can be writen in lower case or upper case, but never a mixture of lower case and upper case in the same word. Some integer variables have special meanings, altough they are treated as internal variables:
+
+<ul>
+<li> <tt>irp</tt> : counter of representations. The total number of representations is always <tt>elec_st%nrep</tt>.
+</li><li> <tt>isp</tt> : counter of spin channels. The number of spin channels can be either <tt>elec_st%nspin</tt> or <tt>elec_st%nspin/elec_st%mxwd</tt> depending on context.
+</li><li> <tt>kplp</tt> : counter of k-points, ranging from 1 to <tt>kpnum = max(1,elec_st%nkpt)</tt> (<tt>elec_st%nkpt</tt> is the  number of k-points).
+</li><li> <tt>mpinfo</tt> : error value returned from calls to MPI functions.
+</li><li> <tt>ity</tt> : counter of chemical elements, ranging from 1 to <tt>clust%type_num</tt> (the number of chemical elements).
+</li><li> <tt>ja</tt> : counter of atoms.
+</li> </ul>
+
+These are some suggestions for variable names and general writing of code:
+
+<ul>
+<li> Use self-explaining names for variables. Generic names such as <tt>ii</tt> should be used only for dummy variables.
+</li><li> Use the same name in all subprograms for a variable which represents the same item in all units. Avoid using the same name for functionally different items.
+</li><li> Avoid using a single letter for a variable name. It makes searching difficult.
+</li><li> Write comments as normal text, with normal capitalization and normal punctuation rules.
+</li><li> Use spacing to enhance readability, especially before and after mathematical operators such as =, +, -, *, ( and ).
+</li><li> Use standard indentation of code blocks.
+</li><li> Use numbered lines and <tt>go to</tt> states only when strictly necessary. Fortran 95 has many alternatives for <tt>go to</tt>.
+</li><li> Statements and variable names should be always written in lower case. Exceptions are some MPI functions and some constants. Mixing of lower case and upper case can make harder to read a code.
+</li><li> Parametrize constants. For example, f you need to compare the value of variables with some constant such as 10, then define the parameter <tt>myconst = 10</tt> and use that parameter instead of its value <tt>10</tt>. This way, it will be easier to change the value of <tt>myconst</tt> if needed.
+</li><li> Use of the operators <, >, <=, >=, ==, /= is recommended instead of their deprecated counterparts <tt>.lt.</tt>, <tt>.gt.</tt>, <tt>.le.</tt>, <tt>.ge.</tt>, <tt>.eq.</tt>, and <tt>.ne.</tt> The motivation is readability.
+</li><li> When writing or heavily modifying an existing subroutine, consider writing your name in the description. If someone else has questions about that subroutine, he/she will know who to ask for help.
+</li><li> All variables must be explicitly declared. The statement <tt>implicit none</tt> must be present in the header of all subroutines and functions.
+</li><li> Avoid using types <tt>double precision</tt> and <tt>double complex</tt>. Use <tt>real(dp)</tt> and <tt>complex(dpc)</tt> instead.
+</li> </ul>
+
+<hr>
+
+<h3><a href="http://www.ices.utexas.edu/ccm/"> Center for Computational Materials, Univ. of Texas at Austin</a> </h3>
+<h3><a href="http://www.ices.utexas.edu/parsec"> PARSEC </a> </h3>
+<h4>Author of this document: 
+<a href="http://www.ices.utexas.edu/~mtiago">Murilo Tiago </a></h4>
+
+</body></html>

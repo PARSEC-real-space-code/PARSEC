@@ -1,0 +1,40 @@
+# Cluster Na5 with finite electric field, static polarizability
+
+Boundary_Conditions: Cluster 
+Boundary_Sphere_Radius:  10.0 bohr
+Grid_Spacing:  0.9
+
+Expansion_Order:  10
+
+States_Num:  6
+Net_charges:  -1
+Max_Iter:  30
+Eigensolver: chebff    #diagla
+
+Coordinate_Unit: Cartesian_Bohr
+
+Mixing_Method: Broyden
+
+Atom_Types_Num:  1
+
+Correlation_Type: PBE
+
+Polarizability: .true.
+
+Electric_Field:  0.001
+
+#------------ new atom type ---------------- 
+Atom_Type: Na
+
+Pseudopotential_Format: Martins_Wang
+Core_Cutoff_Radius:  3.1
+
+begin Atom_Coord
+   -1.015971       3.3662105       2.139044
+    2.800929       3.8603135      -4.162935
+    5.886940       1.1625835       0.865330
+    0.850492      -3.8603135       0.480202
+   -5.886940      -2.1781735       4.162935
+end Atom_Coord
+
+#------------ end of atom type ------------- 

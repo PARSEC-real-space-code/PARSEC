@@ -1,0 +1,268 @@
+ Processor No            0   has started
+ Number of processors:            8
+ Number of threads/processor: *** No openMP support
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+  survived first allreduce
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is      121392
+  reduced size is        60696
+  maximum distance between grid points and their images is
+   0.1752E-14  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node            1
+  neibs sent to node            2
+  neibs sent to node            3
+ The local dimension is :       15174
+ INTERIOR POINTS Mvec, PreCond (           0       11158 ) 
+ WARNING, NO MATVEC INTERIOR POINTS
+ CURRENT SYSTEM SIZE/PE RATIO NOT RECOMMENDED
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ send PE            1  #rows:       10116
+ send PE            2  #rows:           0
+ send PE            3  #rows:       10116
+ I communicate with            2  processors, a total of        20232  elements
+ Also, I receive from these procs:        20232  elements
+ 
+ topo_aware: I am now aware that I communicate with           2 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =         1056
+ 
+ Sizes of all non-local blocks 
+  1032  1054  1042  1054  1042  1056  1048  1054  1048  1054  1056  1042
+  1040  1054  1042  1040  1054  1048  1048   246   246   246   250   252
+   251   249   250   251   250   249   246   249   246   250   251   249
+   251   246   102   102   100   102   100   100   100    99   101    99
+   101   102   102   102   102    99    97    99    97    95    98    95
+    98    98    98    99    98    99    98    98
+ 
+ Transform atoms          68
+ My number of non-local rows:         8622  of total        27616
+ My number of rows in WS sphere:            0  of total            0
+# Poisson solver, return code =   0  convergence rate =   0.3473E-01
+ # reported residual norm:   3.934498083255783E-004
+ # euclidean norm of lap(pot):   1.966877245868468E-004
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.3540E-01
+ # reported residual norm:   7.003466783841994E-005
+ # euclidean norm of lap(pot):   3.480452477073627E-005
+ allocating both dwvec and zwvec of size (why!):       60697
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=   15174,  blksize=  6,  n_spdim=   68
+  nwant  =   56,  nconv=   57,  true nconv=    57
+  num_iter =      37,  max_iter =     280
+  num_mv  =    4867,   num_restart=      23
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.2389E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         4867  nec =           57
+  nstate =           56  info =            0
+# Poisson solver, return code =   0  convergence rate =   0.2704E-01
+ # reported residual norm:   3.560662402387741E-006
+ # euclidean norm of lap(pot):   1.826584473669237E-006
+# Poisson solver, return code =   0  convergence rate =   0.2576E-01
+ # reported residual norm:   7.713909985285031E-007
+ # euclidean norm of lap(pot):   4.104699623731520E-007
+# Poisson solver, return code =   0  convergence rate =   0.2565E-01
+ # reported residual norm:   4.966286246146620E-007
+ # euclidean norm of lap(pot):   2.484446265380734E-007
+# Poisson solver, return code =   0  convergence rate =   0.2577E-01
+ # reported residual norm:   1.581946144613733E-007
+ # euclidean norm of lap(pot):   8.373332827785161E-008
+# Poisson solver, return code =   0  convergence rate =   0.2599E-01
+ # reported residual norm:   5.399844836137929E-008
+ # euclidean norm of lap(pot):   2.713161404829775E-008
+# Poisson solver, return code =   0  convergence rate =   0.2684E-01
+ # reported residual norm:   1.514320634212916E-008
+ # euclidean norm of lap(pot):   8.031139723163427E-009
+# Poisson solver, return code =   0  convergence rate =   0.2520E-01
+ # reported residual norm:   7.518401649192091E-009
+ # euclidean norm of lap(pot):   4.112593164966196E-009
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=   15174,  blksize=  6,  n_spdim=   82
+  nwant  =   70,  nconv=   71,  true nconv=    71
+  num_iter =      46,  max_iter =     350
+  num_mv  =    6161,   num_restart=      32
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.2343E+01
+  kactmax =   36,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         6161  nec =           71
+  nstate =           70  info =            0
+# Poisson solver, return code =   0  convergence rate =   0.2571E-01
+ # reported residual norm:   2.115316080386538E-009
+ # euclidean norm of lap(pot):   1.118523422235839E-009
+  forcnloc reports: 
+  I received L =            1  for atom #           1  with mnloc =          920
+  I received L =            2  for atom #           1  with mnloc =          920
+  forcnloc reports: 
+  I received L =            1  for atom #           2  with mnloc =            0
+  I received L =            2  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           3  with mnloc =            0
+  I received L =            2  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           4  with mnloc =            0
+  I received L =            2  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           5  with mnloc =            0
+  I received L =            2  for atom #           5  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           6  with mnloc =            0
+  I received L =            2  for atom #           6  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           7  with mnloc =          944
+  I received L =            2  for atom #           7  with mnloc =          944
+  forcnloc reports: 
+  I received L =            1  for atom #           8  with mnloc =            0
+  I received L =            2  for atom #           8  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #           9  with mnloc =          944
+  I received L =            2  for atom #           9  with mnloc =          944
+  forcnloc reports: 
+  I received L =            1  for atom #          10  with mnloc =            0
+  I received L =            2  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          11  with mnloc =            0
+  I received L =            2  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          12  with mnloc =            0
+  I received L =            2  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          13  with mnloc =          928
+  I received L =            2  for atom #          13  with mnloc =          928
+  forcnloc reports: 
+  I received L =            1  for atom #          14  with mnloc =            0
+  I received L =            2  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          15  with mnloc =            0
+  I received L =            2  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          16  with mnloc =          928
+  I received L =            2  for atom #          16  with mnloc =          928
+  forcnloc reports: 
+  I received L =            1  for atom #          17  with mnloc =            0
+  I received L =            2  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          18  with mnloc =          944
+  I received L =            2  for atom #          18  with mnloc =          944
+  forcnloc reports: 
+  I received L =            1  for atom #          19  with mnloc =          944
+  I received L =            2  for atom #          19  with mnloc =          944
+  forcnloc reports: 
+  I received L =            1  for atom #          20  with mnloc =            0
+  I received L =            2  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          21  with mnloc =            0
+  I received L =            2  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          22  with mnloc =            0
+  I received L =            2  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          23  with mnloc =            0
+  I received L =            2  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          24  with mnloc =            0
+  I received L =            2  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          25  with mnloc =            0
+  I received L =            2  for atom #          25  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          26  with mnloc =          196
+  I received L =            2  for atom #          26  with mnloc =          196
+  forcnloc reports: 
+  I received L =            1  for atom #          27  with mnloc =            0
+  I received L =            2  for atom #          27  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          28  with mnloc =            0
+  I received L =            2  for atom #          28  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          29  with mnloc =          196
+  I received L =            2  for atom #          29  with mnloc =          196
+  forcnloc reports: 
+  I received L =            1  for atom #          30  with mnloc =          196
+  I received L =            2  for atom #          30  with mnloc =          196
+  forcnloc reports: 
+  I received L =            1  for atom #          31  with mnloc =            0
+  I received L =            2  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          32  with mnloc =            0
+  I received L =            2  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          33  with mnloc =            0
+  I received L =            2  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          34  with mnloc =            0
+  I received L =            2  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          35  with mnloc =          194
+  I received L =            2  for atom #          35  with mnloc =          194
+  forcnloc reports: 
+  I received L =            1  for atom #          36  with mnloc =            0
+  I received L =            2  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            1  for atom #          37  with mnloc =          194
+  I received L =            2  for atom #          37  with mnloc =          194
+  forcnloc reports: 
+  I received L =            1  for atom #          38  with mnloc =          194
+  I received L =            2  for atom #          38  with mnloc =          194
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

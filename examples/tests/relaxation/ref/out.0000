@@ -1,0 +1,592 @@
+ Processor No            0   has started
+ Number of processors:            1
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is        3544
+  reduced size is          886
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+ The local dimension is :         886
+ INTERIOR POINTS Mvec - Prec           54         676
+ Information to be send to neighbors:
+ send proc            0  #rows:           0
+ I communicate with            0  processors, a total of            0  elements
+ I receive from these procs:            0
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          245
+ 
+ Sizes of all non-local blocks 
+   136   245   245   245   245
+ 
+ Transform atoms           5
+ My number of non-local rows:         1116  of total         1116
+# Poisson solver, return code =   0  convergence rate =   0.1367    
+ # the residual norm   1.409996790035066E-004  1.409996790185782E-004
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          172  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          146  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          153  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          153  nec =            7  nstate =            7  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.44,      tdiag_sum =        0.00
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1284    
+ # the residual norm   4.592977034875239E-006  4.592977028770767E-006
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          174  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          149  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          144  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          155  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        0.44
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1360    
+ # the residual norm   1.807373041170634E-006  1.807373039855332E-006
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          191  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          144  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          136  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          144  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        0.86
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1343    
+ # the residual norm   1.202079513762040E-006  1.202079511700112E-006
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          174  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          143  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          149  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        1.28
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1363    
+ # the residual norm   6.240450044253718E-007  6.240450072578432E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          182  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          148  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          146  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        1.68
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1348    
+ # the residual norm   4.254164446985110E-007  4.254164431565532E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          182  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          155  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          143  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          149  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.43,      tdiag_sum =        2.10
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1311    
+ # the residual norm   5.265581061787745E-008  5.265581426244620E-008
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          213  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          139  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          146  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.44,      tdiag_sum =        2.53
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1357    
+ # the residual norm   3.823618216182797E-008  3.823618106328897E-008
+  I received L =            0  for atom #           1  with mnloc =          136
+  I received L =            0  for atom #           2  with mnloc =          245
+  I received L =            2  for atom #           2  with mnloc =          245
+  I received L =            0  for atom #           3  with mnloc =          245
+  I received L =            2  for atom #           3  with mnloc =          245
+  I received L =            0  for atom #           4  with mnloc =          245
+  I received L =            2  for atom #           4  with mnloc =          245
+  I received L =            0  for atom #           5  with mnloc =          245
+  I received L =            2  for atom #           5  with mnloc =          245
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          238
+ 
+ Sizes of all non-local blocks 
+   136   238   238   238   238
+ 
+ Transform atoms           5
+ My number of non-local rows:         1088  of total         1088
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          170  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          138  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          150  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.40,      tdiag_sum =        2.97
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1292    
+ # the residual norm   1.711876275588814E-006  1.711876277530752E-006
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          185  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          142  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          148  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        3.37
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1280    
+ # the residual norm   9.965230829569501E-007  9.965230884115411E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          174  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          141  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          138  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.40,      tdiag_sum =        3.78
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1225    
+ # the residual norm   1.637990172188421E-007  1.637990117615065E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          180  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          131  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          144  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          140  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.40,      tdiag_sum =        4.18
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1190    
+ # the residual norm   2.107690503535203E-008  2.107690723916242E-008
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          180  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          141  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          148  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          146  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        4.58
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1242    
+ # the residual norm   5.479729041006405E-009  5.479723486396723E-009
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          180  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          161  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        4.99
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1198    
+ # the residual norm   1.128606883470543E-009  1.128601273093018E-009
+  I received L =            0  for atom #           1  with mnloc =          136
+  I received L =            0  for atom #           2  with mnloc =          238
+  I received L =            2  for atom #           2  with mnloc =          238
+  I received L =            0  for atom #           3  with mnloc =          238
+  I received L =            2  for atom #           3  with mnloc =          238
+  I received L =            0  for atom #           4  with mnloc =          238
+  I received L =            2  for atom #           4  with mnloc =          238
+  I received L =            0  for atom #           5  with mnloc =          238
+  I received L =            2  for atom #           5  with mnloc =          238
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          280
+ 
+ Sizes of all non-local blocks 
+   136   280   280   280   280
+ 
+ Transform atoms           5
+ My number of non-local rows:         1256  of total         1256
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          177  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          135  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          145  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          137  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        5.41
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1304    
+ # the residual norm   9.730695730670385E-007  9.730695696202512E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          179  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          136  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          149  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          132  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        5.82
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1317    
+ # the residual norm   5.845026818967979E-007  5.845026827798925E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          178  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          142  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          143  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          142  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        6.23
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1314    
+ # the residual norm   1.092762596587892E-007  1.092762538819513E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          187  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          135  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          144  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          142  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.44,      tdiag_sum =        6.64
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1198    
+ # the residual norm   1.289690213013341E-008  1.289689937244717E-008
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          179  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          141  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          143  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          139  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        7.08
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1239    
+ # the residual norm   2.045781696385095E-009  2.045778436919547E-009
+  I received L =            0  for atom #           1  with mnloc =          136
+  I received L =            0  for atom #           2  with mnloc =          280
+  I received L =            2  for atom #           2  with mnloc =          280
+  I received L =            0  for atom #           3  with mnloc =          280
+  I received L =            2  for atom #           3  with mnloc =          280
+  I received L =            0  for atom #           4  with mnloc =          280
+  I received L =            2  for atom #           4  with mnloc =          280
+  I received L =            0  for atom #           5  with mnloc =          280
+  I received L =            2  for atom #           5  with mnloc =          280
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          247
+ 
+ Sizes of all non-local blocks 
+   136   247   247   247   247
+ 
+ Transform atoms           5
+ My number of non-local rows:         1124  of total         1124
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          195  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          125  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          139  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          133  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.40,      tdiag_sum =        7.50
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1309    
+ # the residual norm   5.915938322207835E-007  5.915938332135282E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          185  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          138  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          141  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          136  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.40,      tdiag_sum =        7.89
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1367    
+ # the residual norm   3.162157739844118E-007  3.162157699058107E-007
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          187  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          135  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          133  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          141  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        8.30
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1358    
+ # the residual norm   4.830888101808029E-008  4.830888903827756E-008
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          184  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          138  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          136  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          142  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.41,      tdiag_sum =        8.71
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1190    
+ # the residual norm   6.378313932005330E-009  6.378314977414358E-009
+  Eigensolver, representation =            1  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          187  nec =            7  nstate =            7  info = 
+           0
+  Eigensolver, representation =            2  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          131  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            3  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          155  nec =            6  nstate =            6  info = 
+           0
+  Eigensolver, representation =            4  k-point =            1  spin = 
+           1  iteration =            1
+  maxmvs =          130  nec =            6  nstate =            6  info = 
+           0
+ 
+ Diagonalization time [sec] :       0.42,      tdiag_sum =        9.12
+ 
+# Poisson solver, return code =   0  convergence rate =   0.1218    
+ # the residual norm   6.353185958434554E-010  6.353207377714297E-010
+  I received L =            0  for atom #           1  with mnloc =          136
+  I received L =            0  for atom #           2  with mnloc =          247
+  I received L =            2  for atom #           2  with mnloc =          247
+  I received L =            0  for atom #           3  with mnloc =          247
+  I received L =            2  for atom #           3  with mnloc =          247
+  I received L =            0  for atom #           4  with mnloc =          247
+  I received L =            2  for atom #           4  with mnloc =          247
+  I received L =            0  for atom #           5  with mnloc =          247
+  I received L =            2  for atom #           5  with mnloc =          247
+ 
+ Closing file on PE #           0
+ 
+  Error code ierr =           -1

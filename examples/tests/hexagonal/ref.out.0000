@@ -1,0 +1,419 @@
+ Processor No            0   has started
+ Number of processors:            1
+ Number of threads/processor: *** No openMP support
+ Original Laplacian coefficients are:    1.33333333333420     
+   1.33333333333420        1.00000000000000        1.33333333333549     
+  0.000000000000000E+000  0.000000000000000E+000
+ number of zero mixed derivatives is:            2
+ 2d non-orthogonal grid found
+ Laplacian number of directions:  1
+ Laplacian coefficients data:
+ 0.67  0.67  1.00  0.67  0.00  0.00
+  survived first allreduce
+  grid%lap_dir_num > 0
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is        1600
+  reduced size is         1600
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+ The local dimension is :        1600
+ INTERIOR POINTS Mvec, PreCond (        1600        1600 ) 
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ I communicate with            0  processors, a total of            0  elements
+ Also, I receive from these procs:            0  elements
+ 
+ topo_aware: I am now aware that I communicate with           0 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          342
+ 
+ Sizes of all non-local blocks 
+   342   342
+ 
+ Transform atoms           2
+ My number of non-local rows:          684  of total          684
+ My number of rows in WS sphere:            0  of total            0
+ 
+  ionpbc v_first_omp time [sec]:       0.00
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.00
+ 
+  is this the correct total charge?=   20.2746236632147     
+  average charge total*vcell =   4.00000000000000     
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.2042    
+ # reported residual norm:   6.099273559775929E-006
+ # euclidean norm of lap(pot):   6.099273563190605E-006
+ allocating both dwvec and zwvec of size (why!):        1601
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      15,  max_iter =      63
+  num_mv  =     675,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4362E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =          675  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      15,  max_iter =      63
+  num_mv  =     675,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4564E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            2  spin =            1
+  maxmvs =          675  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      16,  max_iter =      63
+  num_mv  =     677,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4321E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =          677  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      16,  max_iter =      63
+  num_mv  =     677,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4665E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            4  spin =            1
+  maxmvs =          677  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      15,  max_iter =      63
+  num_mv  =     635,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.5045E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            5  spin =            1
+  maxmvs =          635  nec =           11
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      15,  max_iter =      63
+  num_mv  =     635,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.5161E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            6  spin =            1
+  maxmvs =          635  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      14,  max_iter =      63
+  num_mv  =     653,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4595E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            7  spin =            1
+  maxmvs =          653  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      14,  max_iter =      63
+  num_mv  =     633,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4369E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            8  spin =            1
+  maxmvs =          633  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      14,  max_iter =      63
+  num_mv  =     693,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4778E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            9  spin =            1
+  maxmvs =          693  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      15,  max_iter =      63
+  num_mv  =     695,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4857E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           10  spin =            1
+  maxmvs =          695  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      15,  max_iter =      63
+  num_mv  =     675,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4559E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           11  spin =            1
+  maxmvs =          675  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      15,  max_iter =      63
+  num_mv  =     635,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.5370E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           12  spin =            1
+  maxmvs =          635  nec =           11
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      15,  max_iter =      63
+  num_mv  =     635,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4829E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           13  spin =            1
+  maxmvs =          635  nec =           11
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      14,  max_iter =      63
+  num_mv  =     633,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4516E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           14  spin =            1
+  maxmvs =          633  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      15,  max_iter =      63
+  num_mv  =     635,   num_restart=       2
+  num_outrst =    2,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4806E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           15  spin =            1
+  maxmvs =          635  nec =           11
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      14,  max_iter =      63
+  num_mv  =     593,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4804E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           16  spin =            1
+  maxmvs =          593  nec =           11
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   12,  true nconv=    12
+  num_iter =      16,  max_iter =      63
+  num_mv  =     677,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.5113E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           17  spin =            1
+  maxmvs =          677  nec =           12
+  nstate =           11  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1600,  blksize=  2,  n_spdim=   23
+  nwant  =   11,  nconv=   11,  true nconv=    11
+  num_iter =      14,  max_iter =      63
+  num_mv  =     593,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.5125E+01
+  kactmax =   23,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =           18  spin =            1
+  maxmvs =          593  nec =           11
+  nstate =           11  info =            0
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632069     
+  average charge total*vcell =   3.99999999999847     
+# Poisson solver, return code =   0  convergence rate =   0.1853    
+ # reported residual norm:   2.471682751554430E-007
+ # euclidean norm of lap(pot):   2.471682747627905E-007
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632170     
+  average charge total*vcell =   4.00000000000047     
+# Poisson solver, return code =   0  convergence rate =   0.2126    
+ # reported residual norm:   3.191126875611760E-009
+ # euclidean norm of lap(pot):   3.191127059904519E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632091     
+  average charge total*vcell =   3.99999999999890     
+# Poisson solver, return code =   0  convergence rate =   0.2087    
+ # reported residual norm:   1.135014790917181E-008
+ # euclidean norm of lap(pot):   1.135014776979033E-008
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632075     
+  average charge total*vcell =   3.99999999999859     
+# Poisson solver, return code =   0  convergence rate =   0.2074    
+ # reported residual norm:   3.879381159506927E-009
+ # euclidean norm of lap(pot):   3.879381174131708E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632217     
+  average charge total*vcell =   4.00000000000138     
+# Poisson solver, return code =   0  convergence rate =   0.2068    
+ # reported residual norm:   1.036205664373937E-009
+ # euclidean norm of lap(pot):   1.036205785111883E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632159     
+  average charge total*vcell =   4.00000000000025     
+# Poisson solver, return code =   0  convergence rate =   0.2084    
+ # reported residual norm:   6.376715483197537E-011
+ # euclidean norm of lap(pot):   6.376715912937243E-011
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   20.2746236632197     
+  average charge total*vcell =   4.00000000000099     
+# Poisson solver, return code =   0  convergence rate =   0.2144    
+ # reported residual norm:   1.717022316474092E-011
+ # euclidean norm of lap(pot):   1.717041409910696E-011
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.00
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =          342
+  I received L =            1  for atom #           1  with mnloc =          342
+  I received L =            3  for atom #           1  with mnloc =          342
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =          342
+  I received L =            1  for atom #           2  with mnloc =          342
+  I received L =            3  for atom #           2  with mnloc =          342
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

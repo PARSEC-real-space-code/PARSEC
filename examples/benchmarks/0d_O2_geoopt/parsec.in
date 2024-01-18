@@ -1,0 +1,27 @@
+#
+# O2 dimer, d = 1.00 ang.
+# 
+#Restart_run .true.
+
+Boundary_Sphere_Radius:  12.0
+Grid_Spacing:  0.3
+
+eigensolver chebff  #diagla
+ 
+States_Num:  10
+ 
+Atom_Types_Num:  1
+ 
+Atom_Type: O
+Local_Component: p
+begin Atom_Coord
+ 0.944863      .000000      .000000
+-0.944863      .000000      .000000
+end Atom_Coord
+
+minimization  bfgs
+force_Min  0.01
+movement_Num  150
+
+spin_polarization .true.
+ 

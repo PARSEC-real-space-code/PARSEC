@@ -1,0 +1,45 @@
+# Olddat_style: .true.
+Spin-Orbit: .true.
+SCFSO: .true.
+Spin_Polarization: .true.
+Restart_run: .false.
+Boundary_Sphere_Radius: 11
+Grid_Spacing: 0.25
+Expansion_Order: 12
+States_Num: 8
+Net_Charges: 0
+Fermi_Temp: 100.00
+Max_Iter: 100  #40
+Eigensolver: chebdav
+Mixing_Method: Broyden
+Mixing_Param: 0.25d0
+Memory_Param: 4
+complex_wfn: .false.
+
+Atom_Types_Num: 2
+Total_Atom_Num: 2
+#==================Au atom============
+Atom_Type: Au
+SO_PSP: .true.
+Local_Component: s
+Move_Flag: 0
+Begin atom_coord
+   2.89 0 0 
+End atom_coord
+#================H atom==============
+Atom_Type: H
+SO_PSP: .false.
+Local_Component: s
+Move_Flag: 0
+Begin atom_coord
+    0 0 0
+End atom_coord
+
+Correlation_Type: CA
+
+#old_pseudopotential_format: .true.
+Output_Eigenvalues: .true.
+output_all_states: .true.
+Save_Intermediate_Eigen_Value: .false.
+
+#========== End of Input File =============

@@ -1,0 +1,13 @@
+
+for job in 3 5 7 9 11
+do
+   cd radius_$job
+   if [[ ! -f parsec.out ]]
+   then
+      pwd
+      parsec.ser
+      date
+   fi
+   cd ..
+done
+

@@ -1,0 +1,448 @@
+ Processor No            0   has started
+ Number of processors:            1
+ Number of threads/processor: *** No openMP support
+ Original Laplacian coefficients are:    1.34768800017690     
+   1.34843800032558        1.00375000074337        1.36443865530008     
+  5.971030655923869E-002 -8.109606222593960E-002
+ number of zero mixed derivatives is:            0
+ laplacian orthogonal dir is :           0
+ found the following 3 nearest neighbors
+           1          -1          -1           0
+           2           1           0           1
+           3           1           0          -1
+ uu matrix is:
+ -0.939756731855570       -1.06361551848390       0.000000000000000E+000
+  0.778692613208080       0.000000000000000E+000  0.667747799477991     
+  0.740940725595106       0.000000000000000E+000 -0.635374640349322     
+ mt matrix is:
+   1.99907968720260       0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000   1.03994055787892      -0.941549894090312     
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+ mt matrix is singular, replacing last neighbor
+ found the following 3 nearest neighbors
+           1          -1          -1           0
+           2           1           0           1
+           3          -1           0           1
+ uu matrix is:
+ -0.939756731855570       -1.06361551848390       0.000000000000000E+000
+  0.778692613208080       0.000000000000000E+000  0.667747799477991     
+ -0.740940725595106       0.000000000000000E+000  0.635374640349322     
+ mt matrix is:
+   1.99907968720260       0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000   1.03994055787892      -0.941549894090312     
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+ mt matrix is singular, replacing last neighbor
+ found the following 3 nearest neighbors
+           1          -1          -1           0
+           2           1           0           1
+           3           1           1          -1
+ uu matrix is:
+ -0.939756731855570       -1.06361551848390       0.000000000000000E+000
+  0.778692613208080       0.000000000000000E+000  0.667747799477991     
+  0.735985714616420       0.832987730668151      -0.631125598273817     
+ mt matrix is:
+   1.99907968720260       0.000000000000000E+000   1.22613414044502     
+  0.000000000000000E+000   1.03994055787892      -0.928998848916541     
+  0.000000000000000E+000  0.000000000000000E+000  -1.05143975974537     
+ coeffs vec is:
+  0.635226634830649       0.126317483662964       7.712858627828446E-002
+ bb is:  0.635226634830649       0.126317483662964       7.712858627828446E-002
+ lap_dir is:           1           1           1
+ Laplacian number of directions:  3
+ Laplacian coefficients data:
+ 0.67  0.58  0.92  0.64  0.13  0.08
+  survived first allreduce
+  grid%lap_dir_num > 0
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is        1280
+  reduced size is         1280
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+ The local dimension is :        1280
+ INTERIOR POINTS Mvec, PreCond (        1280        1280 ) 
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ I communicate with            0  processors, a total of            0  elements
+ Also, I receive from these procs:            0  elements
+ 
+ topo_aware: I am now aware that I communicate with           0 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          203
+ 
+ Sizes of all non-local blocks 
+     0     0     0     0     0   201   203
+ 
+ Transform atoms           7
+ My number of non-local rows:          404  of total          404
+ My number of rows in WS sphere:            0  of total            0
+ 
+  ionpbc v_first_omp time [sec]:       0.00
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.00
+ 
+  is this the correct total charge?=   44.6041720590723     
+  average charge total*vcell =   11.0000000000000     
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.1460    
+ # reported residual norm:   9.748973156469080E-006
+ # euclidean norm of lap(pot):   9.748973145998291E-006
+ allocating both dwvec and zwvec of size (why!):        1281
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =      10,  max_iter =     106
+  num_mv  =     885,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4135E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =          885  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       8,  max_iter =     106
+  num_mv  =     777,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.3859E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            2  spin =            1
+  maxmvs =          777  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       9,  max_iter =     106
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4399E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            1
+  maxmvs =          861  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   14,  true nconv=    14
+  num_iter =      11,  max_iter =     106
+  num_mv  =     929,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4524E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            4  spin =            1
+  maxmvs =          929  nec =           14
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       9,  max_iter =     106
+  num_mv  =     841,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4033E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            2
+  maxmvs =          841  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       8,  max_iter =     106
+  num_mv  =     757,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.3875E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            2  spin =            2
+  maxmvs =          757  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       9,  max_iter =     106
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.4340E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            3  spin =            2
+  maxmvs =          861  nec =           15
+  nstate =           14  info =            0
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1280,  blksize=  4,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=    15
+  num_iter =       9,  max_iter =     106
+  num_mv  =     841,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.3882E+01
+  kactmax =   26,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            4  spin =            2
+  maxmvs =          841  nec =           15
+  nstate =           14  info =            0
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590721     
+  average charge total*vcell =   11.0000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.1556    
+ # reported residual norm:   1.682974045451958E-006
+ # euclidean norm of lap(pot):   1.682974034648185E-006
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590739     
+  average charge total*vcell =   11.0000000000004     
+# Poisson solver, return code =   0  convergence rate =   0.1544    
+ # reported residual norm:   8.993844868481932E-007
+ # euclidean norm of lap(pot):   8.993844911594982E-007
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590714     
+  average charge total*vcell =   10.9999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.1508    
+ # reported residual norm:   1.028402471956786E-007
+ # euclidean norm of lap(pot):   1.028402484175708E-007
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590724     
+  average charge total*vcell =   11.0000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.1512    
+ # reported residual norm:   5.356212115059230E-008
+ # euclidean norm of lap(pot):   5.356212549007746E-008
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590707     
+  average charge total*vcell =   10.9999999999996     
+# Poisson solver, return code =   0  convergence rate =   0.1526    
+ # reported residual norm:   2.309692525253266E-008
+ # euclidean norm of lap(pot):   2.309692525009998E-008
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590703     
+  average charge total*vcell =   10.9999999999995     
+# Poisson solver, return code =   0  convergence rate =   0.1490    
+ # reported residual norm:   5.115564722317002E-009
+ # euclidean norm of lap(pot):   5.115565776556971E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590734     
+  average charge total*vcell =   11.0000000000003     
+# Poisson solver, return code =   0  convergence rate =   0.1493    
+ # reported residual norm:   3.567173644125808E-009
+ # euclidean norm of lap(pot):   3.567159600801190E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590731     
+  average charge total*vcell =   11.0000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.1511    
+ # reported residual norm:   2.753443311559847E-009
+ # euclidean norm of lap(pot):   2.753436433524246E-009
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590718     
+  average charge total*vcell =   10.9999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.1488    
+ # reported residual norm:   8.660868093995761E-010
+ # euclidean norm of lap(pot):   8.660922375371332E-010
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590755     
+  average charge total*vcell =   11.0000000000008     
+# Poisson solver, return code =   0  convergence rate =   0.1496    
+ # reported residual norm:   2.090123092283358E-010
+ # euclidean norm of lap(pot):   2.090152109370826E-010
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+ 
+ symm_scalar fsym collection [sec]:       0.00
+ 
+ symm_scalar total time [sec]:       0.00
+  is this the correct total charge?=   44.6041720590733     
+  average charge total*vcell =   11.0000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.1495    
+ # reported residual norm:   2.454622001676452E-010
+ # euclidean norm of lap(pot):   2.454608935368999E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.00
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            2  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            2  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            2  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            2  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =            0
+  I received L =            2  for atom #           5  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =          201
+  I received L =            1  for atom #           6  with mnloc =          201
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =          203
+  I received L =            1  for atom #           7  with mnloc =          203
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

@@ -1,0 +1,1810 @@
+ Processor No            0   has started
+ Number of processors:            8
+ Number of threads/processor: *** No openMP support
+ Original Laplacian coefficients are:    1.00000000000000     
+   1.00000000000000        1.00000000000000       0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000
+ number of zero mixed derivatives is:            3
+ orthogonal grid found
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+  survived first allreduce
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is       21952
+  reduced size is        21952
+  maximum distance between grid points and their images is
+   0.1250E-14  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node            1
+  neibs sent to node            2
+  neibs sent to node            3
+  neibs sent to node            4
+  neibs sent to node            5
+  neibs sent to node            6
+  neibs sent to node            7
+ The local dimension is :        2744
+ INTERIOR POINTS Mvec, PreCond (           0        1176 ) 
+ WARNING, NO MATVEC INTERIOR POINTS
+ CURRENT SYSTEM SIZE/PE RATIO NOT RECOMMENDED
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ send PE            1  #rows:        2744
+ send PE            2  #rows:        1960
+ send PE            3  #rows:           0
+ send PE            4  #rows:           0
+ send PE            5  #rows:           0
+ send PE            6  #rows:        1960
+ send PE            7  #rows:        2744
+ I communicate with            4  processors, a total of         9408  elements
+ Also, I receive from these procs:         9408  elements
+ 
+ topo_aware: I am now aware that I communicate with           4 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           81
+ 
+ Sizes of all non-local blocks 
+    56    64    56    56    56    56    56    56    81    81    81    81
+    81    81    81    81    56    56    56    56    56    56    56    56
+    81    81    81    81    81    81    81    81    56    56    56    56
+    56    56    56    56    81    81    81    81    81    81    81    81
+    56    56    56    56    56    56    56    56    81    81    81    81
+    81    81    81    81
+ 
+ Transform atoms          64
+ My number of non-local rows:          548  of total         4392
+ My number of rows in WS sphere:            0  of total            0
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.7890E-01
+ # reported residual norm:   8.180404747772339E-005
+ # euclidean norm of lap(pot):   2.669646150621160E-005
+ allocating both dwvec and zwvec of size (why!):       21953
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    2744,  blksize=  6,  n_spdim=  154
+  nwant  =  142,  nconv=  143,  true nconv=   143
+  num_iter =      69,  max_iter =     426
+  num_mv  =    9399,   num_restart=      41
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.2673E+01
+  kactmax =   60,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         9399  nec =          143
+  nstate =          142  info =            0
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7587E-01
+ # reported residual norm:   2.574914258831437E-006
+ # euclidean norm of lap(pot):   8.915717865294780E-007
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7398E-01
+ # reported residual norm:   3.732030673427834E-007
+ # euclidean norm of lap(pot):   1.267313054723246E-007
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7448E-01
+ # reported residual norm:   2.352412486543934E-007
+ # euclidean norm of lap(pot):   8.121747749219587E-008
+  is this the correct total charge?=   650.402182657524     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7175E-01
+ # reported residual norm:   1.970977117775504E-008
+ # euclidean norm of lap(pot):   7.062610352316878E-009
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7236E-01
+ # reported residual norm:   2.530716205797905E-008
+ # euclidean norm of lap(pot):   8.589808151162771E-009
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7188E-01
+ # reported residual norm:   8.071675810234961E-009
+ # euclidean norm of lap(pot):   2.799242852325971E-009
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7190E-01
+ # reported residual norm:   3.014879972188478E-009
+ # euclidean norm of lap(pot):   1.023213229232533E-009
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7222E-01
+ # reported residual norm:   1.857781810345875E-009
+ # euclidean norm of lap(pot):   6.512403941613152E-010
+  is this the correct total charge?=   650.402182657517     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7189E-01
+ # reported residual norm:   1.034255272847412E-009
+ # euclidean norm of lap(pot):   3.647104700624520E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.04
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           28
+  I received L =            1  for atom #           5  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           28
+  I received L =            1  for atom #           6  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           28
+  I received L =            1  for atom #           7  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           28
+  I received L =            1  for atom #           8  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           51
+  I received L =            1  for atom #          25  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           51
+  I received L =            1  for atom #          26  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           30
+  I received L =            1  for atom #          27  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           30
+  I received L =            1  for atom #          28  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           28
+  I received L =            1  for atom #          37  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           28
+  I received L =            1  for atom #          38  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           28
+  I received L =            1  for atom #          39  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           28
+  I received L =            1  for atom #          40  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           51
+  I received L =            1  for atom #          57  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           51
+  I received L =            1  for atom #          58  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           30
+  I received L =            1  for atom #          59  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           30
+  I received L =            1  for atom #          60  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           81
+ 
+ Sizes of all non-local blocks 
+    56    64    62    62    56    56    61    58    73    80    73    72
+    71    76    72    79    60    56    56    58    64    60    60    56
+    81    75    81    71    73    76    73    73    56    61    56    60
+    56    57    64    56    73    76    76    72    81    71    75    76
+    56    56    59    56    61    56    56    61    74    69    72    76
+    74    74    74    76
+ 
+ Transform atoms          64
+ My number of non-local rows:          541  of total         4260
+ My number of rows in WS sphere:            0  of total            0
+ allocating both dwvec and zwvec of size (why!):       21953
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+ allocating both dwvec and zwvec of size (why!):       21953
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.6912E-01
+ # reported residual norm:   1.310694971555450E-006
+ # euclidean norm of lap(pot):   4.709356435502657E-007
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7092E-01
+ # reported residual norm:   1.081812193403669E-006
+ # euclidean norm of lap(pot):   3.933542261140672E-007
+  is this the correct total charge?=   650.402182657517     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7253E-01
+ # reported residual norm:   5.263869433006154E-007
+ # euclidean norm of lap(pot):   1.858046363822607E-007
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7078E-01
+ # reported residual norm:   1.074718826525876E-007
+ # euclidean norm of lap(pot):   3.839191283683297E-008
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6976E-01
+ # reported residual norm:   3.955182024824028E-008
+ # euclidean norm of lap(pot):   1.400942543870480E-008
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6911E-01
+ # reported residual norm:   1.454109905298891E-008
+ # euclidean norm of lap(pot):   5.162926998564884E-009
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6879E-01
+ # reported residual norm:   5.392438642603268E-009
+ # euclidean norm of lap(pot):   1.910202041361049E-009
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6932E-01
+ # reported residual norm:   3.149128960484539E-009
+ # euclidean norm of lap(pot):   1.125413856706816E-009
+  is this the correct total charge?=   650.402182657517     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7015E-01
+ # reported residual norm:   1.425921202352760E-009
+ # euclidean norm of lap(pot):   5.081927783290098E-010
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6938E-01
+ # reported residual norm:   1.016811917002135E-009
+ # euclidean norm of lap(pot):   3.534346515093801E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.04
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           28
+  I received L =            1  for atom #           5  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           28
+  I received L =            1  for atom #           6  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           33
+  I received L =            1  for atom #           7  with mnloc =           33
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           28
+  I received L =            1  for atom #           8  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           51
+  I received L =            1  for atom #          25  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           51
+  I received L =            1  for atom #          26  with mnloc =           51
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           30
+  I received L =            1  for atom #          27  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           27
+  I received L =            1  for atom #          28  with mnloc =           27
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           28
+  I received L =            1  for atom #          37  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           28
+  I received L =            1  for atom #          38  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           32
+  I received L =            1  for atom #          39  with mnloc =           32
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           28
+  I received L =            1  for atom #          40  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           44
+  I received L =            1  for atom #          57  with mnloc =           44
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           45
+  I received L =            1  for atom #          58  with mnloc =           45
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           30
+  I received L =            1  for atom #          59  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           30
+  I received L =            1  for atom #          60  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           76
+ 
+ Sizes of all non-local blocks 
+    58    64    62    64    59    60    65    63    67    73    66    65
+    65    70    66    73    63    56    56    62    59    62    62    60
+    73    71    74    64    66    71    66    67    57    64    56    64
+    56    61    62    56    67    71    71    60    76    62    71    72
+    60    56    62    61    65    56    56    65    67    64    66    71
+    71    71    66    71
+ 
+ Transform atoms          64
+ My number of non-local rows:          530  of total         4126
+ My number of rows in WS sphere:            0  of total            0
+ allocating both dwvec and zwvec of size (why!):       21953
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+ allocating both dwvec and zwvec of size (why!):       21953
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6940E-01
+ # reported residual norm:   1.704949105894076E-006
+ # euclidean norm of lap(pot):   6.030147069076672E-007
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7085E-01
+ # reported residual norm:   2.379994425319905E-006
+ # euclidean norm of lap(pot):   8.399370237065541E-007
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7222E-01
+ # reported residual norm:   1.267962296061966E-006
+ # euclidean norm of lap(pot):   4.351416655324617E-007
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.7077E-01
+ # reported residual norm:   2.110541908214429E-007
+ # euclidean norm of lap(pot):   7.385977957976541E-008
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.6957E-01
+ # reported residual norm:   5.770075041666500E-008
+ # euclidean norm of lap(pot):   2.020862743844092E-008
+  is this the correct total charge?=   650.402182657524     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6868E-01
+ # reported residual norm:   3.839745169001145E-008
+ # euclidean norm of lap(pot):   1.385364455502086E-008
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6907E-01
+ # reported residual norm:   1.287558839173072E-008
+ # euclidean norm of lap(pot):   4.585359779948671E-009
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6864E-01
+ # reported residual norm:   9.599528912321795E-009
+ # euclidean norm of lap(pot):   3.471466378155340E-009
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7045E-01
+ # reported residual norm:   2.522031872750462E-009
+ # euclidean norm of lap(pot):   8.782045677962981E-010
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7004E-01
+ # reported residual norm:   3.649123840035702E-009
+ # euclidean norm of lap(pot):   1.304319771126135E-009
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6902E-01
+ # reported residual norm:   1.033981121179834E-009
+ # euclidean norm of lap(pot):   3.583746734195788E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.04
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           30
+  I received L =            1  for atom #           5  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           31
+  I received L =            1  for atom #           6  with mnloc =           31
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           37
+  I received L =            1  for atom #           7  with mnloc =           37
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           28
+  I received L =            1  for atom #           8  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           47
+  I received L =            1  for atom #          25  with mnloc =           47
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           49
+  I received L =            1  for atom #          26  with mnloc =           49
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           29
+  I received L =            1  for atom #          27  with mnloc =           29
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           26
+  I received L =            1  for atom #          28  with mnloc =           26
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           28
+  I received L =            1  for atom #          37  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           28
+  I received L =            1  for atom #          38  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           30
+  I received L =            1  for atom #          39  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           28
+  I received L =            1  for atom #          40  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           40
+  I received L =            1  for atom #          57  with mnloc =           40
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           40
+  I received L =            1  for atom #          58  with mnloc =           40
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           30
+  I received L =            1  for atom #          59  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           29
+  I received L =            1  for atom #          60  with mnloc =           29
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           72
+ 
+ Sizes of all non-local blocks 
+    57    64    63    63    56    58    63    61    64    67    61    62
+    66    64    60    65    62    56    56    57    60    62    64    56
+    68    60    68    64    65    64    68    65    56    64    56    58
+    56    59    61    56    64    62    64    63    72    63    61    63
+    56    56    62    58    64    56    56    63    60    71    64    63
+    63    61    64    61
+ 
+ Transform atoms          64
+ My number of non-local rows:          519  of total         3945
+ My number of rows in WS sphere:            0  of total            0
+ allocating both dwvec and zwvec of size (why!):       21953
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+ allocating both dwvec and zwvec of size (why!):       21953
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.6916E-01
+ # reported residual norm:   2.992390941957025E-006
+ # euclidean norm of lap(pot):   1.094270318373960E-006
+  is this the correct total charge?=   650.402182657517     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7088E-01
+ # reported residual norm:   4.753488994160855E-006
+ # euclidean norm of lap(pot):   1.700149929699328E-006
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7174E-01
+ # reported residual norm:   2.833234613340494E-006
+ # euclidean norm of lap(pot):   1.045074482690862E-006
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7031E-01
+ # reported residual norm:   4.413904038344138E-007
+ # euclidean norm of lap(pot):   1.425389301267856E-007
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6955E-01
+ # reported residual norm:   1.117473391103183E-007
+ # euclidean norm of lap(pot):   4.050339324756092E-008
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6921E-01
+ # reported residual norm:   6.271620882445835E-008
+ # euclidean norm of lap(pot):   2.230375202998325E-008
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6869E-01
+ # reported residual norm:   3.320258174521256E-008
+ # euclidean norm of lap(pot):   1.182733108247312E-008
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6889E-01
+ # reported residual norm:   1.422212931848064E-008
+ # euclidean norm of lap(pot):   4.981295651700814E-009
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7005E-01
+ # reported residual norm:   3.964348374377912E-009
+ # euclidean norm of lap(pot):   1.400868810179166E-009
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.6882E-01
+ # reported residual norm:   5.732143627451085E-009
+ # euclidean norm of lap(pot):   1.991962983585405E-009
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6951E-01
+ # reported residual norm:   2.047268827426258E-009
+ # euclidean norm of lap(pot):   7.206446661495430E-010
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6950E-01
+ # reported residual norm:   9.264142283756359E-010
+ # euclidean norm of lap(pot):   3.245868639588808E-010
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6907E-01
+ # reported residual norm:   6.556088085312275E-010
+ # euclidean norm of lap(pot):   2.296121838981922E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.04
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           28
+  I received L =            1  for atom #           5  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           30
+  I received L =            1  for atom #           6  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           35
+  I received L =            1  for atom #           7  with mnloc =           35
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           28
+  I received L =            1  for atom #           8  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           43
+  I received L =            1  for atom #          25  with mnloc =           43
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           46
+  I received L =            1  for atom #          26  with mnloc =           46
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           27
+  I received L =            1  for atom #          27  with mnloc =           27
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           30
+  I received L =            1  for atom #          28  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           28
+  I received L =            1  for atom #          37  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           28
+  I received L =            1  for atom #          38  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           30
+  I received L =            1  for atom #          39  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           28
+  I received L =            1  for atom #          40  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           29
+  I received L =            1  for atom #          57  with mnloc =           29
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           45
+  I received L =            1  for atom #          58  with mnloc =           45
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           36
+  I received L =            1  for atom #          59  with mnloc =           36
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           28
+  I received L =            1  for atom #          60  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           69
+ 
+ Sizes of all non-local blocks 
+    56    63    64    56    56    56    63    56    65    58    69    67
+    65    62    64    63    62    56    56    56    64    61    63    56
+    58    66    66    62    62    65    62    63    56    63    56    56
+    56    56    60    56    62    67    63    68    65    65    65    64
+    56    58    62    56    60    56    56    62    67    69    63    66
+    65    67    63    61
+ 
+ Transform atoms          64
+ My number of non-local rows:          527  of total         3926
+ My number of rows in WS sphere:            0  of total            0
+ allocating both dwvec and zwvec of size (why!):       21953
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+ allocating both dwvec and zwvec of size (why!):       21953
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6954E-01
+ # reported residual norm:   2.987603157522041E-006
+ # euclidean norm of lap(pot):   1.067180774762369E-006
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7087E-01
+ # reported residual norm:   5.468950445249658E-006
+ # euclidean norm of lap(pot):   1.969263844974223E-006
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7165E-01
+ # reported residual norm:   2.631870240880447E-006
+ # euclidean norm of lap(pot):   9.593396114095666E-007
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7046E-01
+ # reported residual norm:   6.923610161136879E-007
+ # euclidean norm of lap(pot):   2.360366587286393E-007
+  is this the correct total charge?=   650.402182657527     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.7012E-01
+ # reported residual norm:   1.691668380105709E-007
+ # euclidean norm of lap(pot):   5.805027189069249E-008
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6971E-01
+ # reported residual norm:   1.075467079888606E-007
+ # euclidean norm of lap(pot):   3.740275261638880E-008
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6945E-01
+ # reported residual norm:   6.058037350690799E-008
+ # euclidean norm of lap(pot):   2.237443404077012E-008
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6951E-01
+ # reported residual norm:   3.023207212138303E-008
+ # euclidean norm of lap(pot):   1.084017896713806E-008
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7036E-01
+ # reported residual norm:   1.534782838230679E-008
+ # euclidean norm of lap(pot):   5.139737401462346E-009
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6898E-01
+ # reported residual norm:   7.711112288770700E-009
+ # euclidean norm of lap(pot):   2.551434723811306E-009
+  is this the correct total charge?=   650.402182657525     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6898E-01
+ # reported residual norm:   5.451653592586021E-009
+ # euclidean norm of lap(pot):   1.836707591009726E-009
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6899E-01
+ # reported residual norm:   3.131695205557658E-009
+ # euclidean norm of lap(pot):   1.045182799556537E-009
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.6962E-01
+ # reported residual norm:   1.823405080698130E-009
+ # euclidean norm of lap(pot):   6.133714456517380E-010
+  is this the correct total charge?=   650.402182657520     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.7044E-01
+ # reported residual norm:   6.709888125215197E-010
+ # euclidean norm of lap(pot):   2.166734454543647E-010
+  is this the correct total charge?=   650.402182657524     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.6892E-01
+ # reported residual norm:   6.023559635914223E-010
+ # euclidean norm of lap(pot):   1.805552498829163E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.03
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           28
+  I received L =            1  for atom #           5  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           28
+  I received L =            1  for atom #           6  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           35
+  I received L =            1  for atom #           7  with mnloc =           35
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           28
+  I received L =            1  for atom #           8  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           36
+  I received L =            1  for atom #          25  with mnloc =           36
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           56
+  I received L =            1  for atom #          26  with mnloc =           56
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           31
+  I received L =            1  for atom #          27  with mnloc =           31
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           33
+  I received L =            1  for atom #          28  with mnloc =           33
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           28
+  I received L =            1  for atom #          37  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           28
+  I received L =            1  for atom #          38  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           30
+  I received L =            1  for atom #          39  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           28
+  I received L =            1  for atom #          40  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           27
+  I received L =            1  for atom #          57  with mnloc =           27
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           39
+  I received L =            1  for atom #          58  with mnloc =           39
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           37
+  I received L =            1  for atom #          59  with mnloc =           37
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           35
+  I received L =            1  for atom #          60  with mnloc =           35
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           72
+ 
+ Sizes of all non-local blocks 
+    56    66    61    58    61    56    66    58    62    67    72    72
+    66    69    65    63    62    62    56    62    60    56    61    63
+    65    67    67    63    66    64    64    63    60    64    56    65
+    58    66    60    61    63    63    64    63    60    62    62    67
+    56    63    62    57    56    56    57    59    67    64    65    65
+    60    63    63    68
+ 
+ Transform atoms          64
+ My number of non-local rows:          551  of total         3994
+ My number of rows in WS sphere:            0  of total            0
+ allocating both dwvec and zwvec of size (why!):       21953
+ 
+  ionpbc v_first_omp time [sec]:       0.03
+  ionpbc pot_local time [sec]:       0.00
+  ionpbc store/index time [sec]:       0.00
+  ionpbc total [sec]:       0.04
+ 
+ allocating both dwvec and zwvec of size (why!):       21953
+  is this the correct total charge?=   650.402182657527     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.6961E-01
+ # reported residual norm:   2.439130826754408E-006
+ # euclidean norm of lap(pot):   8.706370922845622E-007
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7098E-01
+ # reported residual norm:   4.833949576667491E-006
+ # euclidean norm of lap(pot):   1.695334144976042E-006
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7148E-01
+ # reported residual norm:   2.450169486104884E-006
+ # euclidean norm of lap(pot):   8.907592439793516E-007
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7069E-01
+ # reported residual norm:   6.406165574742183E-007
+ # euclidean norm of lap(pot):   2.197791049952896E-007
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6970E-01
+ # reported residual norm:   1.635614196416823E-007
+ # euclidean norm of lap(pot):   5.937277975496997E-008
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6988E-01
+ # reported residual norm:   8.403429699441940E-008
+ # euclidean norm of lap(pot):   2.989886849616612E-008
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.7006E-01
+ # reported residual norm:   6.477334363598323E-008
+ # euclidean norm of lap(pot):   2.352750552866872E-008
+  is this the correct total charge?=   650.402182657523     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6966E-01
+ # reported residual norm:   3.626846102703185E-008
+ # euclidean norm of lap(pot):   1.216994738126483E-008
+  is this the correct total charge?=   650.402182657524     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7085E-01
+ # reported residual norm:   9.792913864183990E-009
+ # euclidean norm of lap(pot):   3.413473206525351E-009
+  is this the correct total charge?=   650.402182657521     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6960E-01
+ # reported residual norm:   7.620292343070532E-009
+ # euclidean norm of lap(pot):   2.685872791861346E-009
+  is this the correct total charge?=   650.402182657522     
+  average charge total*vcell =   256.000000000000     
+# Poisson solver, return code =   0  convergence rate =   0.6878E-01
+ # reported residual norm:   5.469199601629273E-009
+ # euclidean norm of lap(pot):   1.961128974807304E-009
+  is this the correct total charge?=   650.402182657519     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6941E-01
+ # reported residual norm:   2.152214978446788E-009
+ # euclidean norm of lap(pot):   7.719103205505602E-010
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000001     
+# Poisson solver, return code =   0  convergence rate =   0.7044E-01
+ # reported residual norm:   1.620557722795612E-009
+ # euclidean norm of lap(pot):   5.751257989186302E-010
+  is this the correct total charge?=   650.402182657518     
+  average charge total*vcell =   255.999999999999     
+# Poisson solver, return code =   0  convergence rate =   0.6932E-01
+ # reported residual norm:   2.105746372560584E-009
+ # euclidean norm of lap(pot):   7.166802645617292E-010
+  is this the correct total charge?=   650.402182657517     
+  average charge total*vcell =   255.999999999998     
+# Poisson solver, return code =   0  convergence rate =   0.7043E-01
+ # reported residual norm:   3.652950032759977E-010
+ # euclidean norm of lap(pot):   1.325464232489919E-010
+  is this the correct total charge?=   650.402182657526     
+  average charge total*vcell =   256.000000000002     
+# Poisson solver, return code =   0  convergence rate =   0.6939E-01
+ # reported residual norm:   4.938556404575960E-010
+ # euclidean norm of lap(pot):   1.718129512987936E-010
+ 
+  forpbc time to collect rho,vxc: [sec]:       0.00
+ 
+  forpbc time to unmap to fftw[sec]:       0.00
+ 
+  forpbc fftw time  [sec]:       0.00
+  forpbc fftw wrap-around time  [sec]:       0.00
+  forpbc  total time before local-force contrib.r [sec]:       0.00
+  forpbc  time for local contribution [sec]:       0.04
+ 
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  I received L =            1  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  I received L =            1  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  I received L =            1  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  I received L =            1  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =           30
+  I received L =            1  for atom #           5  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =           28
+  I received L =            1  for atom #           6  with mnloc =           28
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =           37
+  I received L =            1  for atom #           7  with mnloc =           37
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =           30
+  I received L =            1  for atom #           8  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  I received L =            1  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  I received L =            1  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  I received L =            1  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  I received L =            1  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  I received L =            1  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  I received L =            1  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  I received L =            1  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  I received L =            1  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  I received L =            1  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  I received L =            1  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  I received L =            1  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  I received L =            1  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  I received L =            1  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  I received L =            1  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  I received L =            1  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  I received L =            1  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =           40
+  I received L =            1  for atom #          25  with mnloc =           40
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =           58
+  I received L =            1  for atom #          26  with mnloc =           58
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =           36
+  I received L =            1  for atom #          27  with mnloc =           36
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =           35
+  I received L =            1  for atom #          28  with mnloc =           35
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  I received L =            1  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          30  with mnloc =            0
+  I received L =            1  for atom #          30  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          31  with mnloc =            0
+  I received L =            1  for atom #          31  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          32  with mnloc =            0
+  I received L =            1  for atom #          32  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          33  with mnloc =            0
+  I received L =            1  for atom #          33  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          34  with mnloc =            0
+  I received L =            1  for atom #          34  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          35  with mnloc =            0
+  I received L =            1  for atom #          35  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          36  with mnloc =            0
+  I received L =            1  for atom #          36  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          37  with mnloc =           30
+  I received L =            1  for atom #          37  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          38  with mnloc =           36
+  I received L =            1  for atom #          38  with mnloc =           36
+  forcnloc reports: 
+  I received L =            0  for atom #          39  with mnloc =           30
+  I received L =            1  for atom #          39  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          40  with mnloc =           30
+  I received L =            1  for atom #          40  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          41  with mnloc =            0
+  I received L =            1  for atom #          41  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          42  with mnloc =            0
+  I received L =            1  for atom #          42  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          43  with mnloc =            0
+  I received L =            1  for atom #          43  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          44  with mnloc =            0
+  I received L =            1  for atom #          44  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          45  with mnloc =            0
+  I received L =            1  for atom #          45  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          46  with mnloc =            0
+  I received L =            1  for atom #          46  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          47  with mnloc =            0
+  I received L =            1  for atom #          47  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          48  with mnloc =            0
+  I received L =            1  for atom #          48  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          49  with mnloc =            0
+  I received L =            1  for atom #          49  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          50  with mnloc =            0
+  I received L =            1  for atom #          50  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          51  with mnloc =            0
+  I received L =            1  for atom #          51  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          52  with mnloc =            0
+  I received L =            1  for atom #          52  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          53  with mnloc =            0
+  I received L =            1  for atom #          53  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          54  with mnloc =            0
+  I received L =            1  for atom #          54  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          55  with mnloc =            0
+  I received L =            1  for atom #          55  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          56  with mnloc =            0
+  I received L =            1  for atom #          56  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          57  with mnloc =           25
+  I received L =            1  for atom #          57  with mnloc =           25
+  forcnloc reports: 
+  I received L =            0  for atom #          58  with mnloc =           30
+  I received L =            1  for atom #          58  with mnloc =           30
+  forcnloc reports: 
+  I received L =            0  for atom #          59  with mnloc =           38
+  I received L =            1  for atom #          59  with mnloc =           38
+  forcnloc reports: 
+  I received L =            0  for atom #          60  with mnloc =           38
+  I received L =            1  for atom #          60  with mnloc =           38
+  forcnloc reports: 
+  I received L =            0  for atom #          61  with mnloc =            0
+  I received L =            1  for atom #          61  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          62  with mnloc =            0
+  I received L =            1  for atom #          62  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          63  with mnloc =            0
+  I received L =            1  for atom #          63  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          64  with mnloc =            0
+  I received L =            1  for atom #          64  with mnloc =            0
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

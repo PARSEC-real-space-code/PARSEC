@@ -1,0 +1,68 @@
+
+boundary_conditions         slab
+
+begin cell_shape
+5.204233713926559 -3.004665735661225  0
+5.204233713926559  3.004665735661225  0
+end cell_shape
+
+lattice_vector_scale        1
+boundary_sphere_radius      20
+grid_spacing                0.45
+
+eigensolver                 chebdav
+diag_tolerance              1d-7
+
+max_iter                    20
+convergence_criterion       1d-4
+
+states_num                  30
+correlation_type            pb
+
+output_all_states           true
+
+
+
+
+kpoint_method               mp
+
+begin monkhorst_pack_grid
+8    8
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+0.0  0.0  0.0
+end monkhorst_pack_shift
+
+
+
+
+begin bandstruc
+1 0.0         0.0         0.0 0.5         0.0         0.0 gamma-M
+2 0.5         0.0         0.0 0.666666666 0.333333333 0.0 M-K
+3 0.666666666 0.333333333 0.0 0.0         0.0         0.0 K-gamma
+end bandstruc
+
+bandstruc_points            15
+
+
+atom_types_num              2
+coordinate_unit             cartesian_bohr
+
+#------------ new atom type ---------------- 
+atom_type                   Mo
+local_component             s
+
+begin atom_coord
+0.0 0.0 0.0 
+end atom_coord
+
+
+atom_type                   S
+local_component             s
+
+begin atom_coord
+     3.46948914261767    0.00000000000000   -2.98576846688340  
+     3.46948914261767    0.00000000000000    2.98576846688340  
+end atom_coord
+#------------ end of atom type ------------- 

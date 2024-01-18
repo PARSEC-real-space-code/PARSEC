@@ -1,0 +1,70 @@
+
+# ======================================
+# The real-space grid
+# ======================================
+boundary_conditions         bulk
+
+begin cell_shape
+0.0    0.5    0.5
+0.5    0.0    0.5
+0.5    0.5    0.0
+end cell_shape
+
+lattice_vector_scale        3.57 ang
+grid_spacing                0.3 bohr
+
+# ======================================
+# Self-consistency and mixing parameters
+# ======================================
+max_iter                    100
+convergence_criterion       1d-6 ry
+
+# ======================================
+# Electronic parameters
+# ======================================
+states_num                  10
+correlation_type            ca
+
+# ======================================
+# Wave functions and k-points
+# ======================================
+kpoint_method               mp
+
+begin monkhorst_pack_grid
+5    5    5 
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+0.5    0.5    0.5
+end monkhorst_pack_shift
+
+# ======================================
+# Band structure and density of states calculation
+# ======================================
+begin bandstruc
+1 0.00d0     0.00d0     0.00d0     0.50d0     0.00d0     0.50d0    gamma-X
+2 0.50d0     0.00d0     0.50d0     0.50d0     0.25d0     0.75d0    X-W
+3 0.50d0     0.25d0     0.75d0     0.375d0    0.375d0    0.75d0    W-K
+4 0.375d0    0.375d0    0.75d0     0.00d0     0.00d0     0.00d0    K-gamma
+5 0.00d0     0.00d0     0.00d0     0.50d0     0.50d0     0.50d0    gamma-L
+6 0.50d0     0.50d0     0.50d0     0.50d0     0.25d0     0.75d0    L-W
+end bandstruc
+
+# ======================================
+# Global atom parameters
+# ======================================
+atom_types_num            1
+coordinate_unit           lattice_vectors
+
+# ===================
+# For each atom type
+# ===================
+atom_type                 C
+pseudopotential_format    martins_new
+local_component           p
+
+begin atom_coord
+0         0         0
+0.25      0.25      0.25
+end atom_coord
+

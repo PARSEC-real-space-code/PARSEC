@@ -1,0 +1,46 @@
+
+Boundary_conditions bulk
+
+begin cell_shape
+   0.00    0.00    1.00
+   0.50   -0.50    0.50
+   0.50    0.50   -0.50
+end cell_shape
+
+coordinate_unit: lattice_vectors
+
+lattice_vector_scale 5.298 bohr
+
+correlation_type pb
+
+Mixing_Param 0.10
+
+kpoint_method mp
+begin monkhorst_pack_grid
+ 12 12 12
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+ 0.5  0.5  0.5
+end monkhorst_pack_shift
+
+Grid_Spacing: 0.30
+
+Spin_Polarization: .true.
+
+States_Num: 10
+
+Fermi_Temp: 600.00
+
+Atom_Types_Num: 1
+ 
+Atom_Type: Fe 
+
+initial_polarization 0.5
+
+Local_Component: s 
+ 
+begin Atom_Coord
+    0.000000    0.000000    0.000000
+end Atom_Coord
+

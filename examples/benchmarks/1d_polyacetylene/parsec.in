@@ -1,0 +1,48 @@
+#
+boundary_conditions wire
+
+output_level 3
+
+begin Cell_shape
+  4.64306
+end Cell_shape
+ 
+Boundary_Sphere_Radius:  6.0
+
+kpoint_number: 1
+kpoint_method mp
+begin monkhorst_pack_grid
+ 8
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+ 0.5
+end monkhorst_pack_shift
+
+Grid_Spacing:  0.3
+ 
+States_Num:  10
+ 
+Atom_Types_Num:  2
+ 
+#------------ new atom type ---------------- 
+Atom_Type: C
+Local_Component: p
+ 
+begin Atom_Coord
+   -1.20895   -0.64345    0.00000
+    1.20895    0.64345    0.00000
+end Atom_Coord
+ 
+#------------ end of atom type ------------- 
+ 
+#------------ new atom type ---------------- 
+Atom_Type: H
+Local_Component: s
+ 
+begin Atom_Coord
+   -1.2562   -2.70271    0.00000
+    1.2562    2.70271    0.00000
+end Atom_Coord
+ 
+#------------ end of atom type ------------- 

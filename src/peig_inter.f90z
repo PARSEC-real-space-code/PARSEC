@@ -1,0 +1,136 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! Diagonalize a real symmetric matrix A of size ndim by ndim,
+! stored in an array of physical size lda by ndim. Output are
+! the eigenvalues (array eig) and eigenvectors (array amat). On exit,
+! matrix A is destroyed.
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine my_zheev(uplo, ndim, amat, lda, eig, info)
+#else
+subroutine my_dsyev(uplo, ndim, amat, lda, eig, info)
+#endif
+
+  use constants
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  character (len=1), intent(in) :: uplo  ! upper/lower matrix
+  integer, intent(in) :: ndim  ! dimension of matrix A
+  integer, intent(in) :: lda ! leading dimension of matrix A
+  SCALAR, intent(inout) :: amat(lda,ndim)  ! matrix A
+  real(dp), intent(out) :: eig(ndim)
+  integer, intent(out) :: info
+  !
+  ! Work variables:
+  !
+  integer :: alcstat, lwork
+#ifdef USEESSL
+  integer :: il, ii, jj
+#endif
+#ifdef CPLX
+  real(dp), allocatable :: rwork(:)
+#endif
+#ifdef USEESSL
+  SCALAR, allocatable :: amat_up(:)
+#endif
+  SCALAR, allocatable :: work(:)
+
+  !  ESSL/LAPACK Subroutines:
+#ifdef USEESSL
+#ifdef CPLX
+  external  zhpev
+#else
+  external  dspev
+#endif
+#else
+#ifdef CPLX
+  external  zheev
+#else
+  external  dsyev
+#endif
+#endif
+
+  info = 0
+  !AJB: Check for optimal memory size
+#ifdef CPLX
+  lwork = 6*ndim
+#else
+  lwork = 4*ndim
+#endif
+  allocate(work(lwork),stat=alcstat)
+  call alccheck('work',lwork,alcstat)
+#ifdef CPLX
+  allocate(rwork(10*lwork),stat=alcstat)
+  call alccheck('rwork',10*lwork,alcstat)
+#endif
+
+#ifdef USEESSL
+
+  jj = ndim*(ndim+1)/2
+  allocate(amat_up(jj),stat=alcstat)
+  call alccheck('dsyev_amat_up',jj,alcstat)
+  if (uplo == 'U') then
+     il = 0
+     do ii = 1, ndim
+        do jj = 1, ii
+           il = il + 1
+           amat_up(il) = amat(jj, ii)
+        enddo
+     enddo
+  elseif (uplo == 'L') then
+     il = 0
+     do ii = 1, ndim
+        do jj = 1, ii
+           il = il + 1
+           amat_up(il) = amat(ii, jj)
+        enddo
+     enddo
+  else
+    write(9,*) ' ERROR in assembling upper/lower matrix, dspev/zhpev ',uplo
+     info = -666
+     return
+  endif
+
+! write(9,*) "zheev/dsyev : calling zh/dspev for essl"
+#ifdef CPLX
+  call zhpev(21, amat_up, eig, amat, lda, ndim, work, lwork)
+#else
+  call dspev(21, amat_up, eig, amat, lda, ndim, work, lwork)
+#endif
+  deallocate(amat_up)
+
+#else
+ ! write(9,*) "actually calling dsyev"
+ ! write(9,*) "up/lo", uplo
+ ! write(9,*) "ndim", ndim
+ ! write(9,*) "lda", lda
+ ! write(9,*) "lwork", lwork
+ ! write(9,*) "eig:", eig
+
+#ifdef CPLX
+  call zheev('V', uplo, ndim, amat, lda, eig, work, lwork, rwork, info)
+#else
+  call dsyev('V', uplo, ndim, amat, lda, eig, work, lwork, info)
+#endif
+  if (info /= 0) then
+     write(9,*) 'ERROR: dsyev/zheev info = ',info
+  endif
+#endif
+! write(9,*) "zh/dsev: deallocating work"
+  deallocate(work)
+#ifdef CPLX
+  deallocate(rwork)
+#endif
+
+! write(9,*) "zh/dsev: returning...."
+  return
+#ifdef CPLX
+end subroutine my_zheev
+#else
+end subroutine my_dsyev
+#endif
+!===================================================================

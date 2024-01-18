@@ -1,0 +1,124 @@
+#
+# Architecture name
+#
+KSEIG_ARCH = ccm_intel
+#
+#
+##### config/make.ccm_intel #####
+#
+# Currently Loaded Modules:
+#    1) ubt18   2) intel/19.0   3) mpich2/3.2   4) mkl/19.0
+#
+# 
+#####
+
+
+
+##### REQUIRED: BLAS & LAPACK
+#   It is HIGHLY RECOMMENDED that you use an optimized BLAS & LAPACK library (like Intel's MKL)
+#   that has been tuned for your hardware
+#   for mkl - don't need to link anything explicitly
+#####
+LIBBLAS = -mkl
+
+
+
+######### RECOMMENDED: FFTW3
+# FFTW libraries should be downloaded from
+# www.fftw.org
+# the default for this code is fftw ver 3.x
+# if you wish to use fftw ver 2.x, add
+# -DFFTW2 in the DEF command (please just use 3)
+#   It is RECOMMENDED that you use an optimized FFTW3 library (like Intel's MKL)
+#   for mkl - don't need to link anything explicitly
+#####
+CPPOPT += -DUSEFFTW3 
+LIBFFTW =
+
+
+
+########### OPTIONAL: BerkeleyGW Support
+# BerkeleyGW should be acquired and installed separately. It is NOT included with PARSEC.
+#   PARSEC makes use of .mod files generated from BerkeleyGW. This path tells it where to look.
+####
+#CPPOPT+=-DGW
+#LIBBGW	=-Wl,-rpath,$(HOME)/BerkeleyGW-1.0.5/library -L$(HOME)/BerkeleyGW-1.0.5/library -lBGW_wfn
+#BGW_MOD_PATH = -I$(HOME)/BerkeleyGW-1.0.5/Common
+
+
+
+######## OPTIONAL: ARPACK
+# ARPACK libraries should be download from the net
+#   As of this edit, Rice University is no longer actively updating ARPACK.
+#   It is being continued as ARPACK-NG and is available freely. Build it separately
+########
+#CPPOPT+=-DUSEARPACK
+#LIBARPACK1 =
+#LIBARPACK2 =
+
+
+
+######## ESOTERIC: EXTERNAL MPI LIB
+# message passing interface libraries
+# These are usually linked automatically through your mpif90 compiler.
+# You will almost certainly *not* need this
+#######
+CPPOPT += -DMPI
+#LIBMPI =
+
+
+
+######## REQUIRED: Fortran Compilers [mpi or serial]
+# See documentation regarding known quirks and gotchas for various compilers
+########
+FC = mpifort
+F90 = mpifort
+
+
+
+######## REQUIRED: Preprocessor command (automatically invoked)
+# This rarely changes, so I've included it as per how it always seems to be
+########
+CPP = /usr/bin/cpp -P -traditional
+
+CPPOPT += -DNEIGHCOLLETIVE -DIALLREDUCE
+#
+#PPOPT += -DDEBUG
+#CPPOPT += -DOMPFUN
+#CPPOPT += -DBETA
+
+
+######## REQUIRED: Corresponding Fortran Compiler Flags
+# These are important. After our most recent update, PARSEC is completely clear of errors according to valgrind.
+# That being said, we can overwhelm the stack in many default terminal sessions. There are commands to change
+# the allowed stack size in a terminal. Contact your system administrator (or turn to google) to find your appropriate command
+# for optimal performance.
+# You may find previously used flags in other make.<files> in this directory
+#
+# For optimal performance, knowledge of the specific hardware PARSEC will run on is required.
+########
+# compilation flags...
+FFLAGS += -O2
+FFLAGS += -xHost
+FFLAGS += -g -traceback
+FFLAGS += -std08
+FFLAGS += -static
+#FFLAGS += -check all -debug extended
+
+#library archiver
+AR = ar
+
+######## OPTIONAL: Change the extension for the named PARSEC executable
+# This does what you think it would. In the Chelikowsky lab, we like to use .ser
+#  for config files that use non-mpi components, and .mpi for the mpi variants.
+#  This is entirely up to you, though.
+#######
+EXT ?= .mpi
+
+
+
+##### 
+# machine-dependent options
+#####
+
+

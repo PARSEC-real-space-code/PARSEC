@@ -1,0 +1,261 @@
+ Processor No  0   has started
+ Number of processors:  8
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank  0  in group  0
+  I am master in my group, with master rank  0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is 357128
+  reduced size is  357128
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node  1
+  neibs sent to node  2
+  neibs sent to node  3
+  neibs sent to node  4
+  neibs sent to node  5
+  neibs sent to node  6
+  neibs sent to node  7
+ The local dimension is : 44641
+ INTERIOR POINTS Mvec - Prec  7195 40764
+ Information to be send to neighbors:
+ send proc  0  #rows: 0
+ send proc  1  #rows: 22188
+ send proc  2  #rows: 0
+ send proc  3  #rows: 0
+ send proc  4  #rows: 0
+ send proc  5  #rows: 0
+ send proc  6  #rows: 0
+ send proc  7  #rows: 0
+ I communicate with  1  processors, a total of  22188  elements
+ I receive from these procs:  24732
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =  7404
+ 
+ Sizes of all non-local blocks 
+  7404   468
+ Total number of atoms with spin-orbit term = 1
+ 
+ Transform atoms 2
+ My number of non-local rows:  0  of total  7872
+  starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.2383E-01
+ # the residual norm  0.307464215614289737E-03 0.829845547034662205E-03
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=   44641,  blksize=  3,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=     8
+  num_iter =      18,  max_iter =   44649
+  num_mv  =    1339,   num_restart=      10
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.1176E+02
+  kactmax =   26,   polym=   20
+ ===================================================
+  Eigensolver, representation =  1  k-point =  1  spin =  1  iteration =  1
+  maxmvs =  1339  nec =  15  nstate =  14  info =  0
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=   44641,  blksize=  3,  n_spdim=   26
+  nwant  =   14,  nconv=   15,  true nconv=     7
+  num_iter =      18,  max_iter =   44649
+  num_mv  =    1339,   num_restart=      11
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.1184E+02
+  kactmax =   26,   polym=   20
+ ===================================================
+  Eigensolver, representation =  1  k-point =  1  spin =  2  iteration =  1
+  maxmvs =  1339  nec =  15  nstate =  14  info =  0
+ 
+ Diagonalization time [sec] :      16.75,      tdiag_sum =        0.00
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2105E-01
+ # the residual norm  0.241099823384842645E-04 0.872594751534458445E-04
+ 
+ Diagonalization time [sec] :       2.60,      tdiag_sum =       16.75
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2211E-01
+ # the residual norm  0.926879329270179719E-05 0.317703917031182263E-04
+ 
+ Diagonalization time [sec] :       2.60,      tdiag_sum =       19.35
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2235E-01
+ # the residual norm  0.965009099018588125E-05 0.339498020558293547E-04
+ 
+ Diagonalization time [sec] :       2.60,      tdiag_sum =       21.95
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2128E-01
+ # the residual norm  0.461888072846309951E-05 0.148612546391988230E-04
+ 
+ Diagonalization time [sec] :       2.61,      tdiag_sum =       24.55
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2122E-01
+ # the residual norm  0.274390517638041841E-05 0.891588526380815166E-05
+ 
+ Diagonalization time [sec] :       2.60,      tdiag_sum =       27.16
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2141E-01
+ # the residual norm  0.124426345296072835E-05 0.391791107133860082E-05
+ 
+ Diagonalization time [sec] :       2.45,      tdiag_sum =       29.76
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2111E-01
+ # the residual norm  0.180347642134767197E-05 0.634071292653637832E-05
+ 
+ Diagonalization time [sec] :       2.45,      tdiag_sum =       32.21
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2228E-01
+ # the residual norm  0.156427207804902472E-05 0.543498926313527981E-05
+ 
+ Diagonalization time [sec] :       2.32,      tdiag_sum =       34.66
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2218E-01
+ # the residual norm  0.218999280640153671E-06 0.667874354642615974E-06
+ 
+ Diagonalization time [sec] :       2.18,      tdiag_sum =       36.98
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2109E-01
+ # the residual norm  0.377482647527593671E-06 0.131930732475769141E-05
+ 
+ Diagonalization time [sec] :       2.04,      tdiag_sum =       39.16
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2142E-01
+ # the residual norm  0.253264119126194719E-06 0.760237661789310056E-06
+ 
+ Diagonalization time [sec] :       1.90,      tdiag_sum =       41.20
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2107E-01
+ # the residual norm  0.121857028505436100E-06 0.430540745933074440E-06
+ 
+ Diagonalization time [sec] :       1.88,      tdiag_sum =       43.10
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2160E-01
+ # the residual norm  0.136414324214823600E-06 0.412119556723605680E-06
+ 
+ Diagonalization time [sec] :       1.89,      tdiag_sum =       44.98
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2092E-01
+ # the residual norm  0.182068245147722620E-07 0.554090595286070497E-07
+ 
+ Diagonalization time [sec] :       1.89,      tdiag_sum =       46.87
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2105E-01
+ # the residual norm  0.320538917728875728E-07 0.108617012534231822E-06
+# Poisson solver, return code =   0  convergence rate =   0.2020E-01
+ # the residual norm  0.529110461874857009E-06 0.164749384776098956E-05
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=   89282,  blksize=  3,  n_spdim=   28
+  nwant  =   16,  nconv=   17,  true nconv=     4
+  num_iter =      23,  max_iter =   89298
+  num_mv  =    1754,   num_restart=      15
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.1287E+02
+  kactmax =   28,   polym=   20
+ ===================================================
+  Eigensolver, representation =  1  k-point =  1  spin =  1  iteration =  1
+  maxmvs =  1754  nec =  17  nstate =  16  info =  0
+ 
+ Diagonalization time [sec] :      58.96,      tdiag_sum =       48.76
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2001E-01
+ # the residual norm  0.179358143039651087E-04 0.584854666444179039E-04
+ 
+ Diagonalization time [sec] :       8.14,      tdiag_sum =      107.72
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2027E-01
+ # the residual norm  0.215691352919739567E-04 0.759103405190336212E-04
+ 
+ Diagonalization time [sec] :       8.11,      tdiag_sum =      115.86
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2113E-01
+ # the residual norm  0.728362778880756251E-05 0.227570767572999984E-04
+ 
+ Diagonalization time [sec] :       8.15,      tdiag_sum =      123.97
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2077E-01
+ # the residual norm  0.364063533494192645E-05 0.121518631178095776E-04
+ 
+ Diagonalization time [sec] :       8.12,      tdiag_sum =      132.12
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2114E-01
+ # the residual norm  0.205042708326108645E-05 0.687524994535449775E-05
+ 
+ Diagonalization time [sec] :       8.10,      tdiag_sum =      140.24
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2215E-01
+ # the residual norm  0.775910714336498516E-06 0.286333510979202235E-05
+ 
+ Diagonalization time [sec] :       8.26,      tdiag_sum =      148.34
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2104E-01
+ # the residual norm  0.546201529735707826E-06 0.192315986366724751E-05
+ 
+ Diagonalization time [sec] :       8.11,      tdiag_sum =      156.60
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2081E-01
+ # the residual norm  0.524025775835649659E-06 0.188002866910276344E-05
+ 
+ Diagonalization time [sec] :       8.18,      tdiag_sum =      164.71
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2159E-01
+ # the residual norm  0.122731565537166686E-05 0.434390954363898262E-05
+ 
+ Diagonalization time [sec] :       8.24,      tdiag_sum =      172.89
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2072E-01
+ # the residual norm  0.122280444367510674E-05 0.423125780832030200E-05
+ 
+ Diagonalization time [sec] :       7.62,      tdiag_sum =      181.13
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2079E-01
+ # the residual norm  0.130112742324087073E-05 0.445673532246912671E-05
+ 
+ Diagonalization time [sec] :       7.10,      tdiag_sum =      188.75
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2034E-01
+ # the residual norm  0.142963954528930386E-06 0.510129021452513401E-06
+ 
+ Diagonalization time [sec] :       6.61,      tdiag_sum =      195.85
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2087E-01
+ # the residual norm  0.230303276211296064E-06 0.827094842177913042E-06
+ 
+ Diagonalization time [sec] :       6.10,      tdiag_sum =      202.46
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2109E-01
+ # the residual norm  0.127383367648748071E-06 0.446466686772315902E-06
+ 
+ Diagonalization time [sec] :       5.60,      tdiag_sum =      208.56
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2080E-01
+ # the residual norm  0.144499661479658550E-06 0.498319641501025229E-06
+ 
+ Diagonalization time [sec] :       5.63,      tdiag_sum =      214.16
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2089E-01
+ # the residual norm  0.518956167128695131E-07 0.184827600977087363E-06
+ 
+ Diagonalization time [sec] :       5.61,      tdiag_sum =      219.79
+ 
+# Poisson solver, return code =   0  convergence rate =   0.2044E-01
+ # the residual norm  0.182208209447689427E-07 0.619964823146569204E-07
+  I received L =  1  for atom # 1  with mnloc =  0
+  I received L =  2  for atom # 1  with mnloc =  0
+  I received L =  1  for atom # 2  with mnloc =  0
+  I received L =  2  for atom # 2  with mnloc =  0
+ 
+ Closing file on PE # 0
+ 
+  Error code ierr =  -1

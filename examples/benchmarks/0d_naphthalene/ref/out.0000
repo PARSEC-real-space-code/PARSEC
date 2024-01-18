@@ -1,0 +1,128 @@
+ Processor No            0   has started
+ Number of processors:            8
+ Number of threads/processor: *** No openMP support
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+  survived first allreduce
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is      523984
+  reduced size is        65498
+  maximum distance between grid points and their images is
+   0.1854E-14  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+ The local dimension is :       65498
+ INTERIOR POINTS Mvec, PreCond (       47469       64063 ) 
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ I communicate with            0  processors, a total of            0  elements
+ Also, I receive from these procs:            0  elements
+ 
+ topo_aware: I am now aware that I communicate with           0 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          278
+ 
+ Sizes of all non-local blocks 
+   272   278   278   272   276   276   272   272   278   278   182   170
+   170   182   182   182   170   170
+ 
+ Transform atoms          18
+ My number of non-local rows:         4160  of total         4160
+ My number of rows in WS sphere:            0  of total            0
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.2548E-01
+ # reported residual norm:   4.733122378338329E-005
+ # euclidean norm of lap(pot):   4.733122376406287E-005
+ allocating both dwvec and zwvec of size (why!):       65499
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=   65498,  blksize=  6,  n_spdim=   21
+  nwant  =    9,  nconv=   10,  true nconv=    10
+  num_iter =      11,  max_iter =     141
+  num_mv  =    1451,   num_restart=       7
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.3893E+01
+  kactmax =   21,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         1451  nec =           10
+  nstate =            9  info =            0
+# Poisson solver, return code =   0  convergence rate =   0.2451E-01
+ # reported residual norm:   2.366411847213828E-006
+ # euclidean norm of lap(pot):   2.366411927847188E-006
+# Poisson solver, return code =   0  convergence rate =   0.2423E-01
+ # reported residual norm:   5.645436604400350E-007
+ # euclidean norm of lap(pot):   5.645436436773475E-007
+# Poisson solver, return code =   0  convergence rate =   0.2426E-01
+ # reported residual norm:   3.661946613277260E-007
+ # euclidean norm of lap(pot):   3.661946324424747E-007
+# Poisson solver, return code =   0  convergence rate =   0.2377E-01
+ # reported residual norm:   7.369567112173490E-008
+ # euclidean norm of lap(pot):   7.369565643959530E-008
+# Poisson solver, return code =   0  convergence rate =   0.2444E-01
+ # reported residual norm:   4.335949846412968E-008
+ # euclidean norm of lap(pot):   4.335942880635572E-008
+# Poisson solver, return code =   0  convergence rate =   0.2404E-01
+ # reported residual norm:   4.052840479093300E-008
+ # euclidean norm of lap(pot):   4.052850246620838E-008
+# Poisson solver, return code =   0  convergence rate =   0.2464E-01
+ # reported residual norm:   1.291024403535168E-008
+ # euclidean norm of lap(pot):   1.291015648509761E-008
+# Poisson solver, return code =   0  convergence rate =   0.2473E-01
+ # reported residual norm:   2.259868110110260E-009
+ # euclidean norm of lap(pot):   2.259915693570194E-009
+# Poisson solver, return code =   0  convergence rate =   0.2475E-01
+ # reported residual norm:   1.452497580776700E-009
+ # euclidean norm of lap(pot):   1.452668504173261E-009
+# Poisson solver, return code =   0  convergence rate =   0.2411E-01
+ # reported residual norm:   9.346149405030505E-010
+ # euclidean norm of lap(pot):   9.347550910927668E-010
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =          272
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =          278
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =          278
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =          272
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =          276
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =          276
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =          272
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =          272
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =          278
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =          278
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

@@ -1,0 +1,35 @@
+Step #   0
+ O      2
+      .944863      .000000      .000000
+     -.944863      .000000      .000000
+Total Energy =   -431.29585 [eV/at], Max force =  1.54210 [Ry/au]
+ 
+Step #   1
+ O      2
+     1.651970      .000000      .000000
+    -1.651970      .000000      .000000
+Total Energy =   -431.01981 [eV/at], Max force =   .32902 [Ry/au]
+ 
+Step #   2
+ O      2
+     1.197109      .000000      .000000
+    -1.197109      .000000      .000000
+Total Energy =   -432.81345 [eV/at], Max force =   .07284 [Ry/au]
+ 
+Step #   3
+ O      2
+     1.185732      .000000      .000000
+    -1.185732      .000000      .000000
+Total Energy =   -432.82447 [eV/at], Max force =   .05158 [Ry/au]
+ 
+Step #   4
+ O      2
+     1.158137      .000000      .000000
+    -1.158137      .000000      .000000
+Total Energy =   -432.83714 [eV/at], Max force =   .00022 [Ry/au]
+ 
+ Local minimum of total energy was found 
+ 
+  Coordinates for next Run 
+     1.158137      .000000      .000000
+    -1.158137      .000000      .000000

@@ -1,0 +1,3129 @@
+ 
+ =================================================================
+ 
+  PARSEC 1.4_DEV - Real-space DFT Program
+  under development - use at your own risk !!
+  
+ 
+  parallel run - using             4  PEs 
+
+ starting run on 06-JUL-2013 06:25:37 +0000 UTC
+
+ =================================================================
+ 
+  Restarted Run - from parsec.dat
+ ignoresym=  F
+ 
+ Grid data:
+ ----------
+ 
+ Periodic boundary conditions!
+ System is fully periodic 
+ Unit lattice vectors [bohr] : 
+   5.1306000000    5.1306000000    0.0000000000
+   5.1306000000    0.0000000000    5.1306000000
+   0.0000000000    5.1306000000    5.1306000000
+ 
+ User-provided grid spacing is  0.700000 bohrs
+ WARNING: grid spacing may be rescaled below!!
+ 
+ Grid points are shifted from origin! 
+ shift vector =   0.0000  0.0000  0.0000   [units of grid spacing]
+  kpoints selected by Monkhort-Pack algorithm
+  Monkhorst-Pack grid dimensions specified
+   5 X  5 X  5
+  Monkhorst-Pack shift specified
+   0.500 X  0.500 X  0.500
+  Calculating non self consistent electronic structure
+  Kpoints (units 1/Bohr) and sampling weights
+   -0.06184  0.06184  0.06184  0.00200
+   -0.18431  0.18431  0.18431  0.00200
+   -0.30677  0.30677  0.30677  0.00200
+   -0.42924  0.42924  0.42924  0.00200
+   -0.55170  0.55170  0.55170  0.00200
+   -0.06184  0.06184  0.30677  0.00600
+   -0.18431  0.18431  0.42924  0.00600
+    0.06062 -0.06062  0.30677  0.00600
+   -0.06184  0.06184  0.42924  0.00600
+   -0.06184  0.06184  0.55170  0.00600
+    0.18309 -0.18309  0.42924  0.00600
+    0.06062 -0.06062  0.55170  0.00600
+   -0.06184  0.06184  0.67417  0.00600
+   -0.18431  0.18431  0.79663  0.00600
+   -0.06184  0.06184  0.79663  0.00600
+    0.06062 -0.06062  0.79663  0.00600
+   -0.06184  0.06184  0.91910  0.00600
+    0.06062  0.06184  0.06184  0.00600
+   -0.06184  0.18431  0.18431  0.00600
+   -0.18431  0.30677  0.30677  0.00600
+   -0.30677  0.42924  0.42924  0.00600
+   -0.42924  0.55170  0.55170  0.00600
+    0.06062  0.06184  0.30677  0.01200
+   -0.06184  0.18431  0.42924  0.01200
+   -0.18431  0.30677  0.55170  0.01200
+   -0.30677  0.42924  0.67417  0.01200
+    0.06062  0.06184  0.55170  0.01200
+   -0.06184  0.18431  0.67417  0.01200
+   -0.18431  0.30677  0.79663  0.01200
+    0.06062  0.06184  0.79663  0.01200
+    0.18309  0.06184 -0.06062  0.01200
+   -0.30677  0.55170  0.42924  0.01200
+    0.18309  0.06184  0.06184  0.00600
+    0.06062  0.18431  0.18431  0.00600
+   -0.06184  0.30677  0.30677  0.00600
+    0.30555 -0.06062  0.18431  0.01200
+    0.06062  0.18431  0.42924  0.01200
+    0.06062  0.18431  0.55170  0.01200
+    0.42801 -0.18309  0.30677  0.01200
+    0.06062  0.18431  0.67417  0.01200
+    0.55048 -0.30555  0.30677  0.01200
+    0.06062  0.18431  0.79663  0.01200
+    0.67294 -0.42801  0.42924  0.01200
+    0.18309  0.18431  0.18431  0.00600
+    0.06062  0.30677  0.30677  0.00600
+   -0.06184  0.42924  0.42924  0.00600
+    0.18309  0.18431  0.42924  0.01200
+    0.06062  0.30677  0.55170  0.01200
+    0.55048 -0.18309  0.55170  0.01200
+    0.06062  0.42924 -0.06062  0.00600
+    0.30555  0.18431 -0.18309  0.01200
+   -0.06184  0.55170  0.18431  0.01200
+   -0.18431  0.67417  0.30677  0.01200
+    0.30555  0.18431  0.06184  0.01200
+    0.30555  0.18431  0.18431  0.00600
+    0.18309  0.30677  0.30677  0.00600
+    0.06062  0.42924  0.42924  0.00600
+    0.42801  0.06184  0.30677  0.01200
+    0.18309  0.30677  0.55170  0.01200
+    0.67294 -0.18309  0.18431  0.01200
+    0.55048 -0.06062  0.30677  0.01200
+    0.18309  0.30677  0.67417  0.01200
+    0.55048 -0.06062  0.42924  0.01200
+    0.79541 -0.30555  0.30677  0.01200
+    0.67294 -0.18309  0.42924  0.01200
+    0.30555  0.30677  0.30677  0.00600
+    0.55048  0.06184  0.30677  0.01200
+    0.42801  0.18431  0.42924  0.01200
+    0.79541 -0.18309  0.30677  0.01200
+    0.67294 -0.06062  0.42924  0.01200
+    0.55048  0.06184  0.55170  0.01200
+    0.06062  0.67417 -0.06062  0.00600
+    0.42801  0.30677 -0.30555  0.01200
+   -0.06184  0.79663  0.18431  0.01200
+    0.55048  0.18431 -0.18309  0.01200
+    0.42801  0.30677 -0.06062  0.01200
+    0.55048  0.18431  0.18431  0.00600
+    0.42801  0.30677  0.30677  0.00600
+    0.30555  0.42924  0.42924  0.00600
+    0.30555  0.42924  0.55170  0.01200
+    0.67294  0.06184  0.30677  0.01200
+    0.55048  0.18431  0.42924  0.01200
+    0.30555  0.42924  0.67417  0.01200
+    0.91787 -0.18309  0.18431  0.01200
+    0.79541 -0.06062  0.30677  0.01200
+    0.67294  0.06184  0.42924  0.01200
+    0.67294  0.18431  0.18431  0.00600
+    0.55048  0.30677  0.30677  0.00600
+    0.42801  0.42924  0.42924  0.00600
+    0.91787 -0.06062  0.18431  0.01200
+    0.79541  0.06184  0.30677  0.01200
+    0.67294  0.18431  0.42924  0.01200
+    0.55048  0.30677  0.55170  0.01200
+    0.18309  0.79663 -0.18309  0.00600
+    0.06062  0.91910 -0.06062  0.00600
+    0.55048  0.42924 -0.42801  0.01200
+    0.67294  0.30677 -0.30555  0.01200
+    0.55048  0.42924 -0.18309  0.01200
+    0.55048  0.42924  0.06184  0.01200
+    0.67294  0.30677  0.30677  0.00600
+    0.55048  0.42924  0.42924  0.00600
+    0.42801  0.55170  0.55170  0.00600
+    1.04034 -0.06062  0.06184  0.01200
+    0.91787  0.06184  0.18431  0.01200
+    0.79541  0.18431  0.30677  0.01200
+    1.04034  0.06184  0.06184  0.00600
+    0.91787  0.18431  0.18431  0.00600
+    0.79541  0.30677  0.30677  0.00600
+    0.67294  0.42924  0.42924  0.00600
+    0.55048  0.55170  0.55170  0.00600
+
+ No external uniform magnetic field H=0 !!
+ WAVEFUNCTIONS ARE COMPLEX!
+ Finite-difference expansion of order 12
+
+ Eigenvalue data: 
+ ---------------- 
+ Number of states:            10
+ Net cluster charge =  0.00      [e] 
+ 
+ Fermi temperature =   80.0 [K]
+ 
+ Self-consistency data: 
+ ----------------------
+ Maximum number of iterations is             1
+ Using Chebyshev-Davidson eigensolver
+ Polynomial degree for Chebyshev-Davidson is     20
+ 
+ 
+ Performing Chebyshev subspace filtering
+ Polynomial degree for Chebyshev filtering is     15
+ Change in polynomial degree (dpm) for Chebyshev filtering is      3
+ Performing Rayleigh-Ritz rotation on all SCF iterations
+ 
+ Self-consistency convergence criterion is  0.00001 Ry
+ Self-consistency convergence indicator criterion is  0.00100 Ry
+ If applicable, Chebyshev polynomial order will decrease to 
+ 10 after SRE becomes less than the self-consistency 
+ convergence indicator.
+ Diagonalization tolerance is     0.00000
+ Buffer size in subspace is      5
+
+  With Chebyshev subspace, buffer size  must be at least 6
+ New buffer size is      6
+ 
+ Mixer data:
+ -----------
+ solver lpole is :             9
+ Anderson mixer
+ Initial Jacobian:  0.300  Mixing memory is  4
+ Mixing restarted after            20  iterations
+ 
+ Atom data:
+ ----------
+
+ Total # of atom types is     1
+
+ Atom coordinates input in lattice vector units
+ 
+
+ Chemical element : Si
+ fhipp                                                       
+  pseudopotential format : FHIPP
+ There are      2 Si atoms
+ and their initial coordinates are:
+ 
+    x [bohr]          y [bohr]          z [bohr]     movable?
+   -1.282650000      -1.282650000      -1.282650000      1
+    1.282650000       1.282650000       1.282650000      1
+
+ Total number of atoms =       2
+
+ Correlation data:
+ -----------------
+ Exchange-Correlation functional is ca
+ LDA, Ceperley-Alder, Perdew-Zunger parametrization
+ 
+ Other input data:
+ -----------------
+ Writing only wave functions of occupied levels to parsec.dat file
+ 
+ Writing files for GW calculation using BerkeleyGW
+  Non-self consistent kgrid dimensions
+   5 X  5 X  5
+  Non-selfconsistent kgrid shift
+   0.500 X  0.500 X  0.500
+ Symmetrizing charge density according to symm.
+  operations in the full point group
+ No spin effects!
+
+ 
+ Using new (r*V_ps) interpolation of pseudopot. !
+
+ output level [1 - 6] =  0
+
+ Generating Eigenvalue Output File!
+ outevflag =             1
+ 
+ No minimization!
+ 
+ No molecular dynamics!
+ No polarizability!
+ 
+
+
+ Pseudopotential messages
+ ------------------------
+
+ Pseudopotential file for atom type  1 is Si_FHIPP.DAT
+FHIPP generator
+
+ 
+ logarithmic parameters of pseudopot. radial grid
+ r(i) = a*Exp(b(i-1)) - c
+ Si:   a [bohr] = 0.435668E-03  b = 0.243999E-01  c [bohr] =  0.00000    
+
+ NOTICE: No Core-Correction !
+
+ Occupancy of orbitals : 
+   2.000   2.000   0.000
+ # of pseudopot= 3, Local component is l = 2, Core radius [bohr] =  2.50
+
+ Using order           18 for calculating dV/dr in pseudo
+
+ Normalization check and Kleinman-Bylander Integral
+
+                                 s                 p                 d
+  Si   Normalization        1.00009923        1.00009923        1.05091999
+  Si   K-B Int. [Ry]        0.73656875        0.26759002        0.00000000
+ 
+ K-B Energy Integrals renormalized to unity
+ 
+ Performing Fourier transform of pseudopotentials:
+ 
+ Si     nql=  602     delq= 0.015
+
+ Symmetry Properties:
+ --------------------
+
+ The point group of the system is the full        cubic group
+
+ The space group is non-symmorphic
+ (Or a non-standard origin of coordinates is used)
+
+ Operation number: 
+       1  2  3  4  5  6  7  8  9 10 11 12
+      13 14 15 16 17 18 19 20 21 22 23 24
+      25 26 27 28 29 30 31 32 33 34 35 36
+      37 38 39 40 41 42 43 44 45 46 47 48
+
+
+    Rotation matrices (r-lattice) and fractional translations (r-lattice)
+
+    1     1  0  0     0  1  0     0  0  1      0.00000  0.00000  0.00000   E  
+    2     0  1  0     1  0  0    -1 -1 -1      0.00000  0.00000  0.50000   C2 
+    3     0  0  1    -1 -1 -1     1  0  0      0.00000  0.50000  0.00000   C2 
+    4    -1 -1 -1     0  0  1     0  1  0      0.50000  0.00000  0.00000   C2 
+    5     0  1  0     0  0  1     1  0  0      0.00000  0.00000  0.00000   C3 
+    6     1  0  0    -1 -1 -1     0  1  0      0.00000  0.00000  0.50000   C3 
+    7    -1 -1 -1     1  0  0     0  0  1      0.00000  0.50000  0.00000   C3 
+    8     0  0  1     0  1  0    -1 -1 -1      0.50000  0.00000  0.00000   C3 
+    9     0  0  1     1  0  0     0  1  0      0.00000  0.00000  0.00000   C3 
+   10    -1 -1 -1     0  1  0     1  0  0      0.00000  0.00000  0.50000   C3 
+   11     1  0  0     0  0  1    -1 -1 -1      0.00000  0.50000  0.00000   C3 
+   12     0  1  0    -1 -1 -1     0  0  1      0.50000  0.00000  0.00000   C3 
+   13    -1  0  0     0  0 -1     0 -1  0      0.00000  0.00000  0.00000   C2 
+   14     0 -1  0     1  1  1    -1  0  0      0.00000  0.00000 -0.50000   C4 
+   15     0  0 -1    -1  0  0     1  1  1      0.00000 -0.50000  0.00000   C4 
+   16     1  1  1     0 -1  0     0  0 -1     -0.50000  0.00000  0.00000   C2 
+   17     0 -1  0    -1  0  0     0  0 -1      0.00000  0.00000  0.00000   C2 
+   18    -1  0  0     0 -1  0     1  1  1      0.00000  0.00000 -0.50000   C2 
+   19     1  1  1     0  0 -1    -1  0  0      0.00000 -0.50000  0.00000   C4 
+   20     0  0 -1     1  1  1     0 -1  0     -0.50000  0.00000  0.00000   C4 
+   21     0  0 -1     0 -1  0    -1  0  0      0.00000  0.00000  0.00000   C2 
+   22     1  1  1    -1  0  0     0 -1  0      0.00000  0.00000 -0.50000   C4 
+   23    -1  0  0     1  1  1     0  0 -1      0.00000 -0.50000  0.00000   C2 
+   24     0 -1  0     0  0 -1     1  1  1     -0.50000  0.00000  0.00000   C4 
+   25    -1  0  0     0 -1  0     0  0 -1      0.00000  0.00000  0.00000   IE 
+   26     0 -1  0    -1  0  0     1  1  1      0.00000  0.00000 -0.50000   IC2
+   27     0  0 -1     1  1  1    -1  0  0      0.00000 -0.50000  0.00000   IC2
+   28     1  1  1     0  0 -1     0 -1  0     -0.50000  0.00000  0.00000   IC2
+   29     0 -1  0     0  0 -1    -1  0  0      0.00000  0.00000  0.00000   IC3
+   30    -1  0  0     1  1  1     0 -1  0      0.00000  0.00000 -0.50000   IC3
+   31     1  1  1    -1  0  0     0  0 -1      0.00000 -0.50000  0.00000   IC3
+   32     0  0 -1     0 -1  0     1  1  1     -0.50000  0.00000  0.00000   IC3
+   33     0  0 -1    -1  0  0     0 -1  0      0.00000  0.00000  0.00000   IC3
+   34     1  1  1     0 -1  0    -1  0  0      0.00000  0.00000 -0.50000   IC3
+   35    -1  0  0     0  0 -1     1  1  1      0.00000 -0.50000  0.00000   IC3
+   36     0 -1  0     1  1  1     0  0 -1     -0.50000  0.00000  0.00000   IC3
+   37     1  0  0     0  0  1     0  1  0      0.00000  0.00000  0.00000   IC2
+   38     0  1  0    -1 -1 -1     1  0  0      0.00000  0.00000  0.50000   IC4
+   39     0  0  1     1  0  0    -1 -1 -1      0.00000  0.50000  0.00000   IC4
+   40    -1 -1 -1     0  1  0     0  0  1      0.50000  0.00000  0.00000   IC2
+   41     0  1  0     1  0  0     0  0  1      0.00000  0.00000  0.00000   IC2
+   42     1  0  0     0  1  0    -1 -1 -1      0.00000  0.00000  0.50000   IC2
+   43    -1 -1 -1     0  0  1     1  0  0      0.00000  0.50000  0.00000   IC4
+   44     0  0  1    -1 -1 -1     0  1  0      0.50000  0.00000  0.00000   IC4
+   45     0  0  1     0  1  0     1  0  0      0.00000  0.00000  0.00000   IC2
+   46    -1 -1 -1     1  0  0     0  1  0      0.00000  0.00000  0.50000   IC4
+   47     1  0  0    -1 -1 -1     0  0  1      0.00000  0.50000  0.00000   IC2
+   48     0  1  0     0  0  1    -1 -1 -1      0.50000  0.00000  0.00000   IC4
+ 
+Abelian subgroup contains only the Identity operation
+
+ Reciprocal Space Data:
+ ----------------------
+ Reciprocal Lattice (a.u.):
+   0.6123246119    0.6123246119   -0.6123246119
+   0.6123246119   -0.6123246119    0.6123246119
+  -0.6123246119    0.6123246119    0.6123246119
+
+     1331 g-vectors are set up in      91 stars - kmax =    5   5   5
+ 
+ Input grid spacing:  0.700 bohr
+ Final grid spacings:  0.726  0.726  0.726 bohr
+ Number of grid points along each direction:  10  10  10
+ 
+
+ K-point generation:
+ -------------------
+    19 K points generated from Monkhorst-Pack grid :
+    order =     5    5    5      shift =   0.5000  0.5000  0.5000
+
+    I     weight        relative coord.        Cartesian coord.     E_kin (Ry)
+
+    1   0.0160000   0.1000  0.1000  0.1000     0.061  0.061  0.061     0.011
+    2   0.0480000   0.1000  0.1000  0.3000    -0.061  0.184  0.184     0.071
+    3   0.0480000   0.1000  0.1000  0.5000    -0.184  0.306  0.306     0.221
+    4   0.0480000   0.1000  0.1000  0.7000    -0.306  0.429  0.429     0.161
+    5   0.0480000   0.1000  0.1000  0.9000    -0.429  0.551  0.551     0.041
+    6   0.0480000   0.1000  0.3000  0.3000     0.061  0.061  0.306     0.101
+    7   0.0960000   0.1000  0.3000  0.5000    -0.061  0.184  0.429     0.221
+    8   0.0960000   0.1000  0.3000  0.7000    -0.184  0.306  0.551     0.581
+    9   0.0960000   0.1000  0.3000  0.9000    -0.306  0.429  0.674     0.131
+   10   0.0480000   0.1000  0.5000  0.5000     0.061  0.061  0.551     0.311
+   11   0.0960000   0.1000  0.5000  0.7000    -0.061  0.184  0.674     0.341
+   12   0.0480000   0.1000  0.5000  0.9000    -0.184  0.306  0.796     0.311
+   13   0.0480000   0.1000  0.7000  0.7000     0.061  0.061  0.796     0.191
+   14   0.0160000   0.3000  0.3000  0.3000     0.184  0.184  0.184     0.101
+   15   0.0480000   0.3000  0.3000  0.5000     0.061  0.306  0.306     0.191
+   16   0.0480000   0.3000  0.3000  0.7000    -0.061  0.429  0.429     0.521
+   17   0.0480000   0.3000  0.5000  0.5000     0.184  0.184  0.429     0.251
+   18   0.0480000   0.3000  0.5000  0.7000     0.061  0.306  0.551     0.401
+   19   0.0080000   0.5000  0.5000  0.5000     0.306  0.306  0.306     0.281
+ Laplacian number of directions:  3
+ Laplacian directions:
+           -1            0            1   weight is:    0.4999999999999999     
+           -1            1            0   weight is:    0.4999999999999999     
+            0           -1            1   weight is:    0.4999999999999999     
+ Laplacian coefficients data:
+ 0.50  0.50  0.50  0.50  0.50  0.50
+                     ********************                    
+ 
+  Distributing             4  processors among             1  groups.
+  Each group contains             4  processors.
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is         1000
+  reduced size is          1000
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+ pbc shift indices =            -5           -5           -5
+ pbc shift [latt. vect. units] =    -0.5000   -0.5000   -0.5000
+ 
+  Maximum number of matrix-vector operations =         30000
+ 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           240
+ 
+ Sizes of all non-local blocks 
+   240   240
+ 
+ 
+ Memory usage:
+ -------------
+ estimated memory usage per PE    :     1.84 MB
+ additional memory in master PE   :     0.33 MB
+ maximum estimated memory per PE  :     2.17 MB
+ 
+  *** warning  in v_first tape contains information about local potential up to gmax =  0.898E+01
+
+  in fft for local potential n =   10  10  10
+
+  max and min of potential     0.7351   -4.2565
+ Reciprocal lattice atom data
+     -0.785398     -0.785398     -0.785398
+      0.785398      0.785398      0.785398
+ 
+ Restarting from previous run
+ ----------------------------
+ 
+  parsec.dat file created on   06-JUL-2013 03:26:04 +0000
+ 
+ 
+Setup time [sec] :       0.34
+ 
+ -----------------------------------------------------------------
+ 
+ calling calc_nscf 
+ 
+ 
+  Maximum number of matrix-vector operations =         30000
+ 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           240
+ 
+ Sizes of all non-local blocks 
+   240   240
+ 
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =         698
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =        1433
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =        2231
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =        3029
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =        3764
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =        4625
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =        5360
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =        6095
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =        6956
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =        7754
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =        8515
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =        9313
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       10048
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       10783
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =       11644
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =       12505
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       13266
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       14001
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       14799
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       15560
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       16358
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       17119
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       17880
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       18678
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       19413
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       20148
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       20883
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       21618
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       22353
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       23114
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       23912
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =       24773
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       25571
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       26369
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       27104
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       27839
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       28574
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       29372
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       30107
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       30842
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       31577
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       32375
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       33110
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       33908
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       34643
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       35378
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       36113
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       36848
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       37646
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =       38507
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       39205
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       39940
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       40738
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       41473
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       42234
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       42932
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       43667
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       44402
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       45137
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       45898
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       46633
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       47368
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       48103
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       48838
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       49636
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       50334
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       51132
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       51867
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       52628
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       53389
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       54187
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       54985
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       55720
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       56455
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       57190
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       57988
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       58786
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       59521
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       60256
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       60991
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       61726
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       62461
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       63222
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       63957
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       64692
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       65490
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       66225
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       67023
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       67721
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       68519
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       69254
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       70052
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       70787
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       71522
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       72257
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       73055
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       73816
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       74551
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       75286
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       76084
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       76845
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    761
+   total =     761
+ cumulated number of matrix-vector multiplications =       77606
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    798
+   total =     798
+ cumulated number of matrix-vector multiplications =       78404
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    861
+   total =     861
+ cumulated number of matrix-vector multiplications =       79265
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       80000
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       80735
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       81470
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       82168
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    735
+   total =     735
+ cumulated number of matrix-vector multiplications =       82903
+ Number of converged eigen-pairs per representation: 
+     10
+   total =      10
+ Number of matrix-vector multiplications: 
+    698
+   total =     698
+ cumulated number of matrix-vector multiplications =       83601
+ 
+ Diagonalization time [sec] :      23.02,      tdiag_sum =       23.02
+ 
+ Fermi level at     1.1519 [Ry]
+ 
+ k-point =   -0.0618   0.0618   0.0618 (a.u.)^-1
+ k-point =    0.0000   0.0000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2571199503         3.4983226200    1.0000        1
+    2         1.0398237217        14.1476335927    1.0000        1
+    3         1.1109349055        15.1151581374    1.0000        1
+    4         1.1113320959        15.1205622308    1.0000        1
+    5         1.3102028874        17.8263584452    0.0000        1
+    6         1.3364316878        18.1832222577    0.0000        1
+    7         1.3364589860        18.1835936718    0.0000        1
+    8         1.4262589563        19.4053941071    0.0000        1
+    9         1.6667662753        22.6776885889    0.0000        1
+   10         1.6668333785        22.6786015808    0.0000        1
+ 
+ k-point =   -0.1843   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.0000   0.0000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3313212790         4.5078910580    1.0000        1
+    2         0.7721161341        10.5052576971    1.0000        1
+    3         1.0590978843        14.4098739940    1.0000        1
+    4         1.0594593801        14.4147924343    1.0000        1
+    5         1.2535198926        17.0551409548    0.0000        1
+    6         1.3849570387        18.8434484770    0.0000        1
+    7         1.3851365045        18.8458902526    0.0000        1
+    8         1.6727205189        22.7587008357    0.0000        1
+    9         1.6830249508        22.8989008762    0.0000        1
+   10         1.6830775034        22.8996158958    0.0000        1
+ 
+ k-point =   -0.3068   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.0000   0.0000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4193990617         5.7062597531    1.0000        1
+    2         0.6135190076         8.3474169131    1.0000        1
+    3         1.0387512843        14.1330422237    1.0000        1
+    4         1.0390201622        14.1367005227    1.0000        1
+    5         1.2299323541        16.7342136241    0.0000        1
+    6         1.3706670631        18.6490219268    0.0000        1
+    7         1.3707913573        18.6507130498    0.0000        1
+    8         1.6805356049        22.8650313325    0.0000        1
+    9         1.8957954851        25.7938142117    0.0000        1
+   10         1.9012735114        25.8683471417    0.0000        1
+ 
+ k-point =   -0.4292   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.0000   0.0000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3305790550         4.4977925064    1.0000        1
+    2         0.7748956095        10.5430746844    1.0000        1
+    3         1.0598238895        14.4197518752    1.0000        1
+    4         1.0599204639        14.4210658483    1.0000        1
+    5         1.2550714335        17.0762509100    0.0000        1
+    6         1.3850494905        18.8447063578    0.0000        1
+    7         1.3861043984        18.8590592237    0.0000        1
+    8         1.6718363404        22.7466708803    0.0000        1
+    9         1.6813833360        22.8765653923    0.0000        1
+   10         1.6853306579        22.9302718653    0.0000        1
+ 
+ k-point =   -0.5517   0.5517   0.5517 (a.u.)^-1
+ k-point =    0.0000   0.0000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2574608766         3.5029611948    1.0000        1
+    2         1.0434363738        14.1967866149    1.0000        1
+    3         1.1117710628        15.1265347266    1.0000        1
+    4         1.1129272611        15.1422657290    1.0000        1
+    5         1.3134600441        17.8706746681    0.0000        1
+    6         1.3350027169        18.1637799654    0.0000        1
+    7         1.3393971634        18.2235699254    0.0000        1
+    8         1.4262294156        19.4049921825    0.0000        1
+    9         1.6688125095        22.7055292417    0.0000        1
+   10         1.6717979147        22.7461480679    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.0000   0.2000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3332903805         4.5346822585    1.0000        1
+    2         0.8401060393        11.4303147501    1.0000        1
+    3         0.9792881899        13.3239992539    1.0000        1
+    4         0.9917230131        13.4931849715    1.0000        1
+    5         1.2367284374        16.8266797730    0.0000        1
+    6         1.3737770440        18.6913357056    0.0000        1
+    7         1.4999183619        20.4075892481    0.0000        1
+    8         1.5269371220        20.7752010942    0.0000        1
+    9         1.7393232402        23.6648841419    0.0000        1
+   10         1.7854756076        24.2928240217    0.0000        1
+ 
+ k-point =   -0.1843   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.0000   0.2000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4371039600         5.9471490583    1.0000        1
+    2         0.6483302188         8.8210512912    1.0000        1
+    3         0.8952505624        12.1806001019    1.0000        1
+    4         0.9836882699        13.3838658625    1.0000        1
+    5         1.2561563097        17.0910115181    0.0000        1
+    6         1.4638328078        19.9166164167    0.0000        1
+    7         1.4992787660        20.3988870349    0.0000        1
+    8         1.5366338777        20.9071332132    0.0000        1
+    9         1.8334332781        24.9453264945    0.0000        1
+   10         1.8925619905        25.7498199298    0.0000        1
+ 
+ k-point =    0.0606  -0.0606   0.3068 (a.u.)^-1
+ k-point =    0.0000   0.3000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3330580920         4.5315217875    1.0000        1
+    2         0.8411095559        11.4439683959    1.0000        1
+    3         0.9794406611        13.3260737470    1.0000        1
+    4         0.9915685739        13.4910837024    1.0000        1
+    5         1.2357519720        16.8133941812    0.0000        1
+    6         1.3727631018        18.6775402102    0.0000        1
+    7         1.5013686374        20.4273214061    0.0000        1
+    8         1.5276750477        20.7852411642    0.0000        1
+    9         1.7380792336        23.6479584370    0.0000        1
+   10         1.7853611558        24.2912668136    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.4292 (a.u.)^-1
+ k-point =    0.0000   0.3000   0.4010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4071147324         5.5391216262    1.0000        1
+    2         0.7270516393         9.8921191938    1.0000        1
+    3         0.9161328341        12.4647201140    1.0000        1
+    4         0.9481026318        12.8996947879    1.0000        1
+    5         1.1982851302        16.3036278244    0.0000        1
+    6         1.2857839530        17.4941193071    0.0000        1
+    7         1.6298487564        22.1753962099    0.0000        1
+    8         1.6419462337        22.3399920665    0.0000        1
+    9         1.8943145599        25.7736650396    0.0000        1
+   10         1.8959027978        25.7952742866    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.5517 (a.u.)^-1
+ k-point =    0.0000   0.4000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5013169762         6.8208185149    1.0000        1
+    2         0.6103828888         8.3047475081    1.0000        1
+    3         0.8849552460        12.0405240855    1.0000        1
+    4         0.9256396215        12.5940675624    1.0000        1
+    5         1.1803487324        16.0595887830    0.0000        1
+    6         1.2373216983        16.8347515630    0.0000        1
+    7         1.7641717730        24.0029683097    0.0000        1
+    8         1.7674985715        24.0482320644    0.0000        1
+    9         1.9089985794        25.9734528712    0.0000        1
+   10         1.9189193197        26.1084324804    0.0000        1
+ 
+ k-point =    0.1831  -0.1831   0.4292 (a.u.)^-1
+ k-point =    0.0000   0.5000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4368433924         5.9436038288    1.0000        1
+    2         0.6492002784         8.8328891476    1.0000        1
+    3         0.8948311779        12.1748940398    1.0000        1
+    4         0.9831968823        13.3771801407    1.0000        1
+    5         1.2555977856        17.0834123512    0.0000        1
+    6         1.4652289379        19.9356118837    0.0000        1
+    7         1.5006405422        20.4174150895    0.0000        1
+    8         1.5337082501        20.8673277086    0.0000        1
+    9         1.8349530656        24.9660044203    0.0000        1
+   10         1.8941187721        25.7710011888    0.0000        1
+ 
+ k-point =    0.0606  -0.0606   0.5517 (a.u.)^-1
+ k-point =    0.0000   0.5000   0.4010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5012029558         6.8192671762    1.0000        1
+    2         0.6103850310         8.3047766546    1.0000        1
+    3         0.8860704388        12.0556971758    1.0000        1
+    4         0.9254363668        12.5913021198    1.0000        1
+    5         1.1800145501        16.0550419653    0.0000        1
+    6         1.2354053806        16.8086785277    0.0000        1
+    7         1.7657444138        24.0243653453    0.0000        1
+    8         1.7690098797        24.0687946217    0.0000        1
+    9         1.9107059663        25.9966832368    0.0000        1
+   10         1.9205772714        26.1309902394    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.6742 (a.u.)^-1
+ k-point =    0.0000   0.5000   0.6010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5004093821         6.8084699711    1.0000        1
+    2         0.6116689752         8.3222457431    1.0000        1
+    3         0.8851757764        12.0435245782    1.0000        1
+    4         0.9258031238        12.5962921412    1.0000        1
+    5         1.1805925898        16.0629066585    0.0000        1
+    6         1.2377216321        16.8401929820    0.0000        1
+    7         1.7636499625        23.9958686598    0.0000        1
+    8         1.7679551944        24.0544447835    0.0000        1
+    9         1.9105669967        25.9947924432    0.0000        1
+   10         1.9196055505        26.1177691984    0.0000        1
+ 
+ k-point =   -0.1843   0.1843   0.7966 (a.u.)^-1
+ k-point =    0.0000   0.5000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4370142665         5.9459287076    1.0000        1
+    2         0.6490108479         8.8303117941    1.0000        1
+    3         0.8966875441        12.2001513877    1.0000        1
+    4         0.9842400713        13.3913735616    1.0000        1
+    5         1.2570170142        17.1027220911    0.0000        1
+    6         1.4647235496        19.9287356707    0.0000        1
+    7         1.5010646056        20.4231848110    0.0000        1
+    8         1.5376904525        20.9215087583    0.0000        1
+    9         1.8355094274        24.9735741669    0.0000        1
+   10         1.8934498512        25.7618999854    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.7966 (a.u.)^-1
+ k-point =    0.0000   0.6000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4066356458         5.5326032693    1.0000        1
+    2         0.7286528098         9.9139044001    1.0000        1
+    3         0.9168369511        12.4743001895    1.0000        1
+    4         0.9486042282        12.9065194078    1.0000        1
+    5         1.1990739642        16.3143605422    0.0000        1
+    6         1.2869601941        17.5101230089    0.0000        1
+    7         1.6304636903        22.1837628780    0.0000        1
+    8         1.6430227049        22.3546383177    0.0000        1
+    9         1.8928877719        25.7542524462    0.0000        1
+   10         1.8981808767        25.8262693724    0.0000        1
+ 
+ k-point =    0.0606  -0.0606   0.7966 (a.u.)^-1
+ k-point =    0.0000   0.7000   0.6010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4064377309         5.5299104784    1.0000        1
+    2         0.7290262194         9.9189849358    1.0000        1
+    3         0.9176225902        12.4849894378    1.0000        1
+    4         0.9484146563        12.9039401304    1.0000        1
+    5         1.1983358594        16.3043180363    0.0000        1
+    6         1.2855214084        17.4905471780    0.0000        1
+    7         1.6320026902        22.2047022028    0.0000        1
+    8         1.6442465837        22.3712901687    0.0000        1
+    9         1.8916265654        25.7370927233    0.0000        1
+   10         1.8971514459        25.8122631425    0.0000        1
+ 
+ k-point =   -0.0618   0.0618   0.9191 (a.u.)^-1
+ k-point =    0.0000   0.7000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3332970844         4.5347734708    1.0000        1
+    2         0.8419364953        11.4552195683    1.0000        1
+    3         0.9806042414        13.3419051872    1.0000        1
+    4         0.9925952341        13.5050522355    1.0000        1
+    5         1.2381315738        16.8457705661    0.0000        1
+    6         1.3756525273        18.7168531563    0.0000        1
+    7         1.5016322582        20.4309081784    0.0000        1
+    8         1.5285859376        20.7976345496    0.0000        1
+    9         1.7399942258        23.6740134373    0.0000        1
+   10         1.7880249456        24.3275098050    0.0000        1
+ 
+ k-point =    0.0606   0.0618   0.0618 (a.u.)^-1
+ k-point =    0.1000   0.1000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2569942140         3.4966118764    1.0000        1
+    2         1.0404509174        14.1561670914    1.0000        1
+    3         1.1112295780        15.1191673928    1.0000        1
+    4         1.1117578764        15.1263553142    1.0000        1
+    5         1.3101527009        17.8256756179    0.0000        1
+    6         1.3359458080        18.1766114746    0.0000        1
+    7         1.3365548612        18.1848981300    0.0000        1
+    8         1.4255327849        19.3955139654    0.0000        1
+    9         1.6665448565        22.6746760088    0.0000        1
+   10         1.6674694548        22.6872559082    0.0000        1
+ 
+ k-point =   -0.0618   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.1000   0.1000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3076807481         4.1862427231    1.0000        1
+    2         0.8567108100        11.6562359384    1.0000        1
+    3         0.9956242921        13.5462649935    1.0000        1
+    4         1.0892776365        14.8204936663    1.0000        1
+    5         1.3191241983        17.9477400167    0.0000        1
+    6         1.3740396143        18.6949081848    0.0000        1
+    7         1.3957541368        18.9903516342    0.0000        1
+    8         1.5543034365        21.1475416957    0.0000        1
+    9         1.5911255958        21.6485366314    0.0000        1
+   10         1.7511456340        23.8257372669    0.0000        1
+ 
+ k-point =   -0.1843   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.1000   0.1000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4114199187         5.5976971298    1.0000        1
+    2         0.6420530547         8.7356454510    1.0000        1
+    3         0.9713779360        13.2163739223    1.0000        1
+    4         1.0354124408        14.0876145877    1.0000        1
+    5         1.2807697843        17.4258975310    0.0000        1
+    6         1.3760064896        18.7216690962    0.0000        1
+    7         1.3959790307        18.9934114953    0.0000        1
+    8         1.7078648474        23.2368675403    0.0000        1
+    9         1.7562537642        23.8952374650    0.0000        1
+   10         1.7987372190        24.4732588544    0.0000        1
+ 
+ k-point =   -0.3068   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.1000   0.1000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3756651324         5.1112246580    1.0000        1
+    2         0.7019784779         9.5509787749    1.0000        1
+    3         1.0026963940        13.6424865969    1.0000        1
+    4         1.0185600007        13.8583236582    1.0000        1
+    5         1.2838251201        17.4674678191    0.0000        1
+    6         1.3695173536        18.6333792097    0.0000        1
+    7         1.4269103292        19.4142565567    0.0000        1
+    8         1.5922314031        21.6635820247    0.0000        1
+    9         1.7728487302        24.1210252527    0.0000        1
+   10         1.8225073607        24.7966706488    0.0000        1
+ 
+ k-point =   -0.4292   0.5517   0.5517 (a.u.)^-1
+ k-point =    0.1000   0.1000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2828670053         3.8486319011    1.0000        1
+    2         0.9473497020        12.8894505754    1.0000        1
+    3         1.0527834529        14.3239611033    1.0000        1
+    4         1.0662636480        14.5073699423    1.0000        1
+    5         1.2901591147        17.5536468831    0.0000        1
+    6         1.3740099680        18.6945048233    0.0000        1
+    7         1.4184100793        19.2986038568    0.0000        1
+    8         1.4853001931        20.2086973670    0.0000        1
+    9         1.6169767635        22.0002624483    0.0000        1
+   10         1.7111007194        23.2808941674    0.0000        1
+ 
+ k-point =    0.0606   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.1000   0.3000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3331829497         4.5332205768    1.0000        1
+    2         0.8405730217        11.4366684181    1.0000        1
+    3         0.9791933570        13.3227089771    1.0000        1
+    4         0.9919438322        13.4961893920    1.0000        1
+    5         1.2363429214        16.8214345200    0.0000        1
+    6         1.3731289189        18.6825174447    0.0000        1
+    7         1.5007038485        20.4182764218    0.0000        1
+    8         1.5274372102        20.7820051944    0.0000        1
+    9         1.7386639805        23.6559143863    0.0000        1
+   10         1.7852505130        24.2897614291    0.0000        1
+ 
+ k-point =   -0.0618   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.1000   0.3000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4261723586         5.7984158765    1.0000        1
+    2         0.6939772187         9.4421152421    1.0000        1
+    3         0.8737610511        11.8882181095    1.0000        1
+    4         0.9491679652        12.9141895004    1.0000        1
+    5         1.2799382944        17.4145844461    0.0000        1
+    6         1.3977572950        19.0176062037    0.0000        1
+    7         1.4750356542        20.0690401032    0.0000        1
+    8         1.6305789720        22.1853313770    0.0000        1
+    9         1.8531563561        25.2136747504    0.0000        1
+   10         1.8545806251        25.2330530690    0.0000        1
+ 
+ k-point =   -0.1843   0.3068   0.5517 (a.u.)^-1
+ k-point =    0.1000   0.3000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4584928954         6.2381626365    1.0000        1
+    2         0.6512647906         8.8609784876    1.0000        1
+    3         0.8330223222        11.3339351115    1.0000        1
+    4         0.9632079795        13.1052151280    1.0000        1
+    5         1.3187272157        17.9423387520    0.0000        1
+    6         1.4233794123        19.3662156073    0.0000        1
+    7         1.5591950771        21.2140963798    0.0000        1
+    8         1.6148883929        21.9718484964    0.0000        1
+    9         1.6807322866        22.8677073444    0.0000        1
+   10         1.7908386636        24.3657926888    0.0000        1
+ 
+ k-point =   -0.3068   0.4292   0.6742 (a.u.)^-1
+ k-point =    0.1000   0.3000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3561215138         4.8453180923    1.0000        1
+    2         0.7756319810        10.5530936069    1.0000        1
+    3         0.9314222154        12.6727443782    1.0000        1
+    4         1.0291198507        14.0019988646    1.0000        1
+    5         1.3223504361        17.9916355632    0.0000        1
+    6         1.3878041905        18.8821862557    0.0000        1
+    7         1.4678852206        19.9717527338    0.0000        1
+    8         1.5005692570        20.4164451972    0.0000        1
+    9         1.7003971421        23.1352634364    0.0000        1
+   10         1.8763975563        25.5298898719    0.0000        1
+ 
+ k-point =    0.0606   0.0618   0.5517 (a.u.)^-1
+ k-point =    0.1000   0.5000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5012812201         6.8203320249    1.0000        1
+    2         0.6104447773         8.3055895517    1.0000        1
+    3         0.8853102837        12.0453546573    1.0000        1
+    4         0.9258493622        12.5969212523    1.0000        1
+    5         1.1804638426        16.0611549493    0.0000        1
+    6         1.2360143474        16.8169640082    0.0000        1
+    7         1.7647680917        24.0110817016    0.0000        1
+    8         1.7685876275        24.0630495428    0.0000        1
+    9         1.9108703347        25.9989195993    0.0000        1
+   10         1.9208954474        26.1353192776    0.0000        1
+ 
+ k-point =   -0.0618   0.1843   0.6742 (a.u.)^-1
+ k-point =    0.1000   0.5000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5101401079         6.9408642797    1.0000        1
+    2         0.6101565532         8.3016680320    1.0000        1
+    3         0.8377020924        11.3976071291    1.0000        1
+    4         0.9077699396        12.3509362438    1.0000        1
+    5         1.2560687201        17.0898197913    0.0000        1
+    6         1.3638907906        18.5568253189    0.0000        1
+    7         1.5884331628        21.6119039261    0.0000        1
+    8         1.7169630942        23.3606564670    0.0000        1
+    9         1.7731579845        24.1252329061    0.0000        1
+   10         1.9277942588        26.2291831257    0.0000        1
+ 
+ k-point =   -0.1843   0.3068   0.7966 (a.u.)^-1
+ k-point =    0.1000   0.5000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4455221036         6.0616846373    1.0000        1
+    2         0.6247596481         8.5003548202    1.0000        1
+    3         0.9096100867        12.3759729175    1.0000        1
+    4         0.9935108073        13.5175093419    1.0000        1
+    5         1.3253974862        18.0330931178    0.0000        1
+    6         1.3521396341        18.3969414330    0.0000        1
+    7         1.4925980342        20.3079903333    0.0000        1
+    8         1.6922766705        23.0247779241    0.0000        1
+    9         1.6991608666        23.1184429183    0.0000        1
+   10         1.8645246969        25.3683501206    0.0000        1
+ 
+ k-point =    0.0606   0.0618   0.7966 (a.u.)^-1
+ k-point =    0.1000   0.7000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4066468115         5.5327551879    1.0000        1
+    2         0.7288792964         9.9169859312    1.0000        1
+    3         0.9171402581        12.4784269231    1.0000        1
+    4         0.9489013297        12.9105617114    1.0000        1
+    5         1.1988271788        16.3110028289    0.0000        1
+    6         1.2860403065        17.4976072017    0.0000        1
+    7         1.6321280061        22.2064072254    0.0000        1
+    8         1.6456069120        22.3897985233    0.0000        1
+    9         1.8926081100        25.7504474226    0.0000        1
+   10         1.8952283827        25.7860983287    0.0000        1
+ 
+ k-point =    0.1831   0.0618  -0.0606 (a.u.)^-1
+ k-point =    0.2000   0.1000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2822724855         3.8405429832    1.0000        1
+    2         0.9456347165        12.8661168261    1.0000        1
+    3         1.0524276050        14.3191195082    1.0000        1
+    4         1.0646005182        14.4847417303    1.0000        1
+    5         1.2883467099        17.5289876651    0.0000        1
+    6         1.3711000085        18.6549124956    0.0000        1
+    7         1.4190634651        19.3074936930    0.0000        1
+    8         1.4842027660        20.1937659940    0.0000        1
+    9         1.6137329313        21.9561275166    0.0000        1
+   10         1.7066345765        23.2201287212    0.0000        1
+ 
+ k-point =   -0.3068   0.5517   0.4292 (a.u.)^-1
+ k-point =    0.2000   0.1000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3557571648         4.8403608333    1.0000        1
+    2         0.7760262063        10.5584573573    1.0000        1
+    3         0.9305804168        12.6612910345    1.0000        1
+    4         1.0284791001        13.9932809400    1.0000        1
+    5         1.3209729874        17.9728942722    0.0000        1
+    6         1.3880275997        18.8852259162    0.0000        1
+    7         1.4693608278        19.9918295515    0.0000        1
+    8         1.4990759877        20.3961280740    0.0000        1
+    9         1.6989655296        23.1157852023    0.0000        1
+   10         1.8764208524        25.5302068337    0.0000        1
+ 
+ k-point =    0.1831   0.0618   0.0618 (a.u.)^-1
+ k-point =    0.2000   0.2000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2824023986         3.8423105548    1.0000        1
+    2         0.9447129963        12.8535760856    1.0000        1
+    3         1.0527827991        14.3239522076    1.0000        1
+    4         1.0646669473        14.4856455522    1.0000        1
+    5         1.2888243157        17.5354858749    0.0000        1
+    6         1.3704904440        18.6466188835    0.0000        1
+    7         1.4190725480        19.3076172738    0.0000        1
+    8         1.4847763225        20.2015696883    0.0000        1
+    9         1.6140167716        21.9599893914    0.0000        1
+   10         1.7061999966        23.2142159141    0.0000        1
+ 
+ k-point =    0.0606   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.2000   0.2000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3075705510         4.1847434032    1.0000        1
+    2         0.8573706539        11.6652136435    1.0000        1
+    3         0.9950515823        13.5384728183    1.0000        1
+    4         1.0894432310        14.8227467125    1.0000        1
+    5         1.3199194681        17.9585602987    0.0000        1
+    6         1.3742539230        18.6978240256    0.0000        1
+    7         1.3957344791        18.9900841751    0.0000        1
+    8         1.5533616185        21.1347275088    0.0000        1
+    9         1.5903936023        21.6385772739    0.0000        1
+   10         1.7514953383        23.8304952738    0.0000        1
+ 
+ k-point =   -0.0618   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.2000   0.2000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4002490565         5.4457086127    1.0000        1
+    2         0.7053638344         9.5970392576    1.0000        1
+    3         0.8717883235        11.8613775721    1.0000        1
+    4         1.0300842151        14.0151198135    1.0000        1
+    5         1.3010089398        17.7012674335    0.0000        1
+    6         1.4571524778        19.8257251822    0.0000        1
+    7         1.4582506281        19.8406663953    0.0000        1
+    8         1.6103369448        21.9099224033    0.0000        1
+    9         1.6256229069        22.1179001462    0.0000        1
+   10         1.8199129370        24.7613714386    0.0000        1
+ 
+ k-point =    0.3055  -0.0606   0.1843 (a.u.)^-1
+ k-point =    0.2000   0.4000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3556343929         4.8386904229    1.0000        1
+    2         0.7748154507        10.5419840586    1.0000        1
+    3         0.9293765251        12.6449111252    1.0000        1
+    4         1.0284055479        13.9922802031    1.0000        1
+    5         1.3209211706        17.9721892628    0.0000        1
+    6         1.3862545612        18.8611023094    0.0000        1
+    7         1.4675849364        19.9676671276    0.0000        1
+    8         1.4985313134        20.3887173439    0.0000        1
+    9         1.6968057775        23.0864000477    0.0000        1
+   10         1.8759352486        25.5235998055    0.0000        1
+ 
+ k-point =    0.0606   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.2000   0.4000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4261283923         5.7978176802    1.0000        1
+    2         0.6943009211         9.4465194724    1.0000        1
+    3         0.8735611024        11.8854976467    1.0000        1
+    4         0.9490059172        12.9119847088    1.0000        1
+    5         1.2808898897        17.4275316609    0.0000        1
+    6         1.3962949373        18.9977096580    0.0000        1
+    7         1.4750246279        20.0688900817    0.0000        1
+    8         1.6320426435        22.2052457992    0.0000        1
+    9         1.8518216856        25.1955154904    0.0000        1
+   10         1.8540391172        25.2256854204    0.0000        1
+ 
+ k-point =    0.0606   0.1843   0.5517 (a.u.)^-1
+ k-point =    0.2000   0.5000   0.6010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5108466543         6.9504774086    1.0000        1
+    2         0.6092559232         8.2894142395    1.0000        1
+    3         0.8376515683        11.3969197084    1.0000        1
+    4         0.9069952094        12.3403954204    1.0000        1
+    5         1.2570292034        17.1028879354    0.0000        1
+    6         1.3617085253        18.5271338541    0.0000        1
+    7         1.5866014474        21.5869819736    0.0000        1
+    8         1.7175397872        23.3685028363    0.0000        1
+    9         1.7759905570        24.1637723199    0.0000        1
+   10         1.9281932737        26.2346120433    0.0000        1
+ 
+ k-point =    0.4280  -0.1831   0.3068 (a.u.)^-1
+ k-point =    0.2000   0.6000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4449564824         6.0539889087    1.0000        1
+    2         0.6245939681         8.4981006109    1.0000        1
+    3         0.9083796772        12.3592322123    1.0000        1
+    4         0.9921489954        13.4989808015    1.0000        1
+    5         1.3242821839        18.0179185378    0.0000        1
+    6         1.3501510584        18.3698852705    0.0000        1
+    7         1.4912444667        20.2895739646    0.0000        1
+    8         1.6930107412        23.0347655432    0.0000        1
+    9         1.6981708170        23.1049725018    0.0000        1
+   10         1.8619729874        25.3336320718    0.0000        1
+ 
+ k-point =    0.0606   0.1843   0.6742 (a.u.)^-1
+ k-point =    0.2000   0.6000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5102774082         6.9427323601    1.0000        1
+    2         0.6101725157         8.3018852138    1.0000        1
+    3         0.8379832074        11.4014319229    1.0000        1
+    4         0.9073017028        12.3445655074    1.0000        1
+    5         1.2573451960        17.1071872672    0.0000        1
+    6         1.3620409974        18.5316574019    0.0000        1
+    7         1.5881264753        21.6077311975    0.0000        1
+    8         1.7169570144        23.3605737469    0.0000        1
+    9         1.7771010726        24.1788817731    0.0000        1
+   10         1.9288627000        26.2437201241    0.0000        1
+ 
+ k-point =    0.5505  -0.3055   0.3068 (a.u.)^-1
+ k-point =    0.2000   0.7000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3999781398         5.4420225749    1.0000        1
+    2         0.7061597065         9.6078677340    1.0000        1
+    3         0.8725999982        11.8724210555    1.0000        1
+    4         1.0303751306        14.0190779524    1.0000        1
+    5         1.3018659221        17.7129273622    0.0000        1
+    6         1.4566371153        19.8187132635    0.0000        1
+    7         1.4586657242        19.8463141110    0.0000        1
+    8         1.6108464634        21.9168548116    0.0000        1
+    9         1.6275800095        22.1445280939    0.0000        1
+   10         1.8195793374        24.7568325491    0.0000        1
+ 
+ k-point =    0.0606   0.1843   0.7966 (a.u.)^-1
+ k-point =    0.2000   0.7000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4259652394         5.7955978547    1.0000        1
+    2         0.6955351367         9.4633119629    1.0000        1
+    3         0.8744739324        11.8979174298    1.0000        1
+    4         0.9500508306        12.9262015907    1.0000        1
+    5         1.2818079532        17.4400226496    0.0000        1
+    6         1.3973781136        19.0124471380    0.0000        1
+    7         1.4772493844        20.0991596742    0.0000        1
+    8         1.6345098832        22.2388145694    0.0000        1
+    9         1.8526331876        25.2065566234    0.0000        1
+   10         1.8555174354        25.2457991226    0.0000        1
+ 
+ k-point =    0.6729  -0.4280   0.4292 (a.u.)^-1
+ k-point =    0.2000   0.9000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3079236186         4.1895471695    1.0000        1
+    2         0.8590735400        11.6883827700    1.0000        1
+    3         0.9965163919        13.5584027247    1.0000        1
+    4         1.0906207760        14.8387681547    1.0000        1
+    5         1.3206358980        17.9683079007    0.0000        1
+    6         1.3760114007        18.7217359155    0.0000        1
+    7         1.3986676011        19.0299916469    0.0000        1
+    8         1.5540386939        21.1439396614    0.0000        1
+    9         1.5922122550        21.6633214986    0.0000        1
+   10         1.7550401438        23.8787251888    0.0000        1
+ 
+ k-point =    0.1831   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.3000   0.3000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3310008646         4.5035315629    1.0000        1
+    2         0.7728460626        10.5151889584    1.0000        1
+    3         1.0593506891        14.4133136055    1.0000        1
+    4         1.0598696204        14.4203740817    1.0000        1
+    5         1.2536320147        17.0566664658    0.0000        1
+    6         1.3850940214        18.8453122365    0.0000        1
+    7         1.3856333385        18.8526500766    0.0000        1
+    8         1.6719093476        22.7476642015    0.0000        1
+    9         1.6814973786        22.8781170335    0.0000        1
+   10         1.6830546471        22.8993049179    0.0000        1
+ 
+ k-point =    0.0606   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.3000   0.3000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4002038356         5.4450933463    1.0000        1
+    2         0.7058649503         9.6038573403    1.0000        1
+    3         0.8711217557        11.8523083831    1.0000        1
+    4         1.0300498217        14.0146518635    1.0000        1
+    5         1.3010817826        17.7022585176    0.0000        1
+    6         1.4584673653        19.8436152781    0.0000        1
+    7         1.4592689114        19.8545209548    0.0000        1
+    8         1.6087696119        21.8885975852    0.0000        1
+    9         1.6243479902        22.1005538851    0.0000        1
+   10         1.8196953790        24.7584113878    0.0000        1
+ 
+ k-point =   -0.0618   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.3000   0.3000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4931355040         6.7095030397    1.0000        1
+    2         0.6194420627         8.4280048167    1.0000        1
+    3         0.8144338921        11.0810246491    1.0000        1
+    4         0.9646231655        13.1244698658    1.0000        1
+    5         1.2278699217        16.7061525801    0.0000        1
+    6         1.5025405035        20.4432655826    0.0000        1
+    7         1.5954268553        21.7070587083    0.0000        1
+    8         1.6033177953        21.8144212587    0.0000        1
+    9         1.7436419278        23.7236433410    0.0000        1
+   10         1.7501548561        23.8122569406    0.0000        1
+ 
+ k-point =    0.1831   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.3000   0.5000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4370449748         5.9463465185    1.0000        1
+    2         0.6487367826         8.8265829168    1.0000        1
+    3         0.8950029018        12.1772304811    1.0000        1
+    4         0.9837572699        13.3848046630    1.0000        1
+    5         1.2561759725        17.0912790468    0.0000        1
+    6         1.4647501647        19.9290977903    0.0000        1
+    7         1.5002302059        20.4118321349    0.0000        1
+    8         1.5347666423        20.8817279821    0.0000        1
+    9         1.8343259107        24.9574714753    0.0000        1
+   10         1.8934652027        25.7621088550    0.0000        1
+ 
+ k-point =    0.0606   0.3068   0.5517 (a.u.)^-1
+ k-point =    0.3000   0.5000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5178689512         7.0460213764    1.0000        1
+    2         0.6071203685         8.2603583103    1.0000        1
+    3         0.8217196351        11.1801530114    1.0000        1
+    4         0.8875306049        12.0755639045    1.0000        1
+    5         1.3911699188        18.9279796813    0.0000        1
+    6         1.4150727457        19.2531967630    0.0000        1
+    7         1.5170685471        20.6409312377    0.0000        1
+    8         1.5501760825        21.0913857431    0.0000        1
+    9         1.7751812675        24.1527612887    0.0000        1
+   10         1.9390025644        26.3816810913    0.0000        1
+ 
+ k-point =    0.5505  -0.1831   0.5517 (a.u.)^-1
+ k-point =    0.3000   0.9000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4076867000         5.5469037034    1.0000        1
+    2         0.7281628247         9.9072377604    1.0000        1
+    3         0.9174810732        12.4830639856    1.0000        1
+    4         0.9484189665        12.9039987745    1.0000        1
+    5         1.1991389396        16.3152445848    0.0000        1
+    6         1.2874630246        17.5169644198    0.0000        1
+    7         1.6325881005        22.2126671772    0.0000        1
+    8         1.6418230762        22.3383164105    0.0000        1
+    9         1.8970945996        25.8114897030    0.0000        1
+   10         1.9001393357        25.8529157737    0.0000        1
+ 
+ k-point =    0.0606   0.4292  -0.0606 (a.u.)^-1
+ k-point =    0.4000   0.0000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4069181255         5.5364466313    1.0000        1
+    2         0.7274191631         9.8971196490    1.0000        1
+    3         0.9169250494        12.4754988375    1.0000        1
+    4         0.9479132804        12.8971185102    1.0000        1
+    5         1.1975489411        16.2936113834    0.0000        1
+    6         1.2843427727        17.4745108965    0.0000        1
+    7         1.6313869586        22.1963246820    0.0000        1
+    8         1.6431787239        22.3567610813    0.0000        1
+    9         1.8929165266        25.7546436777    0.0000        1
+   10         1.8950033027        25.7830359359    0.0000        1
+ 
+ k-point =    0.3055   0.1843  -0.1831 (a.u.)^-1
+ k-point =    0.4000   0.1000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3756841061         5.1114828113    1.0000        1
+    2         0.7009915389         9.5375506799    1.0000        1
+    3         1.0025644370        13.6406912174    1.0000        1
+    4         1.0184493984        13.8568188253    1.0000        1
+    5         1.2832375539        17.4594735115    0.0000        1
+    6         1.3686369735        18.6214009345    0.0000        1
+    7         1.4265112764        19.4088271250    0.0000        1
+    8         1.5898551619        21.6312513617    0.0000        1
+    9         1.7718232263        24.1070724526    0.0000        1
+   10         1.8235877090        24.8113696513    0.0000        1
+ 
+ k-point =   -0.0618   0.5517   0.1843 (a.u.)^-1
+ k-point =    0.4000   0.1000   0.6010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5107363028         6.9489759880    1.0000        1
+    2         0.6092607478         8.2894798828    1.0000        1
+    3         0.8373592821        11.3929429202    1.0000        1
+    4         0.9074820892        12.3470198089    1.0000        1
+    5         1.2558353220        17.0866442238    0.0000        1
+    6         1.3634541737        18.5508847967    0.0000        1
+    7         1.5865849434        21.5867574228    0.0000        1
+    8         1.7180356283        23.3752491516    0.0000        1
+    9         1.7743126941        24.1409436532    0.0000        1
+   10         1.9250725098        26.1921515544    0.0000        1
+ 
+ k-point =   -0.1843   0.6742   0.3068 (a.u.)^-1
+ k-point =    0.4000   0.1000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4587263976         6.2413396204    1.0000        1
+    2         0.6510386235         8.8579013031    1.0000        1
+    3         0.8337148483        11.3433574835    1.0000        1
+    4         0.9635776964        13.1102454222    1.0000        1
+    5         1.3189461949        17.9453181381    0.0000        1
+    6         1.4256173539        19.3966645936    0.0000        1
+    7         1.5573810177        21.1894146506    0.0000        1
+    8         1.6142659316        21.9633794127    0.0000        1
+    9         1.6815855239        22.8793163206    0.0000        1
+   10         1.7928854510        24.3936408695    0.0000        1
+ 
+ k-point =    0.3055   0.1843   0.0618 (a.u.)^-1
+ k-point =    0.4000   0.3000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3557525256         4.8402977125    1.0000        1
+    2         0.7740896890        10.5321094909    1.0000        1
+    3         0.9302096635        12.6562466402    1.0000        1
+    4         1.0283645271        13.9917220826    1.0000        1
+    5         1.3206702672        17.9687755213    0.0000        1
+    6         1.3862685934        18.8612932277    0.0000        1
+    7         1.4681031101        19.9747172956    0.0000        1
+    8         1.4981283696        20.3832349706    0.0000        1
+    9         1.6975933809        23.0971160220    0.0000        1
+   10         1.8750270131        25.5112425351    0.0000        1
+ 
+ k-point =    0.3055   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.4000   0.4000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3760200242         5.1160532448    1.0000        1
+    2         0.7002068438         9.5268742758    1.0000        1
+    3         1.0028577736        13.6446822964    1.0000        1
+    4         1.0188871237        13.8627744273    1.0000        1
+    5         1.2831595372        17.4584120311    0.0000        1
+    6         1.3687088264        18.6223785507    0.0000        1
+    7         1.4263018464        19.4059776621    0.0000        1
+    8         1.5909175814        21.6457064297    0.0000        1
+    9         1.7711918157        24.0984816057    0.0000        1
+   10         1.8235234505        24.8104953626    0.0000        1
+ 
+ k-point =    0.1831   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.4000   0.4000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4113571337         5.5968428898    1.0000        1
+    2         0.6424821082         8.7414830674    1.0000        1
+    3         0.9705564307        13.2051966849    1.0000        1
+    4         1.0353687776        14.0870205145    1.0000        1
+    5         1.2815234535        17.4361518031    0.0000        1
+    6         1.3765867092        18.7295634481    0.0000        1
+    7         1.3969659817        19.0068397542    0.0000        1
+    8         1.7077782961        23.2356899414    0.0000        1
+    9         1.7546041873        23.8727936515    0.0000        1
+   10         1.7968132653        24.4470819254    0.0000        1
+ 
+ k-point =    0.0606   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.4000   0.4000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4935711791         6.7154307483    1.0000        1
+    2         0.6191755326         8.4243784617    1.0000        1
+    3         0.8139750523        11.0747817666    1.0000        1
+    4         0.9645283388        13.1231796727    1.0000        1
+    5         1.2278042185        16.7052586361    0.0000        1
+    6         1.5021055818        20.4373481252    0.0000        1
+    7         1.5969536823        21.7278324107    0.0000        1
+    8         1.6048296061        21.8349906542    0.0000        1
+    9         1.7419927555        23.7012050334    0.0000        1
+   10         1.7485793115        23.7908203957    0.0000        1
+ 
+ k-point =    0.4280   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.4000   0.6000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4586647474         6.2405008202    1.0000        1
+    2         0.6503965512         8.8491653959    1.0000        1
+    3         0.8330873625        11.3348200373    1.0000        1
+    4         0.9635814113        13.1102959665    1.0000        1
+    5         1.3175137180        17.9258281439    0.0000        1
+    6         1.4240562637        19.3754247129    0.0000        1
+    7         1.5583993039        21.2032692495    0.0000        1
+    8         1.6138177004        21.9572808686    0.0000        1
+    9         1.6809184275        22.8702399410    0.0000        1
+   10         1.7913114205        24.3722249253    0.0000        1
+ 
+ k-point =    0.1831   0.3068   0.5517 (a.u.)^-1
+ k-point =    0.4000   0.6000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4592076411         6.2478873231    1.0000        1
+    2         0.6507598624         8.8541085353    1.0000        1
+    3         0.8326596893        11.3290012012    1.0000        1
+    4         0.9625867806        13.0967632189    1.0000        1
+    5         1.3198166853        17.9571618563    0.0000        1
+    6         1.4233284602        19.3655223631    0.0000        1
+    7         1.5574659243        21.1905698728    0.0000        1
+    8         1.6169145893        21.9994165195    0.0000        1
+    9         1.6790756095        22.8451669278    0.0000        1
+   10         1.7943788548        24.4139598231    0.0000        1
+ 
+ k-point =    0.6729  -0.1831   0.1843 (a.u.)^-1
+ k-point =    0.4000   0.7000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4934329016         6.7135493728    1.0000        1
+    2         0.6192342522         8.4251773880    1.0000        1
+    3         0.8140581065        11.0759117855    1.0000        1
+    4         0.9646226899        13.1244633939    1.0000        1
+    5         1.2281658750        16.7101792624    0.0000        1
+    6         1.5012967349        20.4263431161    0.0000        1
+    7         1.5978283589        21.7397330853    0.0000        1
+    8         1.6050434619        21.8379003344    0.0000        1
+    9         1.7414305580        23.6935558860    0.0000        1
+   10         1.7490100935        23.7966815297    0.0000        1
+ 
+ k-point =    0.5505  -0.0606   0.3068 (a.u.)^-1
+ k-point =    0.4000   0.7000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5173608318         7.0391080058    1.0000        1
+    2         0.6074964595         8.2654753283    1.0000        1
+    3         0.8217919748        11.1811372505    1.0000        1
+    4         0.8879124836        12.0807596694    1.0000        1
+    5         1.3904974380        18.9188300415    0.0000        1
+    6         1.4141383369        19.2404833836    0.0000        1
+    7         1.5188515052        20.6651898095    0.0000        1
+    8         1.5508732002        21.1008705874    0.0000        1
+    9         1.7733368082        24.1276659444    0.0000        1
+   10         1.9384109630        26.3736318801    0.0000        1
+ 
+ k-point =    0.1831   0.3068   0.6742 (a.u.)^-1
+ k-point =    0.4000   0.7000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4594804610         6.2515992562    1.0000        1
+    2         0.6506139685         8.8521235332    1.0000        1
+    3         0.8333100481        11.3378498519    1.0000        1
+    4         0.9629642092        13.1018984378    1.0000        1
+    5         1.3201829612        17.9621453332    0.0000        1
+    6         1.4244758491        19.3811335079    0.0000        1
+    7         1.5572039336        21.1870052794    0.0000        1
+    8         1.6180684400        22.0151155804    0.0000        1
+    9         1.6795805475        22.8520370125    0.0000        1
+   10         1.7950381673        24.4229302968    0.0000        1
+ 
+ k-point =    0.5505  -0.0606   0.4292 (a.u.)^-1
+ k-point =    0.4000   0.8000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5109159357         6.9514200381    1.0000        1
+    2         0.6096872234         8.2952824236    1.0000        1
+    3         0.8378938909        11.4002167006    1.0000        1
+    4         0.9079824334        12.3538273923    1.0000        1
+    5         1.2550191057        17.0755389484    0.0000        1
+    6         1.3648899509        18.5704196940    0.0000        1
+    7         1.5883711955        21.6110608116    0.0000        1
+    8         1.7178117135        23.3722026111    0.0000        1
+    9         1.7743505497        24.1414587091    0.0000        1
+   10         1.9257698445        26.2016393499    0.0000        1
+ 
+ k-point =    0.7954  -0.3055   0.3068 (a.u.)^-1
+ k-point =    0.4000   0.9000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4117328380         5.6019546473    1.0000        1
+    2         0.6433604047         8.7534329946    1.0000        1
+    3         0.9717612667        13.2215894426    1.0000        1
+    4         1.0361056018        14.0970455972    1.0000        1
+    5         1.2818509318        17.4406074081    0.0000        1
+    6         1.3792189313        18.7653769352    0.0000        1
+    7         1.3991182952        19.0361237002    0.0000        1
+    8         1.7095874937        23.2603055219    0.0000        1
+    9         1.7551969120        23.8808581457    0.0000        1
+   10         1.7977455013        24.4597657417    0.0000        1
+ 
+ k-point =    0.6729  -0.1831   0.4292 (a.u.)^-1
+ k-point =    0.4000   0.9000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4265380683         5.8033916498    1.0000        1
+    2         0.6954605406         9.4622970240    1.0000        1
+    3         0.8744149335        11.8971147016    1.0000        1
+    4         0.9497715210        12.9224013610    1.0000        1
+    5         1.2825368291        17.4499395899    0.0000        1
+    6         1.3958450779        18.9915889607    0.0000        1
+    7         1.4769271831        20.0947758679    0.0000        1
+    8         1.6342721863        22.2355805125    0.0000        1
+    9         1.8541375890        25.2270252078    0.0000        1
+   10         1.8550745353        25.2397731129    0.0000        1
+ 
+ k-point =    0.3055   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.5000   0.5000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4195264855         5.7079934566    1.0000        1
+    2         0.6134524193         8.3465109268    1.0000        1
+    3         1.0391016441        14.1378091489    1.0000        1
+    4         1.0391071764        14.1378844213    1.0000        1
+    5         1.2300842675        16.7362805271    0.0000        1
+    6         1.3710978613        18.6548832812    0.0000        1
+    7         1.3711044066        18.6549723353    0.0000        1
+    8         1.6805126418        22.8647189013    0.0000        1
+    9         1.8982006016        25.8265377448    0.0000        1
+   10         1.8982270440        25.8268975153    0.0000        1
+ 
+ k-point =    0.5505   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.5000   0.7000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5169605354         7.0336616530    1.0000        1
+    2         0.6077955325         8.2695444558    1.0000        1
+    3         0.8216771081        11.1795743972    1.0000        1
+    4         0.8885615261        12.0895904123    1.0000        1
+    5         1.3903683859        18.9170741845    0.0000        1
+    6         1.4140999314        19.2399608468    0.0000        1
+    7         1.5184522420        20.6597575144    0.0000        1
+    8         1.5515994470        21.1107517553    0.0000        1
+    9         1.7722991682        24.1135480222    0.0000        1
+   10         1.9391696189        26.3839540012    0.0000        1
+ 
+ k-point =    0.4280   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.5000   0.7000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4365955054         5.9402311271    1.0000        1
+    2         0.6493261072         8.8346011497    1.0000        1
+    3         0.8962966411        12.1948328399    1.0000        1
+    4         0.9840420665        13.3886795486    1.0000        1
+    5         1.2566568416        17.0978216561    0.0000        1
+    6         1.4642543177        19.9223513957    0.0000        1
+    7         1.4995927662        20.4031592588    0.0000        1
+    8         1.5374794523        20.9186379319    0.0000        1
+    9         1.8342977857        24.9570888133    0.0000        1
+   10         1.8927258383        25.7520492106    0.0000        1
+ 
+ k-point =    0.7954  -0.1831   0.3068 (a.u.)^-1
+ k-point =    0.5000   0.9000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4460232291         6.0685028504    1.0000        1
+    2         0.6249095947         8.5023949631    1.0000        1
+    3         0.9080549658        12.3548142541    1.0000        1
+    4         0.9926128137        13.5052914202    1.0000        1
+    5         1.3262826298        18.0451362045    0.0000        1
+    6         1.3521013655        18.3964207593    0.0000        1
+    7         1.4949890569        20.3405221099    0.0000        1
+    8         1.6902513167        22.9972213652    0.0000        1
+    9         1.6980177189        23.1028894792    0.0000        1
+   10         1.8657670849        25.3852538041    0.0000        1
+ 
+ k-point =    0.6729  -0.0606   0.4292 (a.u.)^-1
+ k-point =    0.5000   0.9000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5114213702         6.9582968783    1.0000        1
+    2         0.6097681188         8.2963830707    1.0000        1
+    3         0.8382468836        11.4050194495    1.0000        1
+    4         0.9079176653        12.3529461703    1.0000        1
+    5         1.2584474611        17.1221844666    0.0000        1
+    6         1.3610592988        18.5183006082    0.0000        1
+    7         1.5885729253        21.6138055072    0.0000        1
+    8         1.7183864746        23.3800226959    0.0000        1
+    9         1.7774870902        24.1841338519    0.0000        1
+   10         1.9304084783        26.2647516746    0.0000        1
+ 
+ k-point =    0.5505   0.0618   0.5517 (a.u.)^-1
+ k-point =    0.5000   0.9000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5008550677         6.8145338802    1.0000        1
+    2         0.6122698670         8.3304213566    1.0000        1
+    3         0.8862607794        12.0582869123    1.0000        1
+    4         0.9260456759        12.5995922572    1.0000        1
+    5         1.1809781085        16.0681519484    0.0000        1
+    6         1.2390121864        16.8577520061    0.0000        1
+    7         1.7636832822        23.9963220014    0.0000        1
+    8         1.7691889852        24.0712314952    0.0000        1
+    9         1.9127010724        26.0238282515    0.0000        1
+   10         1.9187357215        26.1059344796    0.0000        1
+ 
+ k-point =    0.0606   0.6742  -0.0606 (a.u.)^-1
+ k-point =    0.6000   0.0000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5002932780         6.8068902812    1.0000        1
+    2         0.6116743675         8.3223191095    1.0000        1
+    3         0.8862890838        12.0586720162    1.0000        1
+    4         0.9255997925        12.5935256574    1.0000        1
+    5         1.1802560193        16.0583273470    0.0000        1
+    6         1.2358078914        16.8141550083    0.0000        1
+    7         1.7652128676        24.0171332335    0.0000        1
+    8         1.7694657361        24.0749969126    0.0000        1
+    9         1.9122736554        26.0180129011    0.0000        1
+   10         1.9212664769        26.1403674311    0.0000        1
+ 
+ k-point =    0.4280   0.3068  -0.3055 (a.u.)^-1
+ k-point =    0.6000   0.1000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4111430279         5.5939298083    1.0000        1
+    2         0.6425337361         8.7421855062    1.0000        1
+    3         0.9720864987        13.2260144837    1.0000        1
+    4         1.0354760972        14.0884806827    1.0000        1
+    5         1.2810130353        17.4292071558    0.0000        1
+    6         1.3759329184        18.7206681010    0.0000        1
+    7         1.3959760975        18.9933715874    0.0000        1
+    8         1.7079801926        23.2384369047    0.0000        1
+    9         1.7582409091        23.9222741609    0.0000        1
+   10         1.7976671188        24.4586992846    0.0000        1
+ 
+ k-point =   -0.0618   0.7966   0.1843 (a.u.)^-1
+ k-point =    0.6000   0.1000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4259425591         5.7952892700    1.0000        1
+    2         0.6951370477         9.4578956430    1.0000        1
+    3         0.8746829487        11.9007612638    1.0000        1
+    4         0.9501641608        12.9277435391    1.0000        1
+    5         1.2806590724        17.4243912066    0.0000        1
+    6         1.3991576552        19.0366592257    0.0000        1
+    7         1.4773165978        20.1000741667    0.0000        1
+    8         1.6307799821        22.1880662811    0.0000        1
+    9         1.8548668087        25.2369468252    0.0000        1
+   10         1.8568839894        25.2643921823    0.0000        1
+ 
+ k-point =    0.5505   0.1843  -0.1831 (a.u.)^-1
+ k-point =    0.6000   0.3000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4928193873         6.7052020200    1.0000        1
+    2         0.6193604625         8.4268945814    1.0000        1
+    3         0.8144447791        11.0811727761    1.0000        1
+    4         0.9646377984        13.1246689577    1.0000        1
+    5         1.2281627524        16.7101367772    0.0000        1
+    6         1.5011110085        20.4238161597    0.0000        1
+    7         1.5949487179        21.7005532666    0.0000        1
+    8         1.6025775292        21.8043493466    0.0000        1
+    9         1.7430574718        23.7156913495    0.0000        1
+   10         1.7514269215        23.8295644089    0.0000        1
+ 
+ k-point =    0.4280   0.3068  -0.0606 (a.u.)^-1
+ k-point =    0.6000   0.3000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4586778171         6.2406786440    1.0000        1
+    2         0.6507795261         8.8543760758    1.0000        1
+    3         0.8324687560        11.3264034010    1.0000        1
+    4         0.9634133504        13.1080093622    1.0000        1
+    5         1.3173264574        17.9232803146    0.0000        1
+    6         1.4245841950        19.3826076405    0.0000        1
+    7         1.5577115022        21.1939111570    0.0000        1
+    8         1.6145847452        21.9677171268    0.0000        1
+    9         1.6813400263        22.8759761293    0.0000        1
+   10         1.7903011593        24.3584795131    0.0000        1
+ 
+ k-point =    0.5505   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.6000   0.6000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4926470628         6.7028574071    1.0000        1
+    2         0.6196326422         8.4305978029    1.0000        1
+    3         0.8143329623        11.0796514183    1.0000        1
+    4         0.9652724783        13.1333042859    1.0000        1
+    5         1.2288333645        16.7192609909    0.0000        1
+    6         1.5020702248        20.4368670646    0.0000        1
+    7         1.5944629381        21.6939438429    0.0000        1
+    8         1.6021668201        21.7987613204    0.0000        1
+    9         1.7427097979        23.7109609676    0.0000        1
+   10         1.7515022441        23.8305892325    0.0000        1
+ 
+ k-point =    0.4280   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.6000   0.6000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4108840311         5.5904059507    1.0000        1
+    2         0.6429160016         8.7473865352    1.0000        1
+    3         0.9726525954        13.2337166826    1.0000        1
+    4         1.0360190727        14.0958682990    1.0000        1
+    5         1.2810449671        17.4296416134    0.0000        1
+    6         1.3764464161        18.7276546477    0.0000        1
+    7         1.3959991563        18.9936853215    0.0000        1
+    8         1.7076252214        23.2336072367    0.0000        1
+    9         1.7574150919        23.9110382580    0.0000        1
+   10         1.7977596598        24.4599583792    0.0000        1
+ 
+ k-point =    0.3055   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.6000   0.6000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3763029077         5.1199021019    1.0000        1
+    2         0.7013176134         9.5419871848    1.0000        1
+    3         1.0017367356        13.6294296767    1.0000        1
+    4         1.0182750271        13.8544463643    1.0000        1
+    5         1.2844156523        17.4755024816    0.0000        1
+    6         1.3700864426        18.6411221201    0.0000        1
+    7         1.4282505273        19.4324910239    0.0000        1
+    8         1.5896722298        21.6287624244    0.0000        1
+    9         1.7736699682        24.1321988531    0.0000        1
+   10         1.8262116449        24.8470703986    0.0000        1
+ 
+ k-point =    0.3055   0.4292   0.5517 (a.u.)^-1
+ k-point =    0.6000   0.7000   0.8010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3564406270         4.8496598833    1.0000        1
+    2         0.7752407331        10.5477703658    1.0000        1
+    3         0.9298798698        12.6517595328    1.0000        1
+    4         1.0277602891        13.9835009411    1.0000        1
+    5         1.3208111952        17.9706929593    0.0000        1
+    6         1.3890129977        18.8986330440    0.0000        1
+    7         1.4677417523        19.9698007339    0.0000        1
+    8         1.5010745441        20.4233200319    0.0000        1
+    9         1.7014668076        23.1498170908    0.0000        1
+   10         1.8774727081        25.5445181723    0.0000        1
+ 
+ k-point =    0.6729   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.6000   0.8000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5178304322         7.0454972946    1.0000        1
+    2         0.6074708700         8.2651271634    1.0000        1
+    3         0.8217857172        11.1810521113    1.0000        1
+    4         0.8882621458        12.0855171039    1.0000        1
+    5         1.3929314755        18.9519470699    0.0000        1
+    6         1.4149646476        19.2517260025    0.0000        1
+    7         1.5169603114        20.6394586046    0.0000        1
+    8         1.5501815078        21.0914595584    0.0000        1
+    9         1.7761117490        24.1654212347    0.0000        1
+   10         1.9399224657        26.3941970841    0.0000        1
+ 
+ k-point =    0.5505   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.6000   0.8000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4255589873         5.7900704697    1.0000        1
+    2         0.6956412770         9.4647560866    1.0000        1
+    3         0.8750267016        11.9054382962    1.0000        1
+    4         0.9501011439        12.9268861432    1.0000        1
+    5         1.2799002249        17.4140664797    0.0000        1
+    6         1.3992605964        19.0380598227    0.0000        1
+    7         1.4763863529        20.0874174410    0.0000        1
+    8         1.6303491731        22.1822047790    0.0000        1
+    9         1.8538592568        25.2232382765    0.0000        1
+   10         1.8559854404        25.2521667052    0.0000        1
+ 
+ k-point =    0.3055   0.4292   0.6742 (a.u.)^-1
+ k-point =    0.6000   0.8000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3568418844         4.8551193106    1.0000        1
+    2         0.7749075153        10.5432366712    1.0000        1
+    3         0.9306931945        12.6628254660    1.0000        1
+    4         1.0282565799        13.9902533752    1.0000        1
+    5         1.3212263276        17.9763411675    0.0000        1
+    6         1.3896547461        18.9073645447    0.0000        1
+    7         1.4675105037        19.9666544110    0.0000        1
+    8         1.5029441725        20.4487578229    0.0000        1
+    9         1.7019725288        23.1566978326    0.0000        1
+   10         1.8781306354        25.5534697996    0.0000        1
+ 
+ k-point =    0.9179  -0.1831   0.1843 (a.u.)^-1
+ k-point =    0.6000   0.9000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3770456929         5.1300082881    1.0000        1
+    2         0.7009517620         9.5370094841    1.0000        1
+    3         1.0025298967        13.6402212690    1.0000        1
+    4         1.0186201558        13.8591421153    1.0000        1
+    5         1.2842596072        17.4733793641    0.0000        1
+    6         1.3720248325        18.6674954664    0.0000        1
+    7         1.4300170647        19.4565261788    0.0000        1
+    8         1.5903862210        21.6384768462    0.0000        1
+    9         1.7752869595        24.1541993132    0.0000        1
+   10         1.8282523263        24.8748355009    0.0000        1
+ 
+ k-point =    0.7954  -0.0606   0.3068 (a.u.)^-1
+ k-point =    0.6000   0.9000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4601537075         6.2607593140    1.0000        1
+    2         0.6505729464         8.8515653938    1.0000        1
+    3         0.8326333532        11.3286428768    1.0000        1
+    4         0.9633864514        13.1076433810    1.0000        1
+    5         1.3210349140        17.9737368323    0.0000        1
+    6         1.4246854968        19.3839859321    0.0000        1
+    7         1.5580456756        21.1984578533    0.0000        1
+    8         1.6188759555        22.0261024755    0.0000        1
+    9         1.6784300689        22.8363838313    0.0000        1
+   10         1.7975720636        24.4574059825    0.0000        1
+ 
+ k-point =    0.6729   0.0618   0.4292 (a.u.)^-1
+ k-point =    0.6000   0.9000   0.4010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5105904455         6.9469914831    1.0000        1
+    2         0.6106051937         8.3077721441    1.0000        1
+    3         0.8384237357        11.4074256633    1.0000        1
+    4         0.9081061145        12.3555101725    1.0000        1
+    5         1.2583660614        17.1210769586    0.0000        1
+    6         1.3612840399        18.5213583902    0.0000        1
+    7         1.5881027653        21.6074086038    0.0000        1
+    8         1.7190447318        23.3889788115    0.0000        1
+    9         1.7772575090        24.1810102154    0.0000        1
+   10         1.9309114439        26.2715949238    0.0000        1
+ 
+ k-point =    0.6729   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.7000   0.7000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4933456838         6.7123627049    1.0000        1
+    2         0.6195556612         8.4295504155    1.0000        1
+    3         0.8139369574        11.0742634544    1.0000        1
+    4         0.9653235962        13.1339997856    1.0000        1
+    5         1.2289046605        16.7202310301    0.0000        1
+    6         1.5021180458        20.4375177081    0.0000        1
+    7         1.5984462977        21.7481406368    0.0000        1
+    8         1.6050432226        21.8378970774    0.0000        1
+    9         1.7412545814        23.6911615837    0.0000        1
+   10         1.7483718329        23.7879974839    0.0000        1
+ 
+ k-point =    0.5505   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.7000   0.7000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3995869422         5.4367000188    1.0000        1
+    2         0.7068601377         9.6173976622    1.0000        1
+    3         0.8730950775        11.8791570050    1.0000        1
+    4         1.0310963239        14.0288903637    1.0000        1
+    5         1.3025705532        17.7225144328    0.0000        1
+    6         1.4569859217        19.8234590536    0.0000        1
+    7         1.4581253071        19.8389613028    0.0000        1
+    8         1.6103781420        21.9104829238    0.0000        1
+    9         1.6275818569        22.1445532282    0.0000        1
+   10         1.8205838137        24.7704992522    0.0000        1
+ 
+ k-point =    0.4280   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.7000   0.7000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3311192690         4.5051425500    1.0000        1
+    2         0.7741497895        10.5329272066    1.0000        1
+    3         1.0597834499        14.4192016632    1.0000        1
+    4         1.0602927104        14.4261305596    1.0000        1
+    5         1.2553180341        17.0796061087    0.0000        1
+    6         1.3857341332        18.8540214691    0.0000        1
+    7         1.3862833362        18.8614938155    0.0000        1
+    8         1.6725462919        22.7563303378    0.0000        1
+    9         1.6839417704        22.9113749395    0.0000        1
+   10         1.6852762764        22.9295319616    0.0000        1
+ 
+ k-point =    0.9179  -0.0606   0.1843 (a.u.)^-1
+ k-point =    0.7000   0.9000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3570860181         4.8584409456    1.0000        1
+    2         0.7747016872        10.5404362155    1.0000        1
+    3         0.9295075738        12.6466941477    1.0000        1
+    4         1.0285717383        13.9945413575    1.0000        1
+    5         1.3215009000        17.9800769450    0.0000        1
+    6         1.3899801459        18.9117918688    0.0000        1
+    7         1.4686623660        19.9823264200    0.0000        1
+    8         1.5023184277        20.4402440632    0.0000        1
+    9         1.7048677930        23.1960902175    0.0000        1
+   10         1.8782965890        25.5557277304    0.0000        1
+ 
+ k-point =    0.7954   0.0618   0.3068 (a.u.)^-1
+ k-point =    0.7000   0.9000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4601789782         6.2611031422    1.0000        1
+    2         0.6502780205         8.8475526918    1.0000        1
+    3         0.8332214506        11.3366444124    1.0000        1
+    4         0.9635283923        13.1095746005    1.0000        1
+    5         1.3209602110        17.9727204383    0.0000        1
+    6         1.4244274094        19.3804744465    0.0000        1
+    7         1.5586674315        21.2069173397    0.0000        1
+    8         1.6197737935        22.0383182799    0.0000        1
+    9         1.6784686829        22.8369092063    0.0000        1
+   10         1.7969262740        24.4486194983    0.0000        1
+ 
+ k-point =    0.6729   0.1843   0.4292 (a.u.)^-1
+ k-point =    0.7000   0.9000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4258089836         5.7934718691    1.0000        1
+    2         0.6962698010         9.4733076585    1.0000        1
+    3         0.8748213307        11.9026440607    1.0000        1
+    4         0.9503778382        12.9306507915    1.0000        1
+    5         1.2823327405        17.4471628009    0.0000        1
+    6         1.3965548903        19.0012465267    0.0000        1
+    7         1.4767317010        20.0921161781    0.0000        1
+    8         1.6341999238        22.2345973237    0.0000        1
+    9         1.8529019054        25.2102127448    0.0000        1
+   10         1.8558094472        25.2497721766    0.0000        1
+ 
+ k-point =    0.5505   0.3068   0.5517 (a.u.)^-1
+ k-point =    0.7000   0.9000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3333094451         4.5349416485    1.0000        1
+    2         0.8426533531        11.4649729921    1.0000        1
+    3         0.9810622602        13.3481368999    1.0000        1
+    4         0.9927464625        13.5071098200    1.0000        1
+    5         1.2384345401        16.8498926658    0.0000        1
+    6         1.3758921647        18.7201136140    0.0000        1
+    7         1.5017944644        20.4331151233    0.0000        1
+    8         1.5271480850        20.7780714153    0.0000        1
+    9         1.7408918650        23.6862265362    0.0000        1
+   10         1.7887860431        24.3378651454    0.0000        1
+ 
+ k-point =    0.1831   0.7966  -0.1831 (a.u.)^-1
+ k-point =    0.8000   0.0000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4367456498         5.9422739620    1.0000        1
+    2         0.6498913048         8.8422911149    1.0000        1
+    3         0.8962634589        12.1943813694    1.0000        1
+    4         0.9837478125        13.3846759868    1.0000        1
+    5         1.2564608515        17.0951550536    0.0000        1
+    6         1.4661184822        19.9477148457    0.0000        1
+    7         1.5024201015        20.4416274176    0.0000        1
+    8         1.5347590340        20.8816244653    0.0000        1
+    9         1.8370295641        24.9942568437    0.0000        1
+   10         1.8950167050        25.7832182852    0.0000        1
+ 
+ k-point =    0.0606   0.9191  -0.0606 (a.u.)^-1
+ k-point =    0.8000   0.0000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3330637150         4.5315982931    1.0000        1
+    2         0.8429495145        11.4690025038    1.0000        1
+    3         0.9807454382        13.3438262828    1.0000        1
+    4         0.9924404349        13.5029460696    1.0000        1
+    5         1.2371549694        16.8324830824    0.0000        1
+    6         1.3746422913        18.7031080872    0.0000        1
+    7         1.5030812221        20.4506224918    0.0000        1
+    8         1.5293164621        20.8075739207    0.0000        1
+    9         1.7387523650        23.6571169272    0.0000        1
+   10         1.7879107585        24.3259561974    0.0000        1
+ 
+ k-point =    0.5505   0.4292  -0.4280 (a.u.)^-1
+ k-point =    0.8000   0.1000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3077986302         4.1878466024    1.0000        1
+    2         0.8581111202        11.6752882795    1.0000        1
+    3         0.9968588348        13.5630619348    1.0000        1
+    4         1.0898137705        14.8277881988    1.0000        1
+    5         1.3205719025        17.9674371909    0.0000        1
+    6         1.3751872234        18.7105223242    0.0000        1
+    7         1.3958002378        18.9909788760    0.0000        1
+    8         1.5557740322        21.1675503269    0.0000        1
+    9         1.5935224584        21.6811478645    0.0000        1
+   10         1.7519947785        23.8372905579    0.0000        1
+ 
+ k-point =    0.6729   0.3068  -0.3055 (a.u.)^-1
+ k-point =    0.8000   0.3000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4001405864         5.4442327903    1.0000        1
+    2         0.7068675671         9.6174987444    1.0000        1
+    3         0.8719864751        11.8640735825    1.0000        1
+    4         1.0305433604        14.0213668535    1.0000        1
+    5         1.3019387375        17.7139180750    0.0000        1
+    6         1.4593271919        19.8553139082    0.0000        1
+    7         1.4611211430        19.8797220469    0.0000        1
+    8         1.6090727335        21.8927217971    0.0000        1
+    9         1.6252107795        22.1122928242    0.0000        1
+   10         1.8206295667        24.7711217593    0.0000        1
+ 
+ k-point =    0.5505   0.4292  -0.1831 (a.u.)^-1
+ k-point =    0.8000   0.3000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4263083960         5.8002667737    1.0000        1
+    2         0.6948678552         9.4542330642    1.0000        1
+    3         0.8746648121        11.9005144999    1.0000        1
+    4         0.9493428193        12.9165685304    1.0000        1
+    5         1.2793491004        17.4065679897    0.0000        1
+    6         1.3995925074        19.0425757369    0.0000        1
+    7         1.4769090802        20.0945295637    0.0000        1
+    8         1.6310161932        22.1912801218    0.0000        1
+    9         1.8534400071        25.2175340489    0.0000        1
+   10         1.8562765119        25.2561269661    0.0000        1
+ 
+ k-point =    0.5505   0.4292   0.0618 (a.u.)^-1
+ k-point =    0.8000   0.5000   0.4010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.5100884507         6.9401614421    1.0000        1
+    2         0.6104990848         8.3063284475    1.0000        1
+    3         0.8380528244        11.4023791184    1.0000        1
+    4         0.9082278067        12.3571658919    1.0000        1
+    5         1.2552299031        17.0784070160    0.0000        1
+    6         1.3647264190        18.5681947113    0.0000        1
+    7         1.5877220766        21.6022290298    0.0000        1
+    8         1.7186060460        23.3830101413    0.0000        1
+    9         1.7735005428        24.1298936855    0.0000        1
+   10         1.9268655407        26.2165471742    0.0000        1
+ 
+ k-point =    0.6729   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.8000   0.8000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3998160776         5.4398175888    1.0000        1
+    2         0.7076879745         9.6286610438    1.0000        1
+    3         0.8724172228        11.8699342503    1.0000        1
+    4         1.0313735069        14.0326616603    1.0000        1
+    5         1.3027355920        17.7247599179    0.0000        1
+    6         1.4596017381        19.8590493281    0.0000        1
+    7         1.4610265756        19.8784353827    0.0000        1
+    8         1.6089747450        21.8913885853    0.0000        1
+    9         1.6253428540        22.1140898030    0.0000        1
+   10         1.8216290609        24.7847206762    0.0000        1
+ 
+ k-point =    0.5505   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.8000   0.8000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3076270136         4.1855116223    1.0000        1
+    2         0.8591193342        11.6890058377    1.0000        1
+    3         0.9976852256        13.5743056428    1.0000        1
+    4         1.0903609267        14.8352326971    1.0000        1
+    5         1.3208488317        17.9712050349    0.0000        1
+    6         1.3749634405        18.7074775786    0.0000        1
+    7         1.3965995142        19.0018536709    0.0000        1
+    8         1.5557124662        21.1667126733    0.0000        1
+    9         1.5942564057        21.6911338053    0.0000        1
+   10         1.7522372076        23.8405889988    0.0000        1
+ 
+ k-point =    0.4280   0.5517   0.5517 (a.u.)^-1
+ k-point =    0.8000   0.8000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2834208796         3.8561678035    1.0000        1
+    2         0.9464432067        12.8771169812    1.0000        1
+    3         1.0525675442        14.3210234930    1.0000        1
+    4         1.0648132109        14.4876355855    1.0000        1
+    5         1.2895206343        17.5449598467    0.0000        1
+    6         1.3748675027        18.7061722686    0.0000        1
+    7         1.4217648220        19.3442478149    0.0000        1
+    8         1.4853573793        20.2094754315    0.0000        1
+    9         1.6178599826        22.0122793511    0.0000        1
+   10         1.7119285799        23.2921578726    0.0000        1
+ 
+ k-point =    1.0403  -0.0606   0.0618 (a.u.)^-1
+ k-point =    0.8000   0.9000   0.0010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2835840828         3.8583883138    1.0000        1
+    2         0.9457134309        12.8671877981    1.0000        1
+    3         1.0524277097        14.3191209328    1.0000        1
+    4         1.0649621857        14.4896625055    1.0000        1
+    5         1.2893684301        17.5428889858    0.0000        1
+    6         1.3750560476        18.7087375727    0.0000        1
+    7         1.4233598375        19.3659492770    0.0000        1
+    8         1.4860584439        20.2190139756    0.0000        1
+    9         1.6175723484        22.0083658575    0.0000        1
+   10         1.7116208851        23.2879714389    0.0000        1
+ 
+ k-point =    0.9179   0.0618   0.1843 (a.u.)^-1
+ k-point =    0.8000   0.9000   0.2010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3573052247         4.8614234262    1.0000        1
+    2         0.7740935857        10.5321625088    1.0000        1
+    3         0.9304068181        12.6589290860    1.0000        1
+    4         1.0286149416        13.9951291727    1.0000        1
+    5         1.3210732480        17.9742583978    0.0000        1
+    6         1.3906674614        18.9211433463    0.0000        1
+    7         1.4687389658        19.9833686203    0.0000        1
+    8         1.5039818359        20.4628760635    0.0000        1
+    9         1.7032748562        23.1744170386    0.0000        1
+   10         1.8791401598        25.5672051869    0.0000        1
+ 
+ k-point =    0.7954   0.1843   0.3068 (a.u.)^-1
+ k-point =    0.8000   0.9000   0.4010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4459928324         6.0680892785    1.0000        1
+    2         0.6248751445         8.5019262410    1.0000        1
+    3         0.9089114532        12.3664674494    1.0000        1
+    4         0.9931425962        13.5124995350    1.0000        1
+    5         1.3253446305        18.0323739731    0.0000        1
+    6         1.3531738073        18.4110121872    0.0000        1
+    7         1.4958814902        20.3526643789    0.0000        1
+    8         1.6916465284        23.0162043359    0.0000        1
+    9         1.6983394961        23.1072675160    0.0000        1
+   10         1.8658090346        25.3858245634    0.0000        1
+ 
+ k-point =    1.0403   0.0618   0.0618 (a.u.)^-1
+ k-point =    0.9000   0.9000   0.1010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2838756895         3.8623558559    1.0000        1
+    2         0.9448029720        12.8548002763    1.0000        1
+    3         1.0531917062        14.3295157166    1.0000        1
+    4         1.0656517576        14.4990446829    1.0000        1
+    5         1.2895072095        17.5447771907    0.0000        1
+    6         1.3753027131        18.7120936535    0.0000        1
+    7         1.4247959126        19.3854882272    0.0000        1
+    8         1.4866730689        20.2273764414    0.0000        1
+    9         1.6179901457        22.0140503242    0.0000        1
+   10         1.7115555176        23.2870820612    0.0000        1
+ 
+ k-point =    0.9179   0.1843   0.1843 (a.u.)^-1
+ k-point =    0.9000   0.9000   0.3010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3777068266         5.1390035418    1.0000        1
+    2         0.7003895955         9.5293607586    1.0000        1
+    3         1.0031234079        13.6482964636    1.0000        1
+    4         1.0195064762        13.8712012142    1.0000        1
+    5         1.2840921985        17.4711016349    0.0000        1
+    6         1.3734767049        18.6872493511    0.0000        1
+    7         1.4317734787        19.4804235971    0.0000        1
+    8         1.5911791535        21.6492653271    0.0000        1
+    9         1.7760680863        24.1648271686    0.0000        1
+   10         1.8291413451        24.8869313129    0.0000        1
+ 
+ k-point =    0.7954   0.3068   0.3068 (a.u.)^-1
+ k-point =    0.9000   0.9000   0.5010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.4116996507         5.6015031069    1.0000        1
+    2         0.6439366367         8.7612730917    1.0000        1
+    3         0.9723068281        13.2290122413    1.0000        1
+    4         1.0370043328        14.1092735516    1.0000        1
+    5         1.2819918829        17.4425251609    0.0000        1
+    6         1.3802263580        18.7790837822    0.0000        1
+    7         1.4000799491        19.0492077719    0.0000        1
+    8         1.7098198923        23.2634674900    0.0000        1
+    9         1.7554449741        23.8842332291    0.0000        1
+   10         1.7979964781        24.4631804822    0.0000        1
+ 
+ k-point =    0.6729   0.4292   0.4292 (a.u.)^-1
+ k-point =    0.9000   0.9000   0.7010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.3077999644         4.1878647551    1.0000        1
+    2         0.8602368887        11.7042110599    1.0000        1
+    3         0.9971536583        13.5670732435    1.0000        1
+    4         1.0912692102        14.8475906204    1.0000        1
+    5         1.3211495611        17.9752966982    0.0000        1
+    6         1.3759919168        18.7214708219    0.0000        1
+    7         1.3990005238        19.0345213271    0.0000        1
+    8         1.5544137381        21.1490424384    0.0000        1
+    9         1.5933817461        21.6792333609    0.0000        1
+   10         1.7549860158        23.8779887333    0.0000        1
+ 
+ k-point =    0.5505   0.5517   0.5517 (a.u.)^-1
+ k-point =    0.9000   0.9000   0.9010 (recip. latt. vec.) 
+   State   Eigenvalue [Ry]      Eigenvalue [eV]    Occup.     Repr.
+ 
+    1         0.2579595588         3.5097461654    1.0000        1
+    2         1.0428467645        14.1887645086    1.0000        1
+    3         1.1125156588        15.1366655509    1.0000        1
+    4         1.1130412528        15.1438166767    1.0000        1
+    5         1.3140289912        17.8784156481    0.0000        1
+    6         1.3377098085        18.2006121127    0.0000        1
+    7         1.3383276772        18.2090187111    0.0000        1
+    8         1.4280054185        19.4291561236    0.0000        1
+    9         1.6713355275        22.7398569204    0.0000        1
+   10         1.6722869709        22.7528020686    0.0000        1
+ 
+ Nscf calculation done
+ 
+ calling gw_write 
+ 
+ SIZE OF POTENTIAL GSPACE =     2891 WITH FFT GRID     20    20    20
+
+ HAMILTONIAN MATRIX DIMENSIONS:
+ ---------------------------
+            WEIGHT    K-POINT                              DIMENSION
+   1        0.0020    0.0000    0.0000    0.1010               353
+   2        0.0020    0.0000    0.0000    0.3010               362
+   3        0.0020    0.0000    0.0000    0.5010               368
+   4        0.0020    0.0000    0.0000    0.7010               362
+   5        0.0020    0.0000    0.0000    0.9010               353
+   6        0.0060    0.0000    0.2000    0.3010               361
+   7        0.0060    0.0000    0.2000    0.5010               372
+   8        0.0060    0.0000    0.3000    0.2010               361
+   9        0.0060    0.0000    0.3000    0.4010               367
+  10        0.0060    0.0000    0.4000    0.5010               366
+  11        0.0060    0.0000    0.5000    0.2010               372
+  12        0.0060    0.0000    0.5000    0.4010               366
+  13        0.0060    0.0000    0.5000    0.6010               366
+  14        0.0060    0.0000    0.5000    0.8010               372
+  15        0.0060    0.0000    0.6000    0.7010               367
+  16        0.0060    0.0000    0.7000    0.6010               367
+  17        0.0060    0.0000    0.7000    0.8010               361
+  18        0.0060    0.1000    0.1000    0.1010               353
+  19        0.0060    0.1000    0.1000    0.3010               368
+  20        0.0060    0.1000    0.1000    0.5010               370
+  21        0.0060    0.1000    0.1000    0.7010               366
+  22        0.0060    0.1000    0.1000    0.9010               360
+  23        0.0120    0.1000    0.3000    0.3010               361
+  24        0.0120    0.1000    0.3000    0.5010               370
+  25        0.0120    0.1000    0.3000    0.7010               377
+  26        0.0120    0.1000    0.3000    0.9010               371
+  27        0.0120    0.1000    0.5000    0.5010               366
+  28        0.0120    0.1000    0.5000    0.7010               373
+  29        0.0120    0.1000    0.5000    0.9010               374
+  30        0.0120    0.1000    0.7000    0.7010               367
+  31        0.0120    0.2000    0.1000    0.0010               360
+  32        0.0120    0.2000    0.1000    0.8010               371
+  33        0.0060    0.2000    0.2000    0.1010               360
+  34        0.0060    0.2000    0.2000    0.3010               368
+  35        0.0060    0.2000    0.2000    0.5010               372
+  36        0.0120    0.2000    0.4000    0.1010               371
+  37        0.0120    0.2000    0.4000    0.5010               370
+  38        0.0120    0.2000    0.5000    0.6010               373
+  39        0.0120    0.2000    0.6000    0.1010               374
+  40        0.0120    0.2000    0.6000    0.7010               373
+  41        0.0120    0.2000    0.7000    0.0010               372
+  42        0.0120    0.2000    0.7000    0.8010               370
+  43        0.0120    0.2000    0.9000    0.0010               368
+  44        0.0060    0.3000    0.3000    0.3010               362
+  45        0.0060    0.3000    0.3000    0.5010               372
+  46        0.0060    0.3000    0.3000    0.7010               375
+  47        0.0120    0.3000    0.5000    0.5010               372
+  48        0.0120    0.3000    0.5000    0.7010               376
+  49        0.0120    0.3000    0.9000    0.3010               367
+  50        0.0060    0.4000    0.0000    0.3010               367
+  51        0.0120    0.4000    0.1000    0.0010               366
+  52        0.0120    0.4000    0.1000    0.6010               373
+  53        0.0120    0.4000    0.1000    0.8010               377
+  54        0.0120    0.4000    0.3000    0.2010               371
+  55        0.0060    0.4000    0.4000    0.3010               366
+  56        0.0060    0.4000    0.4000    0.5010               370
+  57        0.0060    0.4000    0.4000    0.7010               375
+  58        0.0120    0.4000    0.6000    0.3010               377
+  59        0.0120    0.4000    0.6000    0.7010               377
+  60        0.0120    0.4000    0.7000    0.0010               375
+  61        0.0120    0.4000    0.7000    0.2010               376
+  62        0.0120    0.4000    0.7000    0.8010               377
+  63        0.0120    0.4000    0.8000    0.3010               373
+  64        0.0120    0.4000    0.9000    0.0010               370
+  65        0.0120    0.4000    0.9000    0.2010               370
+  66        0.0060    0.5000    0.5000    0.5010               368
+  67        0.0120    0.5000    0.7000    0.3010               376
+  68        0.0120    0.5000    0.7000    0.5010               372
+  69        0.0120    0.5000    0.9000    0.1010               374
+  70        0.0120    0.5000    0.9000    0.3010               373
+  71        0.0120    0.5000    0.9000    0.5010               366
+  72        0.0060    0.6000    0.0000    0.5010               366
+  73        0.0120    0.6000    0.1000    0.0010               370
+  74        0.0120    0.6000    0.1000    0.8010               370
+  75        0.0120    0.6000    0.3000    0.0010               375
+  76        0.0120    0.6000    0.3000    0.2010               377
+  77        0.0060    0.6000    0.6000    0.3010               375
+  78        0.0060    0.6000    0.6000    0.5010               370
+  79        0.0060    0.6000    0.6000    0.7010               366
+  80        0.0120    0.6000    0.7000    0.8010               371
+  81        0.0120    0.6000    0.8000    0.3010               376
+  82        0.0120    0.6000    0.8000    0.5010               370
+  83        0.0120    0.6000    0.8000    0.9010               371
+  84        0.0120    0.6000    0.9000    0.0010               366
+  85        0.0120    0.6000    0.9000    0.2010               377
+  86        0.0120    0.6000    0.9000    0.4010               373
+  87        0.0060    0.7000    0.7000    0.3010               375
+  88        0.0060    0.7000    0.7000    0.5010               372
+  89        0.0060    0.7000    0.7000    0.7010               362
+  90        0.0120    0.7000    0.9000    0.1010               371
+  91        0.0120    0.7000    0.9000    0.3010               377
+  92        0.0120    0.7000    0.9000    0.5010               370
+  93        0.0120    0.7000    0.9000    0.7010               361
+  94        0.0060    0.8000    0.0000    0.5010               372
+  95        0.0060    0.8000    0.0000    0.7010               361
+  96        0.0120    0.8000    0.1000    0.0010               368
+  97        0.0120    0.8000    0.3000    0.0010               372
+  98        0.0120    0.8000    0.3000    0.2010               370
+  99        0.0120    0.8000    0.5000    0.4010               373
+ 100        0.0060    0.8000    0.8000    0.5010               372
+ 101        0.0060    0.8000    0.8000    0.7010               368
+ 102        0.0060    0.8000    0.8000    0.9010               360
+ 103        0.0120    0.8000    0.9000    0.0010               360
+ 104        0.0120    0.8000    0.9000    0.2010               371
+ 105        0.0120    0.8000    0.9000    0.4010               374
+ 106        0.0060    0.9000    0.9000    0.1010               360
+ 107        0.0060    0.9000    0.9000    0.3010               366
+ 108        0.0060    0.9000    0.9000    0.5010               370
+ 109        0.0060    0.9000    0.9000    0.7010               368
+ 110        0.0060    0.9000    0.9000    0.9010               353
+ SIZE OF POTENTIAL GSPACE =     2891 WITH FFT GRID     20    20    20
+
+ HAMILTONIAN MATRIX DIMENSIONS:
+ ---------------------------
+            WEIGHT    K-POINT                              DIMENSION
+   1        0.0020    0.0000    0.0000    0.1010               353
+   2        0.0020    0.0000    0.0000    0.3010               362
+   3        0.0020    0.0000    0.0000    0.5010               368
+   4        0.0020    0.0000    0.0000    0.7010               362
+   5        0.0020    0.0000    0.0000    0.9010               353
+   6        0.0060    0.0000    0.2000    0.3010               361
+   7        0.0060    0.0000    0.2000    0.5010               372
+   8        0.0060    0.0000    0.3000    0.2010               361
+   9        0.0060    0.0000    0.3000    0.4010               367
+  10        0.0060    0.0000    0.4000    0.5010               366
+  11        0.0060    0.0000    0.5000    0.2010               372
+  12        0.0060    0.0000    0.5000    0.4010               366
+  13        0.0060    0.0000    0.5000    0.6010               366
+  14        0.0060    0.0000    0.5000    0.8010               372
+  15        0.0060    0.0000    0.6000    0.7010               367
+  16        0.0060    0.0000    0.7000    0.6010               367
+  17        0.0060    0.0000    0.7000    0.8010               361
+  18        0.0060    0.1000    0.1000    0.1010               353
+  19        0.0060    0.1000    0.1000    0.3010               368
+  20        0.0060    0.1000    0.1000    0.5010               370
+  21        0.0060    0.1000    0.1000    0.7010               366
+  22        0.0060    0.1000    0.1000    0.9010               360
+  23        0.0120    0.1000    0.3000    0.3010               361
+  24        0.0120    0.1000    0.3000    0.5010               370
+  25        0.0120    0.1000    0.3000    0.7010               377
+  26        0.0120    0.1000    0.3000    0.9010               371
+  27        0.0120    0.1000    0.5000    0.5010               366
+  28        0.0120    0.1000    0.5000    0.7010               373
+  29        0.0120    0.1000    0.5000    0.9010               374
+  30        0.0120    0.1000    0.7000    0.7010               367
+  31        0.0120    0.2000    0.1000    0.0010               360
+  32        0.0120    0.2000    0.1000    0.8010               371
+  33        0.0060    0.2000    0.2000    0.1010               360
+  34        0.0060    0.2000    0.2000    0.3010               368
+  35        0.0060    0.2000    0.2000    0.5010               372
+  36        0.0120    0.2000    0.4000    0.1010               371
+  37        0.0120    0.2000    0.4000    0.5010               370
+  38        0.0120    0.2000    0.5000    0.6010               373
+  39        0.0120    0.2000    0.6000    0.1010               374
+  40        0.0120    0.2000    0.6000    0.7010               373
+  41        0.0120    0.2000    0.7000    0.0010               372
+  42        0.0120    0.2000    0.7000    0.8010               370
+  43        0.0120    0.2000    0.9000    0.0010               368
+  44        0.0060    0.3000    0.3000    0.3010               362
+  45        0.0060    0.3000    0.3000    0.5010               372
+  46        0.0060    0.3000    0.3000    0.7010               375
+  47        0.0120    0.3000    0.5000    0.5010               372
+  48        0.0120    0.3000    0.5000    0.7010               376
+  49        0.0120    0.3000    0.9000    0.3010               367
+  50        0.0060    0.4000    0.0000    0.3010               367
+  51        0.0120    0.4000    0.1000    0.0010               366
+  52        0.0120    0.4000    0.1000    0.6010               373
+  53        0.0120    0.4000    0.1000    0.8010               377
+  54        0.0120    0.4000    0.3000    0.2010               371
+  55        0.0060    0.4000    0.4000    0.3010               366
+  56        0.0060    0.4000    0.4000    0.5010               370
+  57        0.0060    0.4000    0.4000    0.7010               375
+  58        0.0120    0.4000    0.6000    0.3010               377
+  59        0.0120    0.4000    0.6000    0.7010               377
+  60        0.0120    0.4000    0.7000    0.0010               375
+  61        0.0120    0.4000    0.7000    0.2010               376
+  62        0.0120    0.4000    0.7000    0.8010               377
+  63        0.0120    0.4000    0.8000    0.3010               373
+  64        0.0120    0.4000    0.9000    0.0010               370
+  65        0.0120    0.4000    0.9000    0.2010               370
+  66        0.0060    0.5000    0.5000    0.5010               368
+  67        0.0120    0.5000    0.7000    0.3010               376
+  68        0.0120    0.5000    0.7000    0.5010               372
+  69        0.0120    0.5000    0.9000    0.1010               374
+  70        0.0120    0.5000    0.9000    0.3010               373
+  71        0.0120    0.5000    0.9000    0.5010               366
+  72        0.0060    0.6000    0.0000    0.5010               366
+  73        0.0120    0.6000    0.1000    0.0010               370
+  74        0.0120    0.6000    0.1000    0.8010               370
+  75        0.0120    0.6000    0.3000    0.0010               375
+  76        0.0120    0.6000    0.3000    0.2010               377
+  77        0.0060    0.6000    0.6000    0.3010               375
+  78        0.0060    0.6000    0.6000    0.5010               370
+  79        0.0060    0.6000    0.6000    0.7010               366
+  80        0.0120    0.6000    0.7000    0.8010               371
+  81        0.0120    0.6000    0.8000    0.3010               376
+  82        0.0120    0.6000    0.8000    0.5010               370
+  83        0.0120    0.6000    0.8000    0.9010               371
+  84        0.0120    0.6000    0.9000    0.0010               366
+  85        0.0120    0.6000    0.9000    0.2010               377
+  86        0.0120    0.6000    0.9000    0.4010               373
+  87        0.0060    0.7000    0.7000    0.3010               375
+  88        0.0060    0.7000    0.7000    0.5010               372
+  89        0.0060    0.7000    0.7000    0.7010               362
+  90        0.0120    0.7000    0.9000    0.1010               371
+  91        0.0120    0.7000    0.9000    0.3010               377
+  92        0.0120    0.7000    0.9000    0.5010               370
+  93        0.0120    0.7000    0.9000    0.7010               361
+  94        0.0060    0.8000    0.0000    0.5010               372
+  95        0.0060    0.8000    0.0000    0.7010               361
+  96        0.0120    0.8000    0.1000    0.0010               368
+  97        0.0120    0.8000    0.3000    0.0010               372
+  98        0.0120    0.8000    0.3000    0.2010               370
+  99        0.0120    0.8000    0.5000    0.4010               373
+ 100        0.0060    0.8000    0.8000    0.5010               372
+ 101        0.0060    0.8000    0.8000    0.7010               368
+ 102        0.0060    0.8000    0.8000    0.9010               360
+ 103        0.0120    0.8000    0.9000    0.0010               360
+ 104        0.0120    0.8000    0.9000    0.2010               371
+ 105        0.0120    0.8000    0.9000    0.4010               374
+ 106        0.0060    0.9000    0.9000    0.1010               360
+ 107        0.0060    0.9000    0.9000    0.3010               366
+ 108        0.0060    0.9000    0.9000    0.5010               370
+ 109        0.0060    0.9000    0.9000    0.7010               368
+ 110        0.0060    0.9000    0.9000    0.9010               353
+ GW output is written
+ 
+ 
+ =================================================================
+ Setup time [sec] :        0.34
+ Total time spent in Hartree potential [sec] :        0.00
+ Total time spent during diagonalization [sec] :        0.00
+ 
+ Total CPU time [sec] :      23.76
+ Wall-clock time [sec] :      23.73
+ Current date/time: 06-JUL-2013 06:26:01 +0000 UTC
+ 
+ =================================================================
+ 

@@ -1,0 +1,138 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Global sum routine using the MPI_allREDUCE primitive
+!
+!-------------------------------------------------------------------
+subroutine Zpsum(vec,nmax,nnodes,comm)
+
+  use constants
+#ifdef MPI
+  ! include mpi definitions
+  use mpi
+#endif
+  implicit none
+#ifdef ITAC
+  ! inlcude trace-analyzer definitions
+  include 'VT.inc'
+#endif 
+  !
+  ! Input/Output variables:
+  !
+  ! dimension of array vec
+  integer, intent(in) :: nmax
+  ! number of procs available
+  integer, intent(in) :: nnodes
+  ! communicator
+  integer, intent(in) :: comm
+  ! The original vector whose value is partial for each PE
+  SCALAR, intent(inout) :: vec(nmax)
+  !
+  ! Work variables:
+  !
+  ! A temporary work array used to update the vectors
+  !SCALAR :: work(nmax)
+  ! exit code for mpi calls
+  integer mpinfo
+  !-------------------------------------------------------------------
+  if (nnodes == 1) return
+  if (nmax < 1) return
+#ifdef MPI
+  ! reduce into work 
+! !$OMP BARRIER
+! !$OMP MASTER
+  !call MPI_allREDUCE(vec,work,nmax,MPI_DOUBLE_SCALAR,MPI_SUM,comm,mpinfo)
+  !call Zcopy(nmax,work,1,vec,1)
+
+  call MPI_allREDUCE(MPI_IN_PLACE,vec,nmax,MPI_DOUBLE_SCALAR,MPI_SUM,comm,mpinfo)
+! !$OMP END MASTER
+#endif
+end subroutine Zpsum
+!===================================================================
+#ifdef MPI
+! senrows( jp(node)...jp(node+1)-1 )
+! and receives from 'node' ip(node+1)-ip(node) number of rows
+! and pads them at the end of the vector, in ip(node) position.
+!
+! COMMUNICATION PERFORMED IN PAIRS SIMULTANEOUSLY
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine zbdxc_as(vec,maxdim,ndim,ip,jp,senrows,comm, &
+#else
+subroutine bdxc_as(vec,maxdim,ndim,ip,jp,senrows,comm, &
+#endif
+     nnodes,iam)
+
+  use constants
+  ! include mpi definitions
+  use mpi
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! system size, communicator
+  integer, intent(in) :: maxdim, ndim, comm
+  ! actual number of processors
+  integer, intent(in) :: nnodes
+  ! processor rank
+  integer, intent(in) :: iam
+
+  integer, intent(in) :: ip(0:nnodes),jp(0:nnodes),senrows(ndim)
+
+  SCALAR, intent(inout) :: vec(ndim+1)
+  !
+  ! Work variables:
+  !
+  integer i,j,nelem,msgtype,node,jst,jelem,mpinfo
+
+  SCALAR :: work(maxdim+1,0:nnodes-1)
+
+  ! control parameters for asynchronous communication
+  integer :: req(0:2*nnodes), icomm
+  integer status1(MPI_STATUS_SIZE,2*nnodes)
+
+  !-------------------------------------------------------------------
+  !work(:,:) = Zzero
+  !AJB: commenting ths init is risky and unsafe, but this is a huge cpu hog.
+  !The entire subroutine should be re-written, so only the parts of work(:)
+  !that are going to be actually sent will be initialized.
+  ! Gather local info to be sent
+  icomm = 0
+  do node = 0,nnodes-1
+     jst   = jp(node)-1
+     jelem = jp(node+1) - jst - 1
+     if (jelem /= 0) then
+        ! Gather local info to be sent
+        do i = 1, jelem
+           work(i,node) = vec( senrows(i+jst) )
+        enddo
+        ! Send the info to this node
+        msgtype = 777 + iam
+        ! Post this sends
+        call MPI_ISEND(work(1,node),jelem,MPI_DOUBLE_SCALAR, &
+             node,msgtype,comm, req(icomm), mpinfo)
+        icomm = icomm + 1
+     endif
+  enddo
+  do node = 0,nnodes-1
+     nelem = ip(node+1)-ip(node)
+     if (nelem /= 0) then
+        msgtype = 777 + node
+        call MPI_IRECV( vec(ip(node)), nelem,MPI_DOUBLE_SCALAR &
+             ,node, msgtype, comm, req(icomm), mpinfo )
+        icomm = icomm + 1
+     endif
+  enddo
+  call MPI_WAITALL(icomm, req, status1, mpinfo)
+
+#ifdef CPLX
+end subroutine zbdxc_as
+#else
+end subroutine bdxc_as
+#endif
+
+#endif

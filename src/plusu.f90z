@@ -1,0 +1,170 @@
+#include "mycomplex.h"
+!===============================================================
+!
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Matrix-vector multiplication for the on-site Coulomb interaction.
+! For a distributed set of input
+! vectors p(1:mydim,1:m), calculate the vectors q(1:mydim,1:m)
+! given by q(i,k) = Sum_j H(i,j) p(j,k), where i and j run over
+! all grid points in the irreducible wedge. H(i,j) is the real-space
+! Hamiltonian, H = H_local + H_non-loc + U(if applicable).
+!
+! This subroutine contains the U part of the Hamiltonian which is
+! the subset operation of matvec, and operates in a similar way 
+! matvec does while U potential can be written as the following 
+! expression:
+!
+! V_u = (U-J)/2 { (delta_m,mp) - 2(n_l,s,m,mp)} |phi_lm><phi_lm|
+!     
+! where n_l,s,m,mp represents the density matrix of the interaction
+! between the channels with magnetic moment m and mp, respectively.
+! This matrix is calculated in calcden.F and stored in u_pot%denmat
+! (real algebra) or u_pot%zdenmat (complex algebra).
+!
+! Vectors p,q are assumed to be transformed upon a symmetry
+! operation according to characters stored in solver%chi.
+!
+! AJB: HERE BE DRAGONS
+!---------------------------------------------------------------
+#ifdef CPLX
+subroutine zplusu(kplp,u_pot,solver,parallel,p,q)
+#else
+subroutine plusu(kplp,u_pot,solver,parallel,p,q)
+#endif
+  
+  use constants
+  use electronic_struct_module
+  use pseudo_potential_module
+  use non_local_psp_module
+  use eigen_solver_module
+  use parallel_data_module
+#ifdef MPI
+  !  include mpi definitions
+  use mpi
+#endif
+  implicit none
+  !
+  !  Input/Output variables:
+  !
+  !  U potential related data
+  type (nonloc_pseudo_potential), intent(in) :: u_pot
+  !  solver related data
+  type (eigen_solver), intent(in) :: solver
+  !  parallel computation related data
+  type (parallel_data), intent(in) :: parallel
+  ! k-point index
+  integer, intent(in) :: kplp
+  
+  !  input vectors in IW, distributed accross PEs
+  SCALAR, intent(in) :: p(parallel%ldn)
+  !  output vectors in IW, distributed accross PEs
+  SCALAR, intent(inout) :: q(parallel%ldn)
+  !
+  !  Work variables:
+  !
+  !  local scalars
+  integer ja, i, ii, im, imp, ilm, lmmax
+  !  characters, chi = solver%chi
+  integer :: chi(solver%nrep)
+  !  < phi_lm | p >
+  SCALAR, allocatable :: dots(:)
+ 
+  !---------------------------------------------------------------
+write(9,*)"hello from plusu!"  
+  ! Initialize variables
+  chi = solver%chi
+
+  lmmax = maxval(u_pot%nlmatm)
+  allocate(dots(lmmax))
+
+  !!!!!!!!!!!!!!!!!!!!!!IF KPOINTS OFF
+  if (u_pot%nkpt == 0) then
+
+  ilm = 0
+  ! For each atom,
+  do ja = 1, u_pot%atom_num
+
+     ! Calculate the dot product, < phi_lm | p >.
+     dots(:) = Zzero
+     do im = 1, u_pot%nlmatm(ja)
+        do i = 1, u_pot%nlatom(ja)
+           dots(im) = dots(im) + p(u_pot%indw(i,ja)) * &
+                chi(u_pot%tran(i,ja)) * u_pot%anloc(i,ilm+im)
+        enddo
+     enddo
+
+     ! Globally sum these dots over all procs.
+     call Zpsum(dots,lmmax,parallel%group_size,parallel%group_comm)
+
+     ! Calculate the on-site Coulomb interaction using the dots
+     ! and the density matrix (u_pot%denmat).
+     do i = 1, u_pot%nlatom(ja)
+        if (u_pot%tran(i,ja) /= 1) cycle
+        ! Add to vector only if this grid point is in the irreducible
+        ! wedge (i.e. identity operation is needed to bring it to IW).
+        ii = u_pot%indw(i,ja)
+        do im = 1, u_pot%nlmatm(ja)
+           do imp = 1, u_pot%nlmatm(ja)
+              q(ii) = q(ii) + dots(imp) * u_pot%anloc(i,ilm+im) * &
+#ifdef CPLX
+                  u_pot%zdenmat(im,imp,ja,u_pot%isp)
+#else
+                  u_pot%denmat(im,imp,ja,u_pot%isp)
+#endif
+           enddo
+        enddo
+     enddo
+     ilm = ilm + u_pot%nlmatm(ja)
+  enddo          ! ja = 1, u_pot%atom_num
+
+  else
+
+  ilm = 0
+  ! For each atom,
+  do ja = 1, u_pot%atom_num
+
+     ! Calculate the dot product, < phi_lm | p >.
+     dots(:) = Zzero
+     do im = 1, u_pot%nlmatm(ja)
+        do i = 1, u_pot%nlatom(ja)
+           dots(im) = dots(im) + p(u_pot%indw(i,ja)) * &
+                chi(u_pot%tran(i,ja)) * u_pot%anloc(i,ilm+im)  * &
+                        u_pot%right(i,kplp,ja)
+        enddo
+     enddo
+
+     ! Globally sum these dots over all procs.
+     call Zpsum(dots,lmmax,parallel%group_size,parallel%group_comm)
+
+     ! Calculate the on-site Coulomb interaction using the dots
+     ! and the density matrix (u_pot%denmat).
+     do i = 1, u_pot%nlatom(ja)
+        if (u_pot%tran(i,ja) /= 1) cycle
+        ! Add to vector only if this grid point is in the irreducible
+        ! wedge (i.e. identity operation is needed to bring it to IW).
+        ii = u_pot%indw(i,ja)
+        do im = 1, u_pot%nlmatm(ja)
+           do imp = 1, u_pot%nlmatm(ja)
+              q(ii) = q(ii) + dots(imp) * u_pot%anloc(i,ilm+im) * &
+                  u_pot%left(i,kplp,ja) * &
+#ifdef CPLX
+                  u_pot%zdenmat(im,imp,ja,u_pot%isp)
+#else
+                  u_pot%denmat(im,imp,ja,u_pot%isp)
+#endif
+           enddo
+        enddo
+     enddo
+     
+  enddo          ! ja = 1, u_pot%atom_num
+
+  endif
+
+#ifdef CPLX
+end subroutine zplusu
+#else
+end subroutine plusu
+#endif
+!===============================================================

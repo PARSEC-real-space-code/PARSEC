@@ -1,0 +1,102 @@
+#include "mycomplex.h"
+!===================================================================
+! 
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Precondition routine.
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine zfdo5scl(parallel,p,q,m)
+#else
+subroutine fdo5scl(parallel,p,q,m)
+#endif
+
+  use constants
+  use parallel_data_module
+
+  implicit none
+  !
+  ! Input/Output variables:
+  !
+  ! parallel computation related data
+  type (parallel_data), intent(in) :: parallel
+
+  integer, intent(in) :: m
+  SCALAR, intent(in) :: p(parallel%ldn*parallel%mxwd,m)
+  SCALAR, intent(out) :: q(parallel%ldn*parallel%mxwd,m)
+  !
+  ! Work variables:
+  !
+  SCALAR :: p1
+  SCALAR :: vec(parallel%nwedge+1)
+
+  integer ioffset,irow
+
+  integer row(parallel%mydim)
+  !
+  integer i,k
+  real(dp), parameter :: one6th=1.0d0/6.0d0
+
+  !-------------------------------------------------------------------
+  !
+  ! set wave function outside the domain be zero
+  ! The index for points outside the domain is nwedge+1   
+  !
+  ioffset = parallel%irows(parallel%group_iam) - 1
+
+  ! .. for each vector
+  do k = 1, m
+     !
+     !  Initiate boundary exchange information for 1st shell neighbors.
+     !
+     call Zcopy(parallel%mydim,p(1,k),1,vec,1)
+#ifdef MPI
+#ifdef CPLX
+     call zbdxc_as( vec, parallel%nwedge, parallel%ldn, &
+#else
+     call bdxc_as( vec, parallel%nwedge, parallel%ldn, &
+#endif
+        parallel%ip1, parallel%jp1,parallel%irecvp, &
+        parallel%jsendp, parallel%senrows,parallel%group_size, &
+        parallel%group_comm,parallel%group_iam)
+#endif
+
+     vec(parallel%nwedge+1) = Zzero
+
+     ! averaging over first shell
+     do i=1,parallel%mydim
+        irow = parallel%pint(i)
+        row(i) = irow
+        p1 =  vec( parallel%neibs(1,irow) ) + &
+             vec( parallel%neibs(2,irow) ) + &
+             vec( parallel%neibs(3,irow) ) + &
+             vec( parallel%neibs(4,irow) ) + &
+             vec( parallel%neibs(5,irow) ) + &
+             vec( parallel%neibs(6,irow) )
+        q(irow,k) = half*(vec(irow) + p1*one6th)
+     enddo
+     if(parallel%mxwd == 2) then
+        call Zcopy(parallel%mydim,p(1+parallel%mydim,k),1,vec,1)
+        vec(parallel%nwedge+1) = Zzero
+        do i=1,parallel%mydim
+           irow = row(i)
+           p1 =  vec( parallel%neibs(1,irow) ) + &
+                 vec( parallel%neibs(2,irow) ) + &
+                 vec( parallel%neibs(3,irow) ) + &
+                 vec( parallel%neibs(4,irow) ) + &
+                 vec( parallel%neibs(5,irow) ) + &
+                 vec( parallel%neibs(6,irow) )
+           q(irow+parallel%mydim,k) = half*(vec(irow) + p1*one6th)
+        enddo
+     endif
+
+  enddo                     ! k = 1, m
+
+#ifdef CPLX
+end subroutine zfdo5scl
+#else
+end subroutine fdo5scl
+#endif
+!===================================================================

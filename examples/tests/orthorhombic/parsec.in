@@ -1,0 +1,69 @@
+# MgAl crystalline system
+# Mg pseudopotential copied from the Abinit database (warning: this is a LDA potential!)
+
+Boundary_Conditions: bulk
+
+begin Cell_shape
+  9.000   0.000   0.000
+  0.000   8.000   0.000
+  0.000   0.000   6.000
+end cell_shape
+
+kpoint_method mp
+begin monkhorst_pack_grid
+ 2 2 2
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+ 0.5  0.5  0.5
+end monkhorst_pack_shift
+
+Grid_Spacing:  0.60
+
+States_Num:  10
+Fermi_Temp: 0.05 eV
+Max_Iter:  20
+
+Mixing_Method: Anderson
+Mixing_Param:  0.15
+ 
+Correlation_Type: pw
+
+Coordinate_Unit: lattice_vectors
+
+begin save_wfn_bands
+end save_wfn_bands
+
+spin_polarization .true.
+
+Atom_Types_Num:  2
+
+#------------ new atom type ---------------- 
+Atom_Type: Mg
+Pseudopotential_Format: FHIPP
+Core_Cutoff_Radius:  2.50
+Local_Component: d
+Potential_Num:  4
+
+begin Electron_Per_Orbital
+# S P D F
+2 0 0 0
+end Electron_Per_Orbital
+
+begin Atom_Coord
+   0.000  0.000  0.000
+end Atom_Coord
+
+#------------ end of atom type ------------- 
+
+#------------ new atom type ----------------
+Atom_Type: Al
+Pseudopotential_Format: Martins_new
+Local_Component: d
+
+begin Atom_Coord
+   0.000  0.400  0.000
+   0.400  0.000  0.000
+end Atom_Coord
+
+#------------ end of atom type -------------

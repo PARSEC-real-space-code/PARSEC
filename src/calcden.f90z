@@ -1,0 +1,278 @@
+#include "mycomplex.h"
+!===============================================================
+!
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+! 
+! This subroutine calculates the density matrix projected on 
+! the pseudo wave functionfor every self-consistent loop. 
+! The density matrix for each pair of angular channel, n_l,m,m' 
+! can be written in terms of state vectors and a pair of pseudo
+! wave functions as follows:
+!
+!         n_l,m,m' = Sum_j (f_j <philm|p_j> <p_j|phi_lm'>)
+!
+! where j is an index for eigenvector. Later, the value is
+! used to calculate the U potential operating on each state
+! vector.
+!
+! Author: H Kwak, 2006
+!---------------------------------------------------------------
+#ifdef CPLX
+subroutine zcalculate_den(elec_st,u_pot,parallel)
+#else
+subroutine calculate_den(elec_st,u_pot,parallel)
+#endif
+
+  use constants
+  use electronic_struct_module
+  use non_local_psp_module
+  use parallel_data_module
+  implicit none
+  !
+  !  Input/Output variables:
+  !
+  !  electronic structure
+  type (electronic_struct), intent(inout) :: elec_st
+  !  on-site Coulomb interaction related data
+  type (nonloc_pseudo_potential), intent(inout) :: u_pot
+  !  parallel computation related data
+  type (parallel_data), intent(in) :: parallel
+  !
+  !  Work variables:
+  !
+  !  local scalars
+  integer irp, ja, i, ii, im, imp, ilm, kplp, isp, lmmax
+  !  Dot product: < phi_lm | p >
+  SCALAR, allocatable :: dots(:)
+  !  temporary array for density potential
+  SCALAR, allocatable :: denpot(:,:,:,:)
+  !  work array for density potential
+  complex(dpc) :: tmp_den(5,5,elec_st%nspin),ztmp
+  !  temporary variable for the LDA+U energy term
+  real(dp) :: etotal_plusu
+  real(dp) :: tmpe
+
+  !  external functions
+  complex(dpc), external :: contraction
+
+  !---------------------------------------------------------------
+
+  lmmax = maxval(u_pot%nlmatm)
+  allocate(dots(lmmax))
+
+  allocate(denpot(lmmax,lmmax,u_pot%atom_num,elec_st%nspin))
+  denpot = Zzero
+
+  if (elec_st%cplx) then
+     u_pot%zdenmat(:,:,:,:) = zzero
+  else
+     u_pot%denmat(:,:,:,:) = zero
+  endif
+  ! Calculate the density matrix for each atom for each angular
+  ! channel and sum it over the electronic states.
+  do isp = 1, elec_st%nspin
+     do kplp = 1, max(elec_st%nkpt,1)
+  do irp = 1, elec_st%nrep
+!
+! Only processors belonging to the group in charge of this
+! representation/k-point/spin should work.
+!
+     if ( elec_st%eig(irp,kplp,isp)%group /= parallel%mygroup ) cycle
+     do ii = 1, elec_st%eig(irp,kplp,isp)%nec
+        ilm = 0
+        do ja = 1, u_pot%atom_num
+
+           ! Calculate  <phi_lm|p> for the necessary angular channels.
+           dots(:) = Zzero
+           do im = 1, u_pot%nlmatm(ja)
+              do i = 1, u_pot%nlatom(ja)
+                 dots(im) = dots(im) + &
+#ifdef CPLX
+                      elec_st%eig(irp,kplp,isp)%zwf(u_pot%indw(i,ja),ii) * &
+#else
+                      elec_st%eig(irp,kplp,isp)%wf(u_pot%indw(i,ja),ii) * &
+#endif
+                      elec_st%chi(irp,u_pot%tran(i,ja)) * &
+                      u_pot%anloc(i,ilm+im)
+              enddo
+           enddo
+           ! Globally sum these dots over all procs.              
+           call Zpsum(dots,lmmax,parallel%group_size,parallel%group_comm)
+
+           ! Calculate the density matrix using <phi_lm|p> (dots).
+           do im = 1,  u_pot%nlmatm(ja)
+              do imp = 1,  u_pot%nlmatm(ja)
+#ifdef CPLX
+                 u_pot%zdenmat(imp,im,ja,isp) = u_pot%zdenmat(imp,im,ja,isp) + &
+                      dots(im) * conjg( dots(imp) ) * &
+#else
+                 u_pot%denmat(imp,im,ja,isp) = u_pot%denmat(imp,im,ja,isp) + &
+                      dots(im) * dots(imp) * &
+#endif
+                      elec_st%eig(irp,kplp,isp)%occ(ii)*elec_st%kpwt(kplp)
+              enddo
+           enddo
+           ilm = ilm + u_pot%nlmatm(ja)
+
+        enddo               ! ja = 1, u_pot%atom_num
+     enddo                  ! ii = 1, elec_st%eig(irp,kplp,isp)%nn
+  enddo                     ! irp = 1, elec_st%nrep
+     enddo                  ! kplp = 1, max(elec_st%nkpt,1)
+  enddo                     ! isp = 1, elec_st%nspin
+
+  deallocate(dots)
+  ilm = maxval(u_pot%nlmatm)*maxval(u_pot%nlmatm)*u_pot%atom_num*elec_st%nspin
+#ifdef CPLX
+  if (.not. parallel%iamgmaster) u_pot%zdenmat = zzero
+  call Zpsum(u_pot%zdenmat,ilm,parallel%procs_num,parallel%comm)
+#else
+  if (.not. parallel%iamgmaster) u_pot%denmat = zero
+  call Zpsum(u_pot%denmat,ilm,parallel%procs_num,parallel%comm)
+#endif
+
+#ifdef DEBUG
+  write(9,*) ' Density matrix information'
+  do im = 1, maxval(u_pot%nlmatm)
+     do imp = 1, maxval(u_pot%nlmatm)
+#ifdef CPLX
+        write(9,*) im,imp,sum(u_pot%zdenmat(im,imp,:,:))
+#else
+        write(9,*) im,imp,sum(u_pot%denmat(im,imp,:,:))
+#endif
+     enddo
+  enddo
+#endif
+!
+!  Calculate the first contribution in LDA+U total energy
+!
+  etotal_plusu = zero
+  do isp = 1, elec_st%nspin
+     ilm = 0
+     do ja = 1, u_pot%atom_num
+        do im = 1, u_pot%nlmatm(ja)
+           tmpe = u_pot%uu(ilm+im) - u_pot%jj(ilm+im)
+           etotal_plusu = etotal_plusu + tmpe/four* &
+#ifdef CPLX
+                real(u_pot%zdenmat(im,im,ja,isp))
+#else
+                u_pot%denmat(im,im,ja,isp)
+#endif
+        enddo
+        ilm = ilm + u_pot%nlmatm(ja)
+     enddo
+  enddo
+  if (parallel%iammaster) then
+     write(7,*) '----------------------------------'
+     write(7,*) ' LDA+U energy term (first contribution) = ',etotal_plusu * two / real(elec_st%nspin,dp),' Ry'
+  endif
+
+
+!
+!  Calculate density potential from density matrix and matrices p3,p4
+!
+  ilm = 0
+  do ja = 1, u_pot%atom_num
+#ifdef CPLX
+     tmp_den(:,:,:) = u_pot%zdenmat(:,:,ja,:)
+#else
+     tmp_den(:,:,:) = u_pot%denmat(:,:,ja,:)
+#endif
+     do im = 1, u_pot%nlmatm(ja)
+        do imp = 1, u_pot%nlmatm(ja)
+           if (elec_st%nspin == 1) then
+              ztmp = -u_pot%uu(ilm+im)*tmp_den(im,imp,1) + &
+                 two*u_pot%jj(ilm+im) * ( &
+                 contraction(u_pot%p3(im,imp,:,:),tmp_den(:,:,1)) + &
+                 contraction(u_pot%p4(im,imp,:,:),tmp_den(:,:,1)))
+#ifdef CPLX
+              denpot(im,imp,ja,1) = ztmp
+#else
+              denpot(im,imp,ja,1) = real(ztmp,dp)
+#endif
+           else
+              ztmp = -u_pot%uu(ilm+im)*tmp_den(im,imp,1) + &
+                 two*u_pot%jj(ilm+im) * ( &
+                 contraction(u_pot%p3(im,imp,:,:),tmp_den(:,:,1)) + &
+                 contraction(u_pot%p4(im,imp,:,:),tmp_den(:,:,2)))
+
+#ifdef CPLX
+              denpot(im,imp,ja,1) = ztmp
+#else
+              denpot(im,imp,ja,1) = real(ztmp,dp)
+#endif
+              ztmp = -u_pot%uu(ilm+im)*tmp_den(im,imp,2) + &
+                 two*u_pot%jj(ilm+im) * ( &
+                 contraction(u_pot%p3(im,imp,:,:),tmp_den(:,:,2)) + &
+                 contraction(u_pot%p4(im,imp,:,:),tmp_den(:,:,1)))
+#ifdef CPLX
+              denpot(im,imp,ja,2) = ztmp
+#else
+              denpot(im,imp,ja,2) = real(ztmp,dp)
+#endif
+           endif
+        enddo
+        denpot(im,im,ja,:) = denpot(im,im,ja,:) + &
+            half*u_pot%uu(ilm+im) - half*u_pot%jj(ilm+im)
+     enddo
+     ilm = ilm + u_pot%nlmatm(ja)
+  enddo
+
+#ifdef DEBUG
+!  write(9,*) ' UU ',u_pot%uu,u_pot%jj,sum(u_pot%p3),sum(u_pot%p4)
+  write(9,*) ' Density potential information'
+  do im = 1, maxval(u_pot%nlmatm)
+     do imp = 1, maxval(u_pot%nlmatm)
+#ifdef CPLX
+        write(9,*) im,imp,sum(denpot(im,imp,:,:))
+#else
+        write(9,*) im,imp,sum(denpot(im,imp,:,:))
+#endif
+     enddo
+  enddo
+#endif
+!
+!  Calculate the second contribution in LDA+U total energy
+!
+  do isp = 1, elec_st%nspin
+     ilm = 0
+     do ja = 1, u_pot%atom_num
+        do im = 1, u_pot%nlmatm(ja)
+           do imp = 1, u_pot%nlmatm(ja)
+              etotal_plusu = etotal_plusu - half* &
+#ifdef CPLX
+                   real(denpot(im,imp,ja,isp)*u_pot%zdenmat(im,imp,ja,isp),dp)
+#else
+                   denpot(im,imp,ja,isp)*u_pot%denmat(im,imp,ja,isp)
+#endif
+           enddo
+        enddo
+        ilm = ilm + u_pot%nlmatm(ja)
+     enddo
+  enddo
+  etotal_plusu = etotal_plusu * two / real(elec_st%nspin,dp)
+  elec_st%etot_plusu = etotal_plusu
+
+!
+!  On output, store the density potential in (z)denmat
+!
+#ifdef CPLX
+  u_pot%zdenmat = denpot
+#else
+  u_pot%denmat = denpot
+#endif
+  deallocate(denpot)
+
+  if (parallel%iammaster) then
+     write(7,*) ' LDA+U energy term = ',etotal_plusu,' Ry'
+     write(7,*) '----------------------------------'
+  endif
+
+  return
+
+#ifdef CPLX
+end subroutine zcalculate_den
+#else
+end subroutine calculate_den
+#endif
+!===============================================================

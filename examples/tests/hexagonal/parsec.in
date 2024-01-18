@@ -1,0 +1,56 @@
+# bulk magnesium, HCP crystal
+# Mg pseudopotential copied from the Abinit database (warning: this is a LDA potential!)
+
+Boundary_Conditions: bulk
+
+begin Cell_shape
+   0.5000000    -0.866025403785     0.000000
+   0.5000000     0.866025403785     0.000000
+   0.0000000     0.000000000000     1.632993
+end cell_shape
+
+Lattice_Vector_Scale 3.21 ang
+
+kpoint_method mp
+begin monkhorst_pack_grid
+  5  5  3
+end monkhorst_pack_grid
+
+begin monkhorst_pack_shift
+  0.5  0.5  0.5
+end monkhorst_pack_shift
+
+Grid_Spacing:  0.60
+
+States_Num:  5
+Max_Iter:  20
+Eigensolver: chebdav
+
+Mixing_Method: Anderson
+ 
+Correlation_Type: PW91
+
+Coordinate_Unit: lattice_vectors
+
+Output_File_Name parsec.out
+
+Atom_Types_Num:  1
+
+#------------ new atom type ---------------- 
+Atom_Type: Mg
+Pseudopotential_Format: FHIPP
+Core_Cutoff_Radius:  2.50
+Local_Component: d
+Potential_Num:  4
+
+begin Electron_Per_Orbital
+# S P D F
+2 0 0 0
+end Electron_Per_Orbital
+
+begin Atom_Coord
+   0.333333333333  -0.333333333333   0.25
+  -0.333333333333   0.333333333333  -0.25
+end Atom_Coord
+
+#------------ end of atom type ------------- 

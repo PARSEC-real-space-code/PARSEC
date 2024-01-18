@@ -1,0 +1,36 @@
+#
+output_all_states: .true.
+ 
+Boundary_Sphere_Radius:  12.00
+Grid_Spacing:  0.45
+ 
+States_Num:  50
+ 
+Mixing_Param:  0.2
+
+Molecular_Dynamics: .true.
+Cooling_Method: log
+Tinit:  2000.0
+T_Final:  100.0
+T_Step:  150.0
+step_num: 5
+ 
+Atom_Types_Num:  1
+
+#------------ new atom type ---------------- 
+Atom_Type: Ag
+Local_Component: s
+
+begin Atom_Coord
+    4.564701094       0.000000000      -0.000300000
+    1.459542002       4.273880705      -0.000300000
+   -3.564703094       2.643403540      -0.000300000
+   -3.564704094      -2.647403540      -0.000300000
+    1.459545002      -4.273880705      -0.000300000
+    0.070873982       0.000000000       2.827509355
+    0.070872982       0.000000000      -2.827509355
+   -4.564701094       0.000000000      -0.000300000
+end Atom_Coord
+
+#------------ end of atom type ------------- 
+

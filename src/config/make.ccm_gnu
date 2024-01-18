@@ -1,0 +1,45 @@
+#
+# Architecture name
+#
+KSEIG_ARCH = ccm_gnu
+#
+#
+##### config/make.ccm_gnu #####
+#
+#   1) ubt18   2) gcc/8.2   3) mpich2/3.2   4) mkl/19.0
+# 
+#####
+
+
+FC = mpif90
+F90 = mpif90
+
+# Intel MKL includes the functions of BLAS, LAPACK, and FFTW3
+LIBBLAS = -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_gf_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl
+FFLAGS += -m64 -I${MKLROOT}/include
+
+CPPOPT += -DUSEFFTW3 
+#LIBFFTW= -L$(FFTW_LIB) -lfftw3
+#FFLAGS += -I$(FFTW_INC)
+
+CPPOPT += -DMPI
+CPPOPT += -DNEIGHCOLLETIVE
+CPPOPT += -DIALLREDUCE
+
+FFLAGS += -O2
+FFLAGS += -march=native
+FFLAGS += -g -fbacktrace
+FFLAGS += -std=f2008
+FFLAGS += -static
+FFLAGS += -ffree-line-length-1024
+#FFLAGS += -fcheck=all -fsanitize=address
+
+
+
+
+
+CPP = /usr/bin/cpp -P -traditional
+AR = ar
+EXT ?= .mpi
+
+

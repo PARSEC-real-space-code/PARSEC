@@ -1,0 +1,43 @@
+#
+# Architecture name
+#
+KSEIG_ARCH = ccm_serial
+#
+#
+##### config/make.ccm_serial #####
+#
+# Currently Loaded Modules:
+#    1) ubt18   2) intel/19.0   3) mkl/19.0
+#
+# 
+#####
+
+
+FC = ifort
+F90 = ifort
+
+CPPOPT += -DUSEFFTW3 
+#CPPOPT += -DMPI
+CPPOPT += -DNEIGHCOLLETIVE
+CPPOPT += -DIALLREDUCE
+
+LIBBLAS = -mkl
+
+FFLAGS += -O2
+FFLAGS += -xHost
+FFLAGS += -g -traceback
+FFLAGS += -std08
+FFLAGS += -static
+#FFLAGS += -check all -debug extended
+
+
+
+
+
+CPP = /usr/bin/cpp -P -traditional
+
+#library archiver
+AR = ar
+
+EXT ?= .ser
+

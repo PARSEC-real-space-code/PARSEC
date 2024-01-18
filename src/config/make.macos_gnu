@@ -1,0 +1,41 @@
+#
+# Architecture name
+#
+KSEIG_ARCH = macos_gnu
+#
+#
+##### config/make.macos_gnu #####
+#
+#
+# 
+#####
+
+
+FC = mpif90
+F90 = mpif90
+
+
+LIBBLAS = -L$(LAPACK_LIB) -lrefblas
+LIBLAPA = -L$(LAPACK_LIB) -llapack
+
+CPPOPT += -DUSEFFTW3 
+LIBFFTW= -L$(FFTW_LIB) -lfftw3
+FFLAGS += -I$(FFTW_INC)
+
+CPPOPT += -DMPI
+CPPOPT += -DNEIGHCOLLETIVE
+CPPOPT += -DIALLREDUCE
+
+FFLAGS += -O3 -g -fbacktrace -std=f2008
+FFLAGS += -ffree-line-length-1024
+#FFLAGS += -fcheck=all
+
+
+
+
+
+CPP = /usr/bin/cpp -P -traditional
+AR = ar
+EXT ?= .mpi
+
+

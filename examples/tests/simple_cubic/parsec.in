@@ -1,0 +1,31 @@
+# Germanium, orthorhombic cell
+
+Boundary_Conditions bulk
+
+begin Cell_shape
+  10.0000   0.0000   0.0000
+  0.0000   10.0000   0.0000
+  0.0000   0.0000   10.0000
+end cell_shape
+
+Grid_Spacing:  0.6
+
+States_Num:  8
+Max_Iter:  10
+Eigensolver: diagla
+Chebyshev_filtering .true.
+
+Mixing_Method: Anderson
+
+Atom_Types_Num:  1
+
+#------------ new atom type ---------------- 
+Atom_Type: Ge
+Pseudopotential_Format: Martins_new
+Local_Component: p
+
+begin Atom_Coord
+    2.000000    0.000000    0.000000    0.0000000000
+   -2.000000    0.000000    0.000000    0.0000000000
+end Atom_Coord
+#------------ end of atom type ------------- 

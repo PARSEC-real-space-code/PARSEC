@@ -1,0 +1,799 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! For the first SCF step diagonalization method for symmetric/hermitian
+! eigenvalue problem: 
+!
+!   (OP)*v_basis(:,1:nwant) = v_basis(:,1:nwant)*diag(eval(1:nwant))
+!
+! where nwant is the number of wanted eigen-pairs. Note that nwant
+! approximate smallest eigenvalues and their eigenvectors are computed.
+! The operator (OP) is provided by a user supplied matrix-vectors
+! multiplication subroutine (in PARSEC it is matvec).
+!
+!
+! Author: Yunkai Zhou  (March--April 2014)
+!
+! 1. Simplified the first diagonalization from chebdav into this chebff, 
+!    using only subspace filtering instead of converging eigenvectors.
+!    this can be significantly more efficient than doing first step SCF by 
+!    a real diagonalization such as arpack and chebdav;
+! 2. Utilize scaling in the chebyshev filters (may lead to further 
+!    performance improvement)
+!
+! this code uses the same interface as chebdav in order to integrate into
+! PARSEC with minimum changes to the other source files. (because of this,
+! some not really necessary variables are still kept in the interface) 
+!-------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine  zchebff_diag(kplp, max_spdim, nwant, nconv, max_mv, eval, &  
+#else
+subroutine  chebff_diag(kplp, max_spdim, nwant, nconv, max_mv, eval, &  
+#endif
+            v_basis, conv_tol, verbose, flag, nconvt, info, sizeblk)
+  use constants
+  use parsec_global_data
+  use matvec_module
+  use matvecB_interface
+  use Zbuffer_module
+  implicit none
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif
+  !
+  !.. Input/Output variables:
+  !
+  integer, intent(in) ::  max_spdim   !maximum subspace dimension
+  integer, intent(in) ::  kplp        !k-point index
+
+  integer, intent(in) ::  &
+       nwant,   & !number of wanted eigenpairs (this input should be slightly larger than noc)
+       verbose    !integer controlling how many messages to print out 
+
+  integer, intent(inout) :: &
+       nconv   !on input, nconv is number of initially converged eigenpairs,
+               !   nconv = 0 if flag = "new";
+               !   nconv > 0 if flag = "cont" or flag="appr". 
+               !on output, number of computed approximate eigenpairs
+
+
+  integer, intent(inout) :: &
+       max_mv  !on input, maximum # of matrix-vector products
+               !on output, the actural # of matrix-vector products
+
+  real(dp), intent(out)  :: eval(max_spdim)
+                         !computed eigenvalues in non-increasing order;
+                         !on output, the eval(1:nwant) contains the 
+                         !approximations to the nwant # of wanted eigenvalues
+
+  SCALAR, intent(out)  ::  v_basis(parallel%ldn * parallel%mxwd, max_spdim)   
+               ! v_basis is an ortho-normal basis of the projection subspace.
+               !(It is REQUIRED that the columns in v_basis are always ortho-normal.)
+
+  real(dp) :: conv_tol  !convergence tolerance (not really needed here)
+   
+  character(len=4), intent(in) :: &
+       flag    !used to signal what type of computation in this call:
+               !flag="new"  --- new computation, nconv=0, start from scratch, 
+               !                i.e., start from random vectors;
+               !flag="cont" --- continue from previously converged nconv>0 eigenpairs 
+               !                (i.e., compute only the remaining wanted eigenpairs);
+               !flag="appr" --- continue from previously computed eigenvectors, nconv>0.
+               !                in this case, v_basis(:,1:nconv) contain approximate 
+               !                eigenvectors, can filter v_basis(:,1:nconv) instead
+               !                of filtering random vectors. 
+               !(both "cont" and "appr" flags should be useful for the 'restart') 
+
+  integer, intent(out) :: nconvt !number of truly converged eigenpairs (also not really needed)
+
+  integer, intent(out) :: info   !error info
+
+  integer, optional  :: sizeblk  !input block size if present (may be adjusted)
+
+
+  !
+  !.. Work variables:
+  !
+  type (lap_buffer) :: matvec_lap_buffer(2)
+  !
+  SCALAR, allocatable :: &
+       w_opv1d(:),         & !1-dim work array is sufficient
+       h_proj(:,:),        & !h_proj = V'*(OP)*V, the projected matrix
+                             !(where V is the v_basis)
+!       work(:),            & !work array
+       mmtmp(:,:),         &    !matrix-multipication work array of size (mm_blksize, nwant)
+!       vbtmp(:,:),htmp(:), & !you dont want to know.
+      matmul_tmp(:,:)     !work array for matmul, block mm is defunct
+       !! w_opv(:,:),      & !w_opv = (OP)*v_basis  !!should be removed 
+
+  real(dp) ::     &
+       ritzmax,   & !maximum absolute value of computed ritz values
+       upperb,    & !upper bound of all the eigenvalues
+       lowb,      & !lower bound of the unwanted portion of spectrum
+       lowb0        !estimate of the smallest eigenvalue (must be that lowb0 < lowb)
+!timers galore
+  real(dp) :: time0, time1,tfilter0,tfilter1,tproj0,tproj1,tdecomp0,tdecomp1
+
+  integer  ::     &
+       ldn,       & !leading dimension
+       ndim,      & !actual dimension
+       polym,     & !degree of the Chebyshev polynomials used
+       blksize,   & !actual block size used
+!       lwork,     & !length of work(:) array 
+       alcstat,   & !allocation test
+       alcfactor, & !reduce memory consumption on dgemm if needed
+       columnindex, & !for column-wize matrix-multiply breakdown
+       nwant_tmp,  & !for column-wize matrix-multiply breakdown
+       infolapack   !output info for LAPACK calls
+
+  !.. integer for iteration and mat-vec counts, etc
+  integer  ::     &
+       max_iter,  & !maximum iteration number
+       num_iter,  & !number of iteration
+       num_mv       !number of matrix-vector products
+
+  !.. temporary integers
+  integer  :: ic, jcol, sub_dim, imax, icache, mm_blksize
+  integer  :: next_buff,current_buff,buff_index
+  integer  :: vorth    !used to tell if ortho-normalization is necessary
+#ifdef ITAC
+  integer :: cheb_ierr    !itac error info
+#endif
+
+  SCALAR, external :: Zdot 
+  !
+  !.. BLAS Subroutine:
+  external   Zgemm
+  !.. intrinsic functions
+  intrinsic  max, min, abs
+
+
+  !.. local external subroutines
+#ifdef CPLX
+  external  zorth_normal,  zrandom_array
+#else
+  external  orth_normal,  random_array
+#endif
+
+  !.. user provided matrix-vector-product subroutine
+  !external  ZmatvecB  
+
+  Interface
+#ifdef CPLX
+  subroutine  zlancz_bound(kplp, upperb, n, k, ldn, lowb0, middle)
+#else
+  subroutine   lancz_bound(kplp, upperb, n, k, ldn, lowb0, middle)
+#endif
+    use constants
+    integer,  intent(in)  :: kplp    !which kpoint
+    real(dp), intent(out) :: upperb  !upper bound of the full spectrum
+    integer,  intent(in)  :: n       !dimension of the matrix
+    integer,  intent(in)  :: k       !how many Lanczos step to take
+    integer,  intent(in)  :: ldn     !leading dimension 
+    real(dp), intent(out), optional :: lowb0 !lower bound estimate of the full spectrum
+    real(dp), intent(out), optional :: middle !estimated middle point of the full spectrum
+#ifdef CPLX
+  end subroutine zlancz_bound
+#else
+  end subroutine lancz_bound
+#endif
+  End Interface
+
+  !
+  !-------------------------------------------------------------------
+  !
+  ! init memory allocation params
+  alcstat = 0 
+
+  
+  ndim = parallel%mydim * parallel%mxwd
+  ldn  = parallel%ldn * parallel%mxwd
+
+
+  !.. for the 1st diagonalization, recommend using polym >=15.
+  polym = solver%polym0
+  ! only the filter cares about blksize
+  if (present(sizeblk)) then
+!     if (sizeblk > 1 .and. sizeblk <= 100) 
+     blksize=sizeblk
+  else
+!     blksize = 5  !default block size
+     blksize = 7  !default block size
+  end if
+
+  !... initializations:
+
+  if (flag == "cont"  .or. flag == "appr") then
+     if (nconv < 0) nconv = 0
+  else
+     nconv = 0  !start from scratch for the (flag == "new") case
+  end if
+
+  !assign random vectors to v_basis(1:ldn, nconv+1:nwant+blksize)
+  !(can use real random vectors even in the CPLX case, although we use complex random vectors here)
+  !then filter v_basis(1:ldn, 1:nwant+blksize), including the first 1:nconv columns in v_basis
+
+#ifdef CPLX
+     call zrandom_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv), info)
+#else
+     call random_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv), info)
+#endif
+
+     !set default max_iter to 2, i.e., filtering only twice 
+     !(you can set max_iter to a larger interger  by setting the  'FF_MaxIter'  paremeter in the 
+     ! PARSEC input file parsec.in,  e.g., adding the following line in parsec.in 
+     !   FF_MaxIter 8
+     ! will set max_iter to 8, since this value is passed to solver%ff_maxiter and then to max_iter.
+     ! A larger max_iter makes chebff provide a better initial subspace, at higher computational cost)
+     max_iter = 2      
+
+     !can change the default by setting the parameter FF_MaxIter in parsec.in
+     !in most cases, filter at least once, but do not filter more than 9 times
+     if (solver%ff_maxiter >=1  .and. solver%ff_maxiter < 20) then
+        max_iter = solver%ff_maxiter      
+     end if
+
+     ritzmax = zero
+     num_mv  = 0
+     vorth   = 1  !vorth=0 means will orthonormalize using dgks
+
+  !
+  !.. compute a suitable estimate of the upperb
+  !
+#ifdef CPLX
+  call zlancz_bound(kplp, upperb, ndim, 10, ldn, lowb0)
+#else
+  call lancz_bound(kplp, upperb, ndim, 10, ldn, lowb0)
+#endif
+  num_mv = num_mv + 10
+
+  !.. get an estimate of the filter lower bound of the interval to be dampened. 
+  !.. note that lowb is not the lower bound of the full spectrum
+  lowb = (lowb0 + (lowb0+upperb) )/three
+
+  if (parallel%iammaster) then
+     write(7, '(3(2x, a, f14.6))') 'CHEBFF: upperb=', upperb, 'lowerb=', lowb, 'lowb0=', lowb0
+     call myflush(7)
+  end if
+
+  if (flag == "cont" .and. nconv > 0) then
+     lowb = max(lowb,  (eval(1)+eval(nconv)*six)/seven)
+     upperb = max(upperb, eval(nconv))
+  end if
+
+
+  !!allocate(w_opv(ldn, nwant),stat=alcstat)
+  !!call alccheck('chebff_w_opv',ldn*nwant,alcstat)
+  ! why should we dynamically allocate this eif it never changes?
+  allocate(w_opv1d(ldn),stat=alcstat)
+  call alccheck('chebff_w_opv1d', ldn, alcstat)
+
+  allocate(h_proj(nwant,nwant),stat=alcstat)
+  call alccheck('chebff_h_proj',nwant*nwant,alcstat)
+
+  !no one is using this?!??
+  ! lwork = max(ldn, 15*nwant)
+  ! allocate(work(lwork),stat=alcstat)
+  ! call alccheck('chebff_work',lwork,alcstat)
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Do num_iter = 1, max_iter
+
+#ifdef ITAC
+ call VTTIMESYNC(cheb_ierr)
+#endif
+
+     ! the v_basis(:, nconv+1:nwant) vectors are not eigenvectors yet.
+     ! we filter v_basis(:, 1:nwant) vectors and make an orthonormal basis 
+     ! out of them. this part is essentially the chebyshev-filtered 
+     ! subspace-iteration without doing Davidson. (the current 
+     ! algorithm is no longer chebyshev-davidson)
+
+     call mysecond(time0)
+  if (parallel%iammaster) then
+     write(7, '(2(2x, a, f14.6))') 'CHEBFF: true bnds used:  upperb=', upperb, 'lowerb=', lowb
+     call myflush(7)
+  end if
+     
+     call mysecond(tfilter0)
+
+#ifdef ITAC
+     call VTBEGIN(vt_chebff_filter,cheb_ierr)
+#endif
+
+#ifdef CPLX
+     call zcheby_filterscal1(kplp, ldn, 1, nwant, polym, lowb, upperb, num_mv, lowb0, blksize)
+#else
+     call cheby_filterscal1(kplp, ldn, 1, nwant, polym, lowb, upperb, num_mv, lowb0, blksize)
+#endif
+
+#ifdef ITAC
+     call VTEND(vt_chebff_filter,cheb_ierr)
+#endif
+
+     call mysecond(tfilter1)
+
+      if (vorth == 1) then
+     !.. make the new basis vectors ortho-normal
+#ifdef CPLX
+     call zorth_normal(parallel, ldn, ndim, 0, nwant+1, v_basis(1,1), vorth, info)
+#else
+     call orth_normal(parallel, ldn, ndim, 0, nwant+1, v_basis(1,1), vorth, info)
+#endif
+      else
+    ! use a cleaner dgks algorithm, this may look the same as above, but it is not.
+#ifdef CPLX
+     call zorth_normal(parallel, ldn, ndim, 1, nwant, v_basis(1,1), vorth, info)
+#else
+     call orth_normal(parallel, ldn, ndim, 1, nwant, v_basis(1,1), vorth, info)
+#endif
+      end if
+     if (info /= 0) return       
+
+     !!.. compute the projected V'HV corresponding to non-converged
+     !!.. vectors in V(:,nconv+1:dim_subsp), in chebff this means all of them
+        !! in fact, only need to compute the lower triangular part of  V'*H*V. 
+        !! does not need a big w_opv(:,:), only need a 1d vector (far more memory economical)      
+
+     call mysecond(tproj0)
+
+#ifdef ITAC
+     call VTBEGIN(vt_chebff_decomp,cheb_ierr)
+#endif
+
+! init the buffer (using two buffers since no more are needed)
+    do buff_index=1,2
+        call init_lap_buffer(matvec_lap_buffer(buff_index))
+        call allocate_lap_buffer(matvec_lap_buffer(buff_index),parallel)
+    enddo
+
+! buffer the first jcol lap neighbors
+! these are the only ones that we do not attempt 'hiding' for
+        call Zbuff_lap_pack(parallel,matvec_lap_buffer(2),v_basis(:,1),1,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,matvec_lap_buffer(2)) 
+
+        do jcol = 1, nwant
+        current_buff=mod(jcol,2)+1
+           call buff_lap_check_comm(matvec_lap_buffer(current_buff), 1, parallel)
+           call ZmatvecB(kplp, 1, v_basis(1,jcol), w_opv1d,ldn,matvec_lap_buffer(current_buff))
+           num_mv = num_mv + 1
+           
+         next_buff=mod(jcol+1,2)+1
+           if (jcol<nwant) then
+      ! buffer the next jcol lap neighbors - try to hide communication
+        call Zbuff_lap_pack(parallel,matvec_lap_buffer(next_buff),v_basis(:,jcol+1),1,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,matvec_lap_buffer(next_buff)) 
+
+          !depending on the mpi implementation, 
+          !maybe this will get the comm going earlier. google 'progressing mpi' 
+          !or read this http://htor.inf.ethz.ch/publications/img/hoefler-ib-threads-slides.pdf
+           !call buff_lap_just_test_comm(matvec_lap_buffer(next_buff), parallel)
+
+           endif
+
+
+
+        !this should be done with a single and threaded mv of some sort:
+        ! but not quite like this - 
+        ! call Zgemv(Conjg, ndim, nwant-jcol+1,Zone,v_basis(1,jcol),ldn,w_opv1d(1),1,Zzero,htmp,1)
+        ! call Zcopy(nwant,htmp,1,h_proj(1,jcol),1)
+        !for now we can either do it by hand:
+        !or by using threaded mkl Zdot - 
+            do ic = jcol, nwant
+               !h_proj(ic, jcol) = dot_product(v_basis(1:ndim, ic), w_opv1d(1:ndim))
+               h_proj(ic, jcol) = Zdot(ndim,v_basis(1:ndim, ic),1, w_opv1d(1:ndim),1)
+            end do
+
+        end do
+!destroy the buffers
+    call destroy_lap_buffer(matvec_lap_buffer(1))
+    call destroy_lap_buffer(matvec_lap_buffer(2))
+
+        !AJB consider using mpi dervied datatypes
+        ! something like
+        ! do i=1,nwant
+        !  disp_array(i)=nwant*(i-1)+1
+        !  block_array(i)=nwant -i 
+        ! end do
+        ! call mpi_type_indexed(nwant,block_array,disp_array,MPI_DOUBLE_SCALAR,mpi_lower,mpinfo)
+        ! call mpi_type_commit(mpi_tridiag,mpinfo)
+        ! and lastly
+        ! call mpi_type_free(mpi_tridiag,mpinfo)
+        ! 
+        do jcol = 1, nwant
+           !call Zpsum(h_proj(1,jcol), nwant, parallel%group_size, parallel%group_comm)
+           call Zpsum(h_proj(jcol,jcol), nwant-jcol+1, parallel%group_size, parallel%group_comm)
+        enddo
+     !end if
+
+     !
+     ! compute the eigen decomposition of h_proj:
+     !        h_proj * Hevec = Hevec * diag(eval), 
+     ! Hevec contains the eigenvectors of h_proj, lapck overwrites h_proj by its eigenvectors.
+     !
+     ! This can be done by ELPA/SCALAPACK with only small/medium modifications
+     call mysecond(tproj1)
+     call mysecond(tdecomp0)
+#ifdef CPLX
+     call my_zheev('L', nwant, h_proj, nwant, eval, infolapack )
+#else
+     call my_dsyev('L', nwant, h_proj, nwant, eval, infolapack )
+#endif
+#ifdef ITAC
+     call VTEND(vt_chebff_decomp,cheb_ierr)
+#endif
+     call mysecond(tdecomp1)
+
+     if (infolapack /= 0 ) then
+        write(9,*) 'Error in calling my_zheev/dsyev from chebff.f90'
+        write(9,*) ' info = ',infolapack
+        info = infolapack
+        return
+     endif
+
+     !
+     ! update the v_basis as the current Ritz vectors:
+     !    v_basis(:,nconv+1: nconv+hsize) =
+     !          v_basis(:,nconv+1:nconv+hsize)*Hevec(:,1:hsize)
+     !
+
+#ifdef ITAC
+     call VTBEGIN(vt_chebff_update,cheb_ierr)
+#endif
+  alcstat=99
+  allocate(matmul_tmp(ndim, nwant), stat=alcstat) 
+!  write(9,*) "Chebff debug, matmul_tmp alc status:", alcstat
+  if ( alcstat == 0 ) then
+      !allocation was ok
+     call Zgemm('N','N',ndim,nwant,nwant,Zone,v_basis,ldn,h_proj,nwant,Zzero,matmul_tmp,ndim)
+
+!          v_basis(1:ndim,1:nwant)=matmul_tmp(1:ndim,1:nwant)
+     do jcol = 1,nwant
+     call Zcopy(ndim,matmul_tmp(1,jcol),1,v_basis(1,jcol),1)
+     enddo
+  else
+      !try again, I don't know why this needs to be done on our OS
+      deallocate(matmul_tmp)
+      allocate(matmul_tmp(ndim, nwant), stat=alcstat) 
+ ! write(9,*) "Chebff debug, matmul_tmp alc status, 2nd try:", alcstat
+    if ( alcstat == 0 ) then
+              !allocation was ok this time
+             call Zgemm('N','N',ndim,nwant,nwant,Zone,v_basis,ldn,h_proj,nwant,Zzero,matmul_tmp,ndim)
+
+        !          v_basis(1:ndim,1:nwant)=matmul_tmp(1:ndim,1:nwant)
+             do jcol = 1,nwant
+             call Zcopy(ndim,matmul_tmp(1,jcol),1,v_basis(1,jcol),1)
+             enddo
+    else
+
+      ! not enough memory?
+      write(9,*) "WARNING: in chebff, not enough memory for fast matrix multiply (?)"
+      write(9,*) "...using slow basic blocked matmul instead"
+      ! I should try and rework this using zgemm
+     mm_blksize=ndim/4
+        allocate(mmtmp(mm_blksize, nwant), stat=alcstat)
+        call alccheck('chebff_mmtmp', mm_blksize*nwant, alcstat)
+        icache = mm_blksize
+        do sub_dim = 1, ndim, mm_blksize
+          imax = sub_dim + mm_blksize - 1
+          if (imax.gt.ndim) then
+            icache = mm_blksize - imax + ndim
+            imax = ndim
+          endif
+          mmtmp(1:icache,1:nwant) = v_basis(sub_dim:imax,1:nwant)
+          v_basis(sub_dim:imax,1:nwant)=matmul( &
+             mmtmp(1:icache,1:nwant),h_proj(1:nwant,1:nwant))
+        enddo
+        deallocate(mmtmp)
+    endif
+  endif
+ 
+#ifdef ITAC
+     call VTEND(vt_chebff_update,cheb_ierr)
+#endif
+
+     ! update filter bounds after each Rayleigh-Ritz step  
+     ritzmax = eval(nwant)
+     lowb0 = eval(1)
+
+     if (ritzmax .ge. upperb) then
+        if (parallel%iammaster) then
+           write(7, *)  "Warning:  in chebff.f90z, upperb < ritzmax (this usually should not happen)"
+           write(7, *)  "ritzmax=", ritzmax, "upperb=", upperb
+        end if
+        write(9, *)  "Warning:  in chebff.f90z, upperb < ritzmax (this usually should not happen)"
+        !return 
+        !! can update as follows, but will need to do more iteration in this case!
+        upperb = ritzmax + (ritzmax - upperb)/two + one
+        lowb = min(lowb, (lowb*three+upperb)/four)
+     else  !upperb is good and need not be modified
+        lowb = min(ritzmax + 0.001d0*(upperb-lowb0), ritzmax+0.05d0*(abs(ritzmax)))
+        !lowb = (lowb + ritzmax*six)/7.d0
+     end if
+
+     call mysecond(time1)
+  if (parallel%iammaster) then
+     write(7,999) time1-time0
+999  format('CHEBFF Loop time [sec]:',1x,f10.2)
+  endif
+
+  ! write timing information for the different steps
+     write(9,1000) tfilter1-tfilter0
+     write(9,1001) tproj0-tfilter1
+     write(9,1002) tproj1-tproj0
+     write(9,1003) tdecomp1-tdecomp0
+     write(9,1004) time1-tdecomp1
+     write(9,1005) time1-time0
+     write(9,*) ''
+1000  format('  FF:FLTR [sec]:',1x,f10.2)
+1001  format('  FF:ORTH [sec]:',1x,f10.2)
+1002  format('  FF:PROJ [sec]:',1x,f10.2)
+1003  format('  FF:DCMP [sec]:',1x,f10.2)
+1004  format('  FF:UPDT [sec]:',1x,f10.2)
+1005  format('  FF:LOOP [sec]:',1x,f10.2)
+     call myflush(9)
+
+
+
+     end do !num_iter
+  
+  deallocate(h_proj)
+  deallocate(w_opv1d)
+!  deallocate(work)
+!  deallocate(w_opv)
+  deallocate(matmul_tmp)
+
+  !..
+  !.. forcing that approximate ritz values are always 'considered' as the converged eigenvalues
+  !..
+  nconv = nwant  
+  nconvt = nconv     
+
+!  if (verbose > 0) then
+     write(9,*)   '==================================================='
+     if (num_iter > max_iter .and. nwant > nconvt ) then
+        write(9,*)'****** chebff: not all eigenpairs converged ******' 
+        write(9,*)'****** chebff: exit before full convergence ******'
+     else
+        write(9,*)'------ Full (approximate) convergence in chebff -------'  
+     endif
+     write(9,112) ' ndim=', ndim,' blksize=',blksize 
+     write(9,110) " nwant  =", nwant,  ",  nconv=", nconv
+     write(9,115) " num_iter =", num_iter, ",  max_iter =", max_iter
+     write(9,115) ' num_mv  =',num_mv
+     write(9,113) ' conv_tol=',conv_tol,',   ritzmax=', ritzmax
+     write(9,110) ' polym=',polym
+  !   write(9,*)   " debug: ldn=",ldn
+     write(9,*)   '==================================================='
+110  format(1x, a, i5, a, i5, a, i5)
+112  format(1x, a, i8, a, i3)
+113  format(1x, a, e11.4, a, e11.4)
+115  format(1x, a, i8, a, i8)
+!  endif
+
+  !
+  ! act as if full convergence has been achieved, since nconv should be >=nwant
+  !
+  info = 0
+  max_mv = num_mv  !max_mv returns the actural matrix-vect prod counts
+  return
+!
+!---------------------------------------------------------------------
+!
+contains
+  !
+  !===================================================================
+  !
+  !   compute Chebyshev filtered vectors
+  !
+  !      v_basis(:,n1:n2) = (Filter)*v_basis(:,n1:n2)
+  !
+  !   where v_basis is not passed  as function variable.
+  !
+  !-------------------------------------------------------------------
+#ifdef CPLX
+  subroutine zcheby_filterscal1(kplp, ldn, n1, n2, pm, lowb, uppb, mvcount, lowb0, blk)
+#else
+  subroutine cheby_filterscal1(kplp, ldn, n1, n2, pm, lowb, uppb, mvcount, lowb0, blk)
+#endif
+    use constants
+    use Zbuffer_module
+    implicit none
+    !
+    !  Input/Output variables:
+    !
+    integer, intent(in) :: &
+         kplp, &       ! k-point index
+         ldn, &        ! linear dimension of eigenvectors
+         n1, &         ! lower bound of the filtered subspace
+         n2, &         ! upper bound of the filtered subspace
+         pm, &         ! degree of Chebyshev polynomial
+         blk           !  we use a small block-size blk, which uses at most 3 size-(ldn,blk) work arrays
+                       !  one can simply set blk=1 to save some memory if necessary. 
+                       ! (note that a more involved implementation would need only 2 size-(ldn,blk) work arrays)
+    !  lower and upper bounds of the full spectrum
+    real(dp),intent(in)  :: lowb, uppb, lowb0
+    !  count number of mat-vec products for the filtering step
+    integer, intent(inout)  :: mvcount
+    !
+    !  Work variables:
+    !
+    type (lap_buffer) :: filter_lap_buffers(blk)
+    !real(dp)  :: e, twoeinv, center, sigma, sigma1, sigma2, sigma1einv
+    SCALAR  :: e, twoeinv, center, sigma, sigma1, sigma2, sigma1einv
+ 
+    SCALAR :: vout(ldn,blk), vnew(ldn,blk), vtmp(ldn,blk)
+    integer  :: i, col, jc, jend, dimtmp, n2_almost
+    integer  :: next_buffer,current_buffer,buffer_index
+    
+!    external Zaxpy, Zscal
+
+    e = (uppb - lowb)/two
+    twoeinv = two/e
+    !center= (uppb+lowb)/two
+    center= mone*(uppb+lowb)/two
+    sigma = e/(lowb0 + center)
+    sigma1= sigma
+    sigma1einv = sigma1/e
+    vnew(:,:) = Zzero
+    vout(:,:) = Zzero
+    !why init this?
+    !vtmp(:,:) = Zzero
+    !
+    !based on the hack from the subspace filter to avoid overshooting
+    dimtmp = floor(real(n2)/real(blk))
+    n2_almost= dimtmp*blk
+    if (n2-n2_almost>blk) write(9,*) "cheb_filter: whoa there, n2-n2_almost>blk",(n2-n2_almost)
+    if (n2_almost>n2) then
+        write(*,*) "big oopsie in chebff: someone (AJB) coded badly"
+    endif
+
+!START BUFFER PART
+    do buffer_index = 1,blk
+        call init_lap_buffer(filter_lap_buffers(buffer_index))
+        call allocate_lap_buffer(filter_lap_buffers(buffer_index),parallel)
+    enddo
+ 
+!write(9,*) "chebff filter n2, n2_almost",n2,n2_almost
+    do jc = n1, n2_almost, blk
+
+       jend = jc + blk -1
+
+    do buffer_index = 1,blk
+        call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),v_basis(:,jc-1+buffer_index),buffer_index,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
+          !depending on the mpi implementation, 
+          !maybe this will get the comm going earlier. google 'progressing mpi' 
+          !or read this http://htor.inf.ethz.ch/publications/img/hoefler-ib-threads-slides.pdf
+           !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
+           call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+    enddo
+!        write(9,*) v_basis(1,jc+blk)
+       call ZmatvecB(kplp,blk,v_basis(1,jc), vout,ldn,filter_lap_buffers)
+!       write(9,*) "finished matvec on jc",jc
+       mvcount = mvcount+blk
+
+       !vout = (vout+center*v_basis(:,jc:jend))
+       !vout = vout*sigma1einv
+       !vtmp = v_basis(:,jc:jend)
+!$OMP PARALLEL DO
+       do col = 1,blk
+       vout(:,col) = (vout(:,col)+center*v_basis(:,col+jc-1))*sigma1einv
+       vtmp(:,col) = v_basis(:,col+jc-1)
+!       call Zaxpy(ldn,center,v_vasis(1,col+jc-1),1,vout(1,col),1)
+!       call Zscal(ldn,sigma1einv,vout(1,col),1)
+
+!       call Zcopy(ldn,v_basis(1,col+jc-1),1,vtmp(1,col),1)
+       enddo
+!$OMP END PARALLEL DO
+
+       do i = 2, pm
+
+          sigma2 = one /(two/sigma1 - sigma)
+
+    do buffer_index = 1,blk
+        call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),vout(:,buffer_index),buffer_index,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
+        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
+        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+    enddo
+
+          call ZmatvecB(kplp,blk,vout,vnew,ldn,filter_lap_buffers)
+          mvcount = mvcount+blk
+
+!$OMP PARALLEL DO
+          do col = 1,blk
+              vnew(:,col) = (vnew(:,col)+center*vout(:,col))*twoeinv - sigma*vtmp(:,col)
+              vnew(:,col) = vnew(:,col)*sigma2
+              vtmp(:,col) = vout(:,col)
+              vout(:,col) = vnew(:,col)
+          enddo
+!$OMP END PARALLEL DO
+
+          sigma = sigma2 
+
+       end do
+
+!       v_basis(:,jc:jend)=vout
+        do col=1,blk
+               call Zcopy(ldn,vout(1,col),1,v_basis(1,col+jc-1),1)
+        end do
+    end do
+
+       dimtmp = n2 - jend 
+        ! write(9,*) "cheb filter: now jend was",jend
+        ! write(9,*) "cheb filter: now jc is",jc
+        ! write(9,*) "cheb filter: so dimtmp is ",dimtmp
+        ! write(9,*) "cheb filter: n2-dimtmp+1 is ",n2-dimtmp+1
+    !  filter the remaining vectors (if any) 
+    if (dimtmp > 0) then
+        ! write(9,*) "dimtmp is",dimtmp
+       ! write(9,*) "so we are calculating matvec up to jc+1+dimtmp=",jc+1+dimtmp
+
+    do buffer_index = 1,dimtmp
+        call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),v_basis(:,n2-dimtmp+buffer_index),buffer_index,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
+        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
+        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+    enddo
+
+       call ZmatvecB(kplp,dimtmp,v_basis(1,n2-dimtmp+1), vout(1,1),ldn,filter_lap_buffers)
+       mvcount  = mvcount+dimtmp
+
+!$OMP PARALLEL DO 
+      do col = 1,dimtmp
+       vout(:,col)=(vout(:,col) + center*v_basis(:,n2-dimtmp+col))*sigma1einv
+       vtmp(:,col)= v_basis(:,n2-dimtmp+col)
+      end do
+!$OMP END PARALLEL DO
+
+       do i = 2, pm
+
+          sigma2 = one /(two/sigma1 - sigma)
+    do buffer_index = 1,dimtmp
+        call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),vout(:,buffer_index),buffer_index,1,1,ldn) 
+        call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
+        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
+        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+    enddo
+
+          call ZmatvecB(kplp,dimtmp,vout, vnew,ldn,filter_lap_buffers)
+
+          mvcount = mvcount+dimtmp
+!$OMP PARALLEL DO
+          do col = 1,dimtmp
+              vnew(:,col) = (vnew(:,col)+center*vout(:,col))*twoeinv - sigma*vtmp(:,col)
+              vnew(:,col) = vnew(:,col)*sigma2
+              vtmp(:,col) = vout(:,col)
+              vout(:,col) = vnew(:,col)
+          enddo
+!$OMP END PARALLEL DO
+
+          sigma = sigma2 
+
+       end do
+       !v_basis(:,n2-dimtmp+1:n2)=vout(:,1:dimtmp)
+        do col=1,dimtmp
+               call Zcopy(ldn,vout(1,col),1,v_basis(1,n2-dimtmp+col),1)
+        end do
+    end if
+
+    do buffer_index=1,blk
+    call destroy_lap_buffer(filter_lap_buffers(buffer_index))
+    enddo
+
+#ifdef CPLX
+  end subroutine zcheby_filterscal1
+#else
+  end subroutine cheby_filterscal1
+#endif
+
+
+#ifdef CPLX
+end  subroutine zchebff_diag
+#else
+end  subroutine chebff_diag
+#endif
+

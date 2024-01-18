@@ -1,0 +1,732 @@
+ Processor No            0   has started
+ Number of processors:           68
+ Number of threads/processor: *** No openMP support
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+  survived first allreduce
+                     ********************                    
+ 
+  Group partition information: 
+  I am processor rank            0  in group            0
+  I am master in my group, with master rank            0
+ 
+                     ********************                    
+ 
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is       97496
+  reduced size is        24374
+  maximum distance between grid points and their images is
+   0.1731E-14  [bohr]
+ 
+ There are 36 laplacian-related non-diagonal elements per row
+  neibs sent to node            1
+  neibs sent to node            2
+  neibs sent to node            3
+  neibs sent to node            4
+  neibs sent to node            5
+  neibs sent to node            6
+  neibs sent to node            7
+  neibs sent to node            8
+  neibs sent to node            9
+  neibs sent to node           10
+  neibs sent to node           11
+  neibs sent to node           12
+  neibs sent to node           13
+  neibs sent to node           14
+  neibs sent to node           15
+  neibs sent to node           16
+ The local dimension is :        1434
+ INTERIOR POINTS Mvec, PreCond (           0         606 ) 
+ WARNING, NO MATVEC INTERIOR POINTS
+ CURRENT SYSTEM SIZE/PE RATIO NOT RECOMMENDED
+ Information to be sent to neighbors:
+ send PE            0  #rows:           0
+ send PE            1  #rows:        1434
+ send PE            2  #rows:        1198
+ send PE            3  #rows:         611
+ send PE            4  #rows:           0
+ send PE            5  #rows:           0
+ send PE            6  #rows:           0
+ send PE            7  #rows:           0
+ send PE            8  #rows:           0
+ send PE            9  #rows:           0
+ send PE           10  #rows:           0
+ send PE           11  #rows:           0
+ send PE           12  #rows:           0
+ send PE           13  #rows:           0
+ send PE           14  #rows:           0
+ send PE           15  #rows:           0
+ send PE           16  #rows:           0
+ I communicate with            3  processors, a total of         3243  elements
+ Also, I receive from these procs:         2714  elements
+ 
+ WARNING, ASSYMETRIC COMM PATTERN ENCOUNTERED
+ 
+ topo_aware: I am now aware that I communicate with           3 PEs
+ 
+  CAUTION! GROUP COMMUNICATOR FOR MATVEC IS THE NEIGHBORHOOD GRAPH COMMUNICATOR!
+  NEIGHBORHOOD COMMUNICATION DATA UPDATED FOR EACH PE 
+ 
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =          282
+ 
+ Sizes of all non-local blocks 
+   282   282   282   282   281   282   281   282   282   282   282   282
+   282   281   282   282   282   282   282   282   282   282   282   282
+   280   282   282   282   281     1     3     1     1     1     3     1
+     3     1     3     1     3     1     1     3     1     1     1     1
+     3     1     1     3     1     3     1     1     3     1     1     3
+     3     1     1     1     1
+ 
+ Transform atoms          65
+ My number of non-local rows:            0  of total         8232
+ My number of rows in WS sphere:            0  of total            0
+  init Hartree guess, starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.4648E-01
+ # reported residual norm:   3.578171318010030E-005
+ # euclidean norm of lap(pot):   8.892499349950792E-006
+ allocating both dwvec and zwvec of size (why!):       24375
+  eigval (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32           0
+Chebdav flag=new , nec( 1)=    0
+ CHEBDAV: computed upper bound=   50.2176317689725       lowb=
+   13.1552682260299     
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.921538523E+00  -0.580374239E+00  -0.483389464E+00  -0.253088739E+00   0.975230160E-02
+ 0.510284552E-01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           1
+ ritzmax=  0.921538522822394      tol_loc=  9.215385228223942E-005
+ residual_norm(   1)= 0.96534E+00   Ritz_Val(   1)=-0.92154E+00
+ lowb=   -0.12329  upperb=   50.21763
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.160736992E+01  -0.160221196E+01  -0.157364781E+01  -0.154402249E+01  -0.153987918E+01
+-0.121850762E+01   0.301104798E-01   0.192563270E+00   0.263150159E+00   0.361763302E+00
+ 0.517358831E+00   0.577963470E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           2
+ ritzmax=   1.60736991515725      tol_loc=  1.607369915157247E-004
+ residual_norm(   1)= 0.86517E-01   Ritz_Val(   1)=-0.16074E+01
+ lowb=    0.21383  upperb=   50.21763
+ nconv=    0   hsize=   12   dim_subsp=   12 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.161839611E+01  -0.161767674E+01  -0.159175699E+01  -0.154963723E+01  -0.154879886E+01
+-0.145336054E+01  -0.119211630E+01  -0.108006292E+01  -0.994135631E+00  -0.961801049E+00
+-0.889058443E+00  -0.769161330E+00   0.333727678E+00   0.422769090E+00   0.506757639E+00
+ 0.623372375E+00   0.635261736E+00   0.738919183E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           3
+ ritzmax=   1.61839611335403      tol_loc=  1.618396113354032E-004
+ residual_norm(   1)= 0.85189E-02   Ritz_Val(   1)=-0.16184E+01
+ lowb=    0.31331  upperb=   50.21763
+ nconv=    0   hsize=   18   dim_subsp=   18 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.162015988E+01  -0.161774373E+01  -0.161766611E+01  -0.155372616E+01  -0.154886523E+01
+-0.154879381E+01  -0.128510762E+01  -0.113409859E+01  -0.108058333E+01  -0.107698438E+01
+-0.968545084E+00  -0.904321835E+00  -0.863483537E+00  -0.763595733E+00  -0.714189410E+00
+-0.650615270E+00  -0.597695780E+00  -0.471169258E+00   0.422599210E+00   0.528363514E+00
+ 0.582198380E+00   0.686489003E+00   0.707309503E+00   0.830268177E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           4
+ ritzmax=   1.62015987919123      tol_loc=  1.620159879191231E-004
+ residual_norm(   1)= 0.15362E-01   Ritz_Val(   1)=-0.16202E+01
+ lowb=    0.37481  upperb=   50.21763
+ nconv=    0   hsize=   24   dim_subsp=   24 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.162035862E+01  -0.161774379E+01  -0.161774373E+01  -0.155400226E+01  -0.154886534E+01
+-0.154886526E+01  -0.128676941E+01  -0.113703503E+01  -0.108304037E+01  -0.108295107E+01
+-0.970655000E+00  -0.916587270E+00  -0.915549425E+00  -0.787704614E+00  -0.767742316E+00
+-0.733689177E+00  -0.661845272E+00  -0.632998854E+00  -0.477088794E+00  -0.286825677E+00
+-0.164402647E+00  -0.501069758E-01   0.118519788E+00   0.284480865E+00   0.518250674E+00
+ 0.559974437E+00   0.657812334E+00   0.731409565E+00   0.794160217E+00   0.869090764E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ >>> CHEBDAV: Inner restart. num_restart=           1
+ hsize=          30 hsizerst=          20 dim_subsp=          30
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           5
+ ritzmax=   1.62035862018900      tol_loc=  1.620358620188998E-004
+ residual_norm(   1)= 0.59185E-03   Ritz_Val(   1)=-0.16204E+01
+ lowb=    0.44923  upperb=   50.21763
+ nconv=    0   hsize=   30   dim_subsp=   20 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.162035881E+01  -0.161774379E+01  -0.161774379E+01  -0.155400261E+01  -0.154886534E+01
+-0.154886534E+01  -0.128677609E+01  -0.113709149E+01  -0.108305579E+01  -0.108305433E+01
+-0.970745535E+00  -0.916789428E+00  -0.916747675E+00  -0.789528292E+00  -0.768843263E+00
+-0.763271612E+00  -0.663924634E+00  -0.646304522E+00  -0.614930708E+00  -0.428278021E+00
+-0.737218138E-01   0.887387501E-01   0.118325793E+00   0.213873905E+00   0.496850383E+00
+ 0.726081611E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ >>> CHEBDAV: Inner restart. num_restart=           2
+ hsize=          26 hsizerst=          20 dim_subsp=          26
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           6
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(   1)= 0.18077E-04   Ritz_Val(   1)=-0.16204E+01
+ residual_norm(   2)= 0.10780E-04   Ritz_Val(   2)=-0.16177E+01
+ residual_norm(   3)= 0.22673E-05   Ritz_Val(   3)=-0.16177E+01
+ residual_norm(   4)= 0.28308E-04   Ritz_Val(   4)=-0.15540E+01
+ residual_norm(   5)= 0.11802E-04   Ritz_Val(   5)=-0.15489E+01
+ residual_norm(   6)= 0.29020E-05   Ritz_Val(   6)=-0.15489E+01
+ residual_norm(   7)= 0.20081E-03   Ritz_Val(   7)=-0.12868E+01
+ lowb=    0.24205  upperb=   50.21763
+ nconv=    6   hsize=   26   dim_subsp=   20 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.128677612E+01  -0.113709229E+01  -0.108305645E+01  -0.108305645E+01  -0.970752023E+00
+-0.916794208E+00  -0.916784160E+00  -0.789542588E+00  -0.768858719E+00  -0.768225872E+00
+-0.663974403E+00  -0.646594910E+00  -0.640738965E+00  -0.432679425E+00  -0.125426844E+00
+-0.333078474E-01   0.924285952E-02   0.410893866E-01   0.189051681E+00   0.380471559E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           7
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(   7)= 0.89974E-05   Ritz_Val(   1)=-0.12868E+01
+ residual_norm(   8)= 0.59203E-04   Ritz_Val(   2)=-0.11371E+01
+ residual_norm(   9)= 0.24042E-04   Ritz_Val(   3)=-0.10831E+01
+ residual_norm(  10)= 0.11211E-03   Ritz_Val(   4)=-0.10831E+01
+ residual_norm(  11)= 0.21462E-03   Ritz_Val(   5)=-0.97075E+00
+ lowb=    0.02337  upperb=   50.21763
+ nconv=   10   hsize=   20   dim_subsp=   26 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.970752060E+00  -0.916794249E+00  -0.916794237E+00  -0.789563837E+00  -0.768898338E+00
+-0.768896480E+00  -0.664080821E+00  -0.646795230E+00  -0.646279029E+00  -0.435532654E+00
+-0.393193154E+00  -0.286288608E+00  -0.207214506E+00  -0.110189387E+00  -0.481908871E-01
+ 0.374703286E-01   0.535687238E-01   0.240602396E+00   0.303022079E+00   0.400719118E+00
+ 0.913241390E+00   0.116954255E+01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           8
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  11)= 0.53736E-05   Ritz_Val(   1)=-0.97075E+00
+ residual_norm(  12)= 0.60502E-05   Ritz_Val(   2)=-0.91679E+00
+ residual_norm(  13)= 0.12318E-03   Ritz_Val(   3)=-0.91679E+00
+ residual_norm(  14)= 0.24213E-03   Ritz_Val(   4)=-0.78956E+00
+ lowb=    0.66998  upperb=   50.21763
+ nconv=   13   hsize=   22   dim_subsp=   32 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.789563903E+00  -0.768898423E+00  -0.768898403E+00  -0.664145380E+00  -0.646849979E+00
+-0.646840521E+00  -0.438738156E+00  -0.405848450E+00  -0.304339115E+00  -0.298484107E+00
+-0.276309544E+00  -0.191199072E+00  -0.103696142E+00  -0.822324172E-01  -0.386459469E-01
+ 0.992280525E-02   0.642525536E-01   0.240600279E+00   0.307233813E+00   0.392504562E+00
+ 0.516958571E+00   0.536153789E+00   0.972751304E+00   0.100588374E+01   0.132308841E+01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ >>> CHEBDAV: Inner restart. num_restart=           3
+ hsize=          25 hsizerst=          20 dim_subsp=          38
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =           9
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  14)= 0.19583E-04   Ritz_Val(   1)=-0.78956E+00
+ residual_norm(  15)= 0.17680E-04   Ritz_Val(   2)=-0.76890E+00
+ residual_norm(  16)= 0.15635E-03   Ritz_Val(   3)=-0.76890E+00
+ residual_norm(  17)= 0.14432E-02   Ritz_Val(   4)=-0.66415E+00
+ lowb=    0.76731  upperb=   50.21763
+ nconv=   16   hsize=   25   dim_subsp=   33 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.664147196E+00  -0.646850545E+00  -0.646850383E+00  -0.439887195E+00  -0.411222929E+00
+-0.318179083E+00  -0.309704575E+00  -0.286990242E+00  -0.258092912E+00  -0.205199023E+00
+-0.182411259E+00  -0.114434677E+00  -0.742183753E-01  -0.518899971E-01   0.247692075E-01
+ 0.787891366E-01   0.119692782E+00   0.217681093E+00   0.448676719E+00   0.470261701E+00
+ 0.701785823E+00   0.788586921E+00   0.110514431E+01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =          10
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  17)= 0.11049E-03   Ritz_Val(   1)=-0.66415E+00
+ residual_norm(  18)= 0.82529E-04   Ritz_Val(   2)=-0.64685E+00
+ residual_norm(  19)= 0.33697E-03   Ritz_Val(   3)=-0.64685E+00
+  *** Outer-restart: num_outrst=           1 ,  dim_subsp=           32 
+  hsizerst=           16
+  *** Outer-restart update: num_outrst=           1 ,  dim_subsp=           32 
+  hsizerst=           14
+ lowb=    0.58352  upperb=   50.21763
+ nconv=   18   hsize=   23   dim_subsp=   32 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.646850547E+00  -0.439926945E+00  -0.411749508E+00  -0.319969161E+00  -0.319297691E+00
+-0.297567526E+00  -0.270254385E+00  -0.234493603E+00  -0.214768666E+00  -0.183655404E+00
+-0.120499092E+00  -0.876543703E-01  -0.582375056E-01  -0.310584744E-01   0.240301091E-01
+ 0.171628927E+00   0.332092355E+00   0.372489796E+00   0.470639967E+00   0.117469021E+01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =          11
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  19)= 0.70813E-04   Ritz_Val(   1)=-0.64685E+00
+ swap           19  with           18
+ residual_norm(  20)= 0.99097E-03   Ritz_Val(   2)=-0.43993E+00
+  *** Outer-restart: num_outrst=           2 ,  dim_subsp=           32 
+  hsizerst=           14
+  *** Outer-restart update: num_outrst=           2 ,  dim_subsp=           32 
+  hsizerst=           13
+ lowb=    0.34056  upperb=   50.21763
+ nconv=   19   hsize=   20   dim_subsp=   32 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.439928559E+00  -0.411815154E+00  -0.320475913E+00  -0.320169772E+00  -0.301231837E+00
+-0.284627600E+00  -0.266591172E+00  -0.228056697E+00  -0.222220415E+00  -0.200117657E+00
+-0.107675833E+00  -0.812126376E-01  -0.738174331E-01  -0.331626529E-01   0.609385559E-01
+ 0.153685833E+00   0.205045653E+00   0.390388381E+00   0.511937519E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =          12
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  20)= 0.32791E-03   Ritz_Val(   1)=-0.43993E+00
+ lowb=    0.27177  upperb=   50.21763
+ nconv=   19   hsize=   19   dim_subsp=   38 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.439928651E+00  -0.411821732E+00  -0.320517211E+00  -0.320512910E+00  -0.301816375E+00
+-0.301692957E+00  -0.271168547E+00  -0.230988440E+00  -0.229308761E+00  -0.219952308E+00
+-0.142767112E+00  -0.126005159E+00  -0.880665646E-01  -0.834087914E-01  -0.636325109E-01
+-0.546062890E-01  -0.256521626E-01   0.556860181E-02   0.156811586E+00   0.521082568E+00
+ 0.726884854E+00   0.749964006E+00   0.932113114E+00   0.103611884E+01   0.139249829E+01
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ >>> CHEBDAV: Inner restart. num_restart=           6
+ hsize=          25 hsizerst=          20 dim_subsp=          44
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =          13
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  20)= 0.15643E-04   Ritz_Val(   1)=-0.43993E+00
+ residual_norm(  21)= 0.13217E-03   Ritz_Val(   2)=-0.41182E+00
+ residual_norm(  22)= 0.50569E-03   Ritz_Val(   3)=-0.32052E+00
+  *** Outer-restart: num_outrst=           3 ,  dim_subsp=           32 
+  hsizerst=           13
+  *** Outer-restart update: num_outrst=           3 ,  dim_subsp=           32 
+  hsizerst=           11
+ lowb=    0.84231  upperb=   50.21763
+ nconv=   21   hsize=   25   dim_subsp=   32 current kactmax=   30
+ orth after expansion:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ ritz_val(1:hsize):
+-0.320517604E+00  -0.320517327E+00  -0.301823380E+00  -0.301815072E+00  -0.271203137E+00
+-0.231332250E+00  -0.230762395E+00  -0.220225799E+00  -0.145538823E+00  -0.127738919E+00
+-0.106990711E+00   0.881485279E-02   0.108297737E+00   0.150832719E+00   0.206976270E+00
+ 0.374181779E+00   0.521332892E+00
+ Before V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+ After  RR refinement:  V*Hevec:
+   notnormal =           0 ,  notorth =           0
+   the tested basis is ortho-normal 
+ 
+  % ===== num_iteration =          14
+ ritzmax=   1.62035881131477      tol_loc=  1.620358811314771E-004
+ residual_norm(  22)= 0.17081E-03   Ritz_Val(   1)=-0.32052E+00
+ residual_norm(  23)= 0.57065E-03   Ritz_Val(   2)=-0.32052E+00
+  ## exit outer-loop, dim_subsp=    38, num_outrst=     3
+ hsize=   11, dim_subsp=   33, nconv=   22
+ need to swap in subsp, ic=           1
+ no swap necessary in subsp
+ ===================================================
+ ---------  (approximate) Full convergence in chebdav ------------
+  ndim=    1434,  blksize=  6,  n_spdim=   44
+  nwant  =   32,  nconv=   33,  true nconv=    33
+  num_iter =      14,  max_iter =     160
+  num_mv  =    1989,   num_restart=       7
+  num_outrst =    3,   max_outrst =    2
+  conv_tol= 0.1000E-03,   ritzmax= 0.1620E+01
+  kactmax =   30,   polym=   20
+ ===================================================
+ chebdav: done
+  Eigensolver, end of iteration =            1
+  repr. =            1  k-point =            1  spin =            1
+  maxmvs =         1989  nec =           33
+  nstate =           32  info =            0
+# Poisson solver, return code =   0  convergence rate =   0.4479E-01
+ # reported residual norm:   7.801619068524107E-006
+ # euclidean norm of lap(pot):   1.871863040221448E-006
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          26
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.00000E+00  upperb= 0.49757E+02  maxritz= 0.14057E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4443E-01
+ # reported residual norm:   2.436771915870273E-006
+ # euclidean norm of lap(pot):   5.695444199423399E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.00000E+00  upperb= 0.50118E+02  maxritz= 0.13278E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4113E-01
+ # reported residual norm:   7.261424122183377E-007
+ # euclidean norm of lap(pot):   1.548058201616366E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.00000E+00  upperb= 0.50035E+02  maxritz= 0.12589E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4111E-01
+ # reported residual norm:   4.981841227454153E-007
+ # euclidean norm of lap(pot):   1.103933638772518E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.00000E+00  upperb= 0.49945E+02  maxritz= 0.12265E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4050E-01
+ # reported residual norm:   6.235640885827832E-008
+ # euclidean norm of lap(pot):   1.377195844639294E-008
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49921E+02  maxritz= 0.12262E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4056E-01
+ # reported residual norm:   1.734616189149620E-008
+ # euclidean norm of lap(pot):   3.816607373377252E-009
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50194E+02  maxritz= 0.12244E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4105E-01
+ # reported residual norm:   1.291278688964151E-008
+ # euclidean norm of lap(pot):   2.546216678038168E-009
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49847E+02  maxritz= 0.12239E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4037E-01
+ # reported residual norm:   1.658930903868403E-009
+ # euclidean norm of lap(pot):   3.373031883472968E-010
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49962E+02  maxritz= 0.12239E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4099E-01
+ # reported residual norm:   1.760715047510538E-009
+ # euclidean norm of lap(pot):   3.963818083160306E-010
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50305E+02  maxritz= 0.12238E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4007E-01
+ # reported residual norm:   1.423701211895566E-010
+ # euclidean norm of lap(pot):   3.145590978083738E-011
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50195E+02  maxritz= 0.12238E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4093E-01
+ # reported residual norm:   1.838721263858949E-010
+ # euclidean norm of lap(pot):   3.607807675779120E-011
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50126E+02  maxritz= 0.12238E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4053E-01
+ # reported residual norm:   5.770076654261570E-011
+ # euclidean norm of lap(pot):   1.310878384011587E-011
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50019E+02  maxritz= 0.12238E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4082E-01
+ # reported residual norm:   1.164283029491588E-011
+ # euclidean norm of lap(pot):   2.978182192525118E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49891E+02  maxritz= 0.12238E+01  polym=15
+# Poisson solver, return code =   0  convergence rate =   0.4033E-01
+ # reported residual norm:   5.244932457008823E-012
+ # euclidean norm of lap(pot):   1.989833371020532E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49704E+02  maxritz= 0.12238E+01  polym=14
+# Poisson solver, return code =   0  convergence rate =   0.4023E-01
+ # reported residual norm:   1.129275533729574E-012
+ # euclidean norm of lap(pot):   1.695023637071236E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50552E+02  maxritz= 0.12238E+01  polym=13
+# Poisson solver, return code =   0  convergence rate =   0.4024E-01
+ # reported residual norm:   1.130295645695529E-012
+ # euclidean norm of lap(pot):   1.773292395332998E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50630E+02  maxritz= 0.12238E+01  polym=12
+# Poisson solver, return code =   0  convergence rate =   0.3988E-01
+ # reported residual norm:   3.763285395518260E-013
+ # euclidean norm of lap(pot):   1.800554137716101E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.49918E+02  maxritz= 0.12238E+01  polym=11
+# Poisson solver, return code =   0  convergence rate =   0.3895E-01
+ # reported residual norm:   1.577801178960013E-013
+ # euclidean norm of lap(pot):   1.742448651293202E-012
+  subspace (irp,kplp,isp,mm,nn,nec) =            1           1           1
+          32          32          27
+  kssmax=  32  kssmax0=  32  ncomp=  32  ncompcnt=  32  irp=   1
+  Subspace rotation with LAPACK/ESSL
+ Subspace filter report:
+  irp=  1  lowerb= 0.32479E-02  upperb= 0.50389E+02  maxritz= 0.12238E+01  polym=10
+# Poisson solver, return code =   0  convergence rate =   0.3877E-01
+ # reported residual norm:   1.423797045856622E-013
+ # euclidean norm of lap(pot):   1.714115587063363E-012
+  forcnloc reports: 
+  I received L =            0  for atom #           1  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           2  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           3  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           4  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           5  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           6  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           7  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           8  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #           9  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          10  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          11  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          12  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          13  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          14  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          15  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          16  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          17  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          18  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          19  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          20  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          21  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          22  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          23  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          24  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          25  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          26  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          27  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          28  with mnloc =            0
+  forcnloc reports: 
+  I received L =            0  for atom #          29  with mnloc =            0
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: 
+  forcnloc reports: done
+ 
+ Closing file on PE #           0
+ 

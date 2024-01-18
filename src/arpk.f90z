@@ -1,0 +1,366 @@
+#include "mycomplex.h"
+!===================================================================
+!
+! Copyright (C) 2005 Finite Difference Research Group
+! This file is part of parsec, http://www.ices.utexas.edu/parsec/
+!
+! Driver routine for the ARPACK eigensolver, available at
+!
+!       http://www.caam.rice.edu/software/ARPACK/.
+!
+! Authors: M. Alemany, E. Lorin.
+!       slight modification by Yunkai Zhou, Murilo Tiago (2005)         
+!
+!-------------------------------------------------------------------
+#ifdef CPLX
+subroutine zarpk_diag(kplp,parallel,nstate,nec,maxmvs,eval,evec,tol,resid_restart,ipr,info)
+#else
+subroutine arpk_diag(kplp,parallel,nstate, nec,maxmvs,eval,evec,tol,resid_restart,ipr,info)
+#endif
+
+    use constants
+    use parallel_data_module
+    use matvecB_interface
+    implicit none
+    include 'arpkdbg.h'
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif 
+    !
+    ! Input/Output variables:
+    !
+    ! parallel computation related data
+    type (parallel_data), intent(in) :: parallel
+    !
+    integer, intent(in)    :: ipr, nstate
+    integer, intent(inout) :: nec, maxmvs
+    !
+    !    integer :: kplp
+    integer, intent(in)    :: kplp
+    !
+    integer, intent(inout) :: info
+    !
+    !
+    real(dp), intent(in)   :: tol
+    real(dp), intent(out)  :: eval(nstate)
+
+    SCALAR, intent(inout)  :: evec(parallel%ldn*parallel%mxwd,nstate)
+    SCALAR, intent(inout)  :: resid_restart(parallel%ldn*parallel%mxwd)
+    !
+    ! Work variables:
+    !
+    integer :: ndim, ldn, i, vtierr
+
+    ! arpack scalars
+    character (len=1) :: bmat
+    character (len=2) :: which
+    integer :: arpack_ido, nev, ncv, lworkl, j,jj
+    integer :: k
+
+    logical :: rvec, arpack_temp_debug
+    SCALAR :: sigma, xscal
+
+    ! arpack variables
+
+    ! change (adi):
+    SCALAR, allocatable :: vbasis(:,:)
+    real(dp), dimension(:), allocatable :: rwork
+    SCALAR, dimension(:), allocatable :: eval_loc
+    SCALAR, dimension(:), allocatable :: resid,workd
+    SCALAR, dimension(:), allocatable :: workl
+#ifdef CPLX
+    SCALAR, dimension(:), allocatable :: workev
+#endif
+
+    logical, allocatable :: select(:)
+    integer, allocatable :: indx(:)
+    integer iparam(11)
+#ifdef CPLX
+    integer ipntr(14)
+#else
+    integer ipntr(11)
+#endif
+    ! allocation check
+    integer alcstat
+
+  !-------------------------------------------------------------------
+     arpack_temp_debug = .FALSE.
+#ifdef OLD_DEBUG
+      write(7,*)'zarpk1'
+#endif
+    !
+    ! Initialize the arpack variables.
+    !
+    nev = nstate
+    ncv = 2*nstate+5
+
+#ifdef CPLX
+    lworkl = ncv*(3*ncv+5)
+#else
+    lworkl = ncv*(ncv+8)
+#endif
+
+    ndim = parallel%mydim*parallel%mxwd
+    ldn  = parallel%ldn*parallel%mxwd
+    ! no one uses ldn here, its just the size of evec and resid_restart
+    eval(:) = zero
+
+#ifdef USEARPACK 
+
+    allocate(vbasis(ndim, ncv),stat=alcstat)
+    call alccheck('arpk_vbasis',ndim*(ncv),alcstat)
+
+    allocate(workl(lworkl),stat=alcstat)
+    call alccheck('arpk_workl',lworkl,alcstat)
+    allocate(workd(3*ndim),stat=alcstat)
+    call alccheck('arpk_workd',3*ndim,alcstat)
+    allocate(resid(ndim),stat=alcstat)
+    call alccheck('arpk_resid',ndim,alcstat)
+
+    allocate(eval_loc(ncv))
+    allocate(rwork(ncv))
+#ifdef CPLX
+    allocate(workev(2*ncv))
+    workev(:) = Zzero
+#endif
+    allocate(select(ncv))
+
+    vbasis(:,:) = Zzero
+    rwork(:) = zero
+    workl(:) = Zzero
+    workd(:) = Zzero
+    eval_loc(:) = Zzero
+    resid(:) = Zzero
+    iparam(:) = 0
+    ipntr(:) = 0
+
+    bmat = 'I'         !standard eigenvalue problem
+#ifdef CPLX
+    which = 'SR'       !compute the smallest-algebraic modes 
+#else
+    which = 'SA'       !compute the smallest-algebraic modes 
+#endif
+
+    call Zcopy(ndim,resid_restart,1,resid,1)
+
+    arpack_ido = 0            !integer used to control reverse communication
+
+    iparam(1) = 1      !choose the "exact-shift" strategy for restart
+    !iparam(3) = nev*90 !maxium number of implicit restart allowed
+    iparam(3) = nev*180 !new maxium number of implicit restart allowed
+    iparam(4) = 1      !block size, current ARPACK is single vector version
+    iparam(7) = 1      !regular mode without invert or shift-invert
+
+    if (ipr >= 2) then
+    ! Initialize some variables included from arpkdbg.h, only useful when ipr >=2.
+     ndigit = -3
+     logfil = 6
+     msgets = 0
+     msaitr = 0
+     msapps = 0
+     msaupd = 0
+     msaup2 = 0
+     mseigt = 0
+     mseupd = 1         
+    endif
+
+
+do    ! Main loop (Reverse Communication)
+
+#ifdef ITAC
+                         call VTEND(vt_arpack,vtierr)
+                         call VTBEGIN(vt_naupd,vtierr)
+#endif
+#ifndef MPI
+
+#ifdef CPLX
+    call znaupd ( &
+#else
+    call dsaupd ( &
+#endif
+
+#else
+!with MPI:
+#ifdef CPLX
+    call pznaupd (parallel%group_comm, &
+#else
+    call pdsaupd (parallel%group_comm, &
+#endif
+
+#endif
+
+                    arpack_ido, bmat, ndim, which, nev, tol, resid, &
+                    ncv, vbasis, ndim, iparam, ipntr, &
+
+#ifdef CPLX
+                        workd, workl, lworkl, rwork, info)
+#else
+                        workd, workl, lworkl,        info)
+#endif
+
+#ifdef ITAC
+                         call VTEND(vt_naupd,vtierr)
+#endif
+     if (arpack_ido /= -1 .and. arpack_ido /= 1) exit
+     !if ( abs(arpack_ido) /= 1) exit
+     !otherwise:
+     ! send this to matvec
+    call ZmatvecB(kplp,1,workd(ipntr(1)),workd(ipntr(2)),ndim)
+
+     if (iparam(9) >= maxmvs) exit
+
+enddo !Main 
+
+if ( info == 1) then
+    write(9,'(/,a,/)') ' ARPACK: Maximum number of iterations reached.'
+    else if ( info == 3) then
+    write(9,'(/,a,a,/)') ' No shifts could be applied during', &
+      ' implicit Arnoldi update, try increasing NCV (more states).'
+end if
+
+if ( info < 0 ) then
+        write(9,'(/,a,i5)') ' Error with _saupd, info = ', info
+        write(9,'(a,/)') ' Check documentation in _saupd '
+
+    else
+
+     ! Postprocess with dseupd.
+
+     rvec = .true.
+#ifdef ITAC
+                         call VTBEGIN(vt_seupd,vtierr)
+#endif
+#ifndef MPI
+
+#ifdef CPLX
+    call zneupd( &
+#else
+    call dseupd( &
+#endif
+
+#else
+
+#ifdef CPLX
+    call pzneupd(parallel%group_comm, &
+#else
+    call pdseupd(parallel%group_comm, &
+#endif
+
+#endif
+                    rvec, 'A', select, eval_loc, vbasis, ndim, &
+
+#ifdef CPLX
+                        sigma,workev,bmat, ndim, which, nev, tol,  &
+                        resid, ncv,vbasis, ndim, iparam, ipntr, &
+                        workd, workl, lworkl, rwork, info)
+#else
+                        sigma,bmat, ndim, which, nev, tol, resid, &
+                        ncv,vbasis, ndim,iparam, ipntr, workd, workl, &
+                        lworkl, info)
+#endif
+
+#ifdef ITAC
+                         call VTEND(vt_seupd,vtierr)
+                         call VTBEGIN(vt_arpack,vtierr)
+#endif
+     resid_restart(:) = Zzero
+
+    do jj= 1,nev
+        do j = 1, ndim
+           resid_restart(j) = resid_restart(j)+vbasis(j,jj)
+        enddo
+    enddo
+
+    xscal = Zone/real(nev,dp)
+    call Zscal(ndim,xscal,resid_restart,1)
+
+    if ( info /= 0) then
+        write(9,*)
+        write(9,*) ' Error with _seupd, info = ', info
+        write(9,*) ' Check the documentation of _seupd. '
+        write(9,*)
+    end if
+
+    ! Print additional convergence information.
+
+    if (ipr >= 0) then
+
+        write(9,*) ' '
+        write(9,*) ' ARPACK DEBUG INFO:'
+        write(9,*) ' _SDRV1 '
+        write(9,*) ' ====== '
+        write(9,*) ' '
+        write(9,*) ' Size of the matrix is ', ndim
+        write(9,*) ' The number of Ritz values requested is ', nev
+        write(9,*) ' The number of Arnoldi vectors generated (NCV) is ', ncv
+        write(9,*) ' What portion of the spectrum: ', which
+        write(9,*) ' The number of converged Ritz values is ',  iparam(5)
+        write(9,*) ' The number of Implicit Arnoldi update iterations taken is ', iparam(3)
+        write(9,*) ' The number of OP*x is ', iparam(9)
+        write(9,*) ' The convergence criterion is ', tol
+        write(9,*) ' '
+
+    end if
+
+    
+end if  ! info < 0
+
+    ! evec <-  vbasis
+    nec = iparam(5)
+    maxmvs = iparam(9)
+       
+    ! Make sure eigenvalues are ordered in ascending order of value.
+    allocate(indx(nec))
+    do j = 1, nec
+     indx(j) = j
+     rwork(j) = real(eval_loc(j),dp)
+    enddo
+    call sortreal(which, nec, rwork, indx, zero)
+
+    ! AJB: this should only zero the elements which are not assigned to.
+    evec(:,:) = Zzero
+    if ( min(ncv,nstate) > nec ) then
+        write(9,*) ' ARPACK - The number of converged Ritz values is somehow too low at this stage, nec=', nec
+        write(9,*) ' ARPACK - Watch now how I crash. Temporarily printing debug info'
+        arpack_temp_debug = .TRUE.
+    endif
+    do j=1, min(ncv,nstate)
+     eval(j) = rwork(j)
+       if (arpack_temp_debug) then
+        write(9,*) ' ARPACK - copying basis from  j to indx(j):',j,indx(j)
+       end if
+     call dcopy(ndim,vbasis(1,indx(j)),1,evec(1,j),1)
+     do i = 1, ndim
+        evec(i,j) = vbasis(i,indx(j))
+     enddo
+       if (arpack_temp_debug) then
+     write(9,*) ' ARPACK - done j,indx(j),i:',j,indx(j),i
+       end if
+
+    enddo
+    deallocate(indx)
+    !
+    if (allocated(vbasis)) deallocate(vbasis)
+    if (allocated(workl)) deallocate(workl)
+    if (allocated(workd)) deallocate(workd)
+    if (allocated(resid)) deallocate(resid)
+    if (allocated(eval_loc)) deallocate(eval_loc)
+    if (allocated(rwork)) deallocate(rwork)
+#ifdef CPLX
+    if (allocated(workev)) deallocate(workev)
+#endif
+    if (allocated(select)) deallocate(select)
+
+#endif
+
+#ifdef OLD_DEBUG
+      write(7,*)'_arpk end'
+#endif
+
+#ifdef CPLX
+    end subroutine zarpk_diag
+#else
+    end subroutine arpk_diag
+#endif
+    !===================================================================

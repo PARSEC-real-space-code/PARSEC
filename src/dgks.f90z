@@ -1,0 +1,327 @@
+#include "mycomplex.h"
+!=====================================================================
+!
+!  Subroutine dgks applies DGKS technique (selected 2-step classical 
+!  Gram-Schmidt) to ortho-normalize the vectors in v_basis(:, 1:colsize).
+!  If the input v_basis(:, 1:colsize) is rank deficient, random vectors are
+!  constructed to guarantee that the output vectors in v_basis(:, 1:colsize)
+!  are ortho-normal.
+!
+!  Authors:  Yunkai Zhou, Murilo Tiago  (2005)
+!
+!---------------------------------------------------------------------
+!
+#ifdef CPLX
+subroutine zdgks(parallel, ldn, ndim, colsize, v_basis, info)
+#else
+subroutine dgks(parallel, ldn, ndim, colsize, v_basis, info)
+#endif
+
+  use constants
+  use parallel_data_module
+  implicit none
+#ifdef ITAC
+  include 'VT.inc'
+  include 'vtcommon.inc'
+#endif
+
+  !
+  !  Input/Output variables:
+  !
+  type (parallel_data), intent(in) :: parallel
+  !
+  !  ldn: leading dimension of v_basis
+  !  ndim: dimension of each  vectors in v_basis
+  !  colsize: column number of the vectors in v_basis
+  integer, intent(in) :: ldn, ndim, colsize
+  !  array of size (ndim, colsize) to be ortho-normalized
+  SCALAR, intent(out) :: v_basis(ldn, colsize)
+  !  error flag
+  integer, intent(out) :: info
+
+  !
+  !  Work variables:
+  !
+  !  irandom counts how many random vectors have been constructed
+  integer  irandom
+
+  real(dp), parameter :: eps = 2.22044605D-16, reorth = 0.68d0
+  real(dp):: norm(1), normproj(1)
+  SCALAR :: invnorm
+  SCALAR :: h(colsize)
+  integer k, tmp, ierr
+  !
+  !  External subroutines:
+  !
+  SCALAR , external :: Zdot
+
+  intrinsic  abs
+  external  Zscal, Zgemv
+#ifdef CPLX
+  external  zrandom_array
+#else
+  external   random_array
+#endif
+  !-------------------------------------------------------------------
+
+  !  Normalize the first column in v_basis.
+  !
+  if (parallel%ndim < colsize) then
+     write(9,*) "ERROR in subroutine:  dgks.f"
+     write(9,*) "more #cols than #rows, cannot get #cols basis"
+     info = 1
+     return
+  endif
+
+#ifdef ITAC
+     ierr=0
+     call VTBEGIN(vt_dgks,ierr)
+#endif
+  irandom = 0
+!#ifdef CPLX
+!  norm = real(dot_product(v_basis(1:ndim,1), v_basis(1:ndim,1)),dp)
+!#else
+  norm = dot_product(v_basis(1:ndim,1), v_basis(1:ndim,1))
+!#endif
+  call psum(norm, 1, parallel%group_size, parallel%group_comm)
+  norm = sqrt(norm)
+
+  if (norm(1) > eps) then
+     invnorm = Zone/norm(1)
+     if (abs(norm(1)-one) >= eps) call Zscal(ndim, invnorm, v_basis(1,1), 1)
+
+  else
+#ifdef CPLX
+     !call random_array(ldn * 2, ndim * 2, 1, v_basis(1,1), info)
+     call zrandom_array(ldn, ndim, 1, v_basis(1,1), info)
+#else
+     call  random_array(ldn, ndim, 1, v_basis(1,1), info)
+#endif
+     irandom = irandom+1
+!#ifdef CPLX
+!     norm = real(dot_product(v_basis(1:ndim,1), v_basis(1:ndim,1)),dp)
+!#else
+     norm = dot_product(v_basis(1:ndim,1), v_basis(1:ndim,1))
+!#endif
+     call psum(norm, 1, parallel%group_size, parallel%group_comm)
+     norm = sqrt(norm)
+     invnorm = Zone/norm(1)
+     call Zscal(ndim, invnorm, v_basis(1,1), 1)
+  endif
+
+
+  do  k = 2, colsize
+
+ 10  continue
+
+!#ifdef CPLX
+!     norm = real(dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k)),dp)
+!#else
+tmp=size(v_basis,2)
+!write(9,*)"doing dot_product for vbasis of width", tmp
+tmp=size(v_basis,1)
+! write(9,*)"and length", tmp
+! write(9,*)"while k is", k
+! write(9,*)"the first element of vbasis(:,k)",v_basis(1,k)
+! write(9,*)"the second element of vbasis(:,k)",v_basis(2,k)
+! write(9,*)"the last element of vbasis(:,k)",v_basis(ndim,k)
+     norm = dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k))
+!#endif
+     call psum(norm, 1, parallel%group_size, parallel%group_comm)
+     norm = sqrt(norm)
+     !
+     !  Compute  h(1:k-1) = v_basis(:,1:k-1)'*v_basis(:,k).
+     !
+     call  Zgemv(Conjg, ndim, k-1, Zone, v_basis(1,1), ldn, &
+        v_basis(1,k), 1, Zzero, h, 1)
+     call Zpsum(h, k-1, parallel%group_size, parallel%group_comm)
+     !
+     !  Compute the projection
+     !  v_basis(:,k) = v_basis(:,k) - v_basis(:,1:k-1)*h.
+     !
+     call  Zgemv('N', ndim, k-1, -Zone, v_basis(1,1), &
+         ldn, h, 1, Zone, v_basis(1, k), 1)
+
+!#ifdef CPLX
+!     normproj = real(dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k)),dp)
+!#else
+     normproj = dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k))
+!#endif
+     call psum(normproj, 1, parallel%group_size, parallel%group_comm)
+     normproj = sqrt(normproj)
+
+     if (normproj(1) > reorth*norm(1)) then
+        !  Pass the reorthogonalization test, no need to refine.
+        !
+        if (dabs(normproj(1)-one) >= eps) then
+           invnorm = Zone/normproj(1)
+           call Zscal(ndim, invnorm, v_basis(1,k), 1)
+        endif
+
+     else
+#ifdef ITAC
+     call VTEND(vt_dgks,ierr)
+     call VTBEGIN(vt_gemv,ierr)
+#endif
+        !  Fail the reorthogonalization test, refinement necessary.
+        !
+        !  Compute  h = v_basis(:,1:k-1)'*v_basis(:,k).
+        !
+        call  Zgemv(Conjg, ndim, k-1, Zone, v_basis(1,1), ldn, v_basis(1,k), &
+             1, Zzero, h, 1)
+        call Zpsum(h, k-1, parallel%group_size, parallel%group_comm)
+        !
+        !  Compute the projection
+        !  v_basis(:,k) = v_basis(:,k) - v_basis(:,1:k-1)*h.
+        !
+        call  Zgemv('N', ndim, k-1, -Zone, v_basis(1,1), ldn, h, 1, &
+             Zone, v_basis(1, k), 1)
+#ifdef ITAC
+     call VTEND(vt_gemv,ierr)
+     call VTBEGIN(vt_dgks,ierr)
+#endif
+
+        norm =  normproj
+!#ifdef CPLX
+!        normproj = real(dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k)),dp)
+!#else
+        normproj = dot_product(v_basis(1:ndim,k), v_basis(1:ndim,k))
+!#endif
+        call psum(normproj, 1, parallel%group_size, parallel%group_comm)
+        normproj = sqrt(normproj)            
+
+        if (normproj(1) > reorth*norm(1)) then
+           !
+           !  Pass the 2nd reorthogonalization test.
+           !
+           if (dabs(normproj(1)-one) >= eps) then
+              invnorm = Zone/normproj(1)
+              call Zscal(ndim, invnorm, v_basis(1,k), 1)
+           endif
+
+        else
+           !
+           !  Fail the 2nd reorthogonalization test,
+           !  v_basis(:,k) is numerically in v_basis(:, 1:k-1), need to replace
+           !  v_basis(:,k) by a random vector.
+           !
+#ifdef CPLX
+           !call random_array(ldn * 2, ndim * 2, 1, v_basis(1,k), info)
+           call zrandom_array(ldn, ndim, 1, v_basis(1,k), info)
+#else
+           call  random_array(ldn, ndim, 1, v_basis(1,k), info)
+#endif
+           irandom = irandom+1
+           goto 10
+
+        endif
+
+     endif
+
+  enddo
+
+  if (irandom > 0) write(9,'(1x, a, i10, a)') &
+       "applied ", irandom, " random vectors in subroutine dgks.f"
+#ifdef ITAC
+     call VTEND(vt_dgks,ierr)
+     call VTBEGIN(vt_gemv,ierr)
+#endif
+
+#ifdef CPLX
+end subroutine zdgks
+#else
+end subroutine dgks
+#endif
+!===================================================================
+
+
+!
+!this routine is now moved from subspace_sub.f90 to here  
+!
+!===================================================================
+!
+! Generate random array of size (ndim, blksize) by calling
+! LAPACK auxiliary subroutine DLARNv_basis and output the generated
+! array in v_basis(1:ndim, 1:blksize)
+!
+!-------------------------------------------------------------------
+!
+#ifdef CPLX
+  subroutine zrandom_array(ldn, ndim, blksize, v_basis,info)
+#else
+  subroutine random_array(ldn, ndim, blksize, v_basis,info)
+#endif
+
+  use constants
+  implicit none
+  !
+  !  Input/Output variables:
+  !
+  !  ldn: leading dimension of v_basis
+  !  ndim: working dimension of v_basis
+  !  blksize: size of vectors to be generated in v_basis
+  integer, intent(in)  :: ldn, ndim, blksize
+  integer, intent(out) :: info
+
+  !
+  !  v_basis: on input, can be empty;  on output, v_basis(1:ndim, 1:blksize)
+  !  contains the generated random vectors
+  !!real(dp), intent(inout) :: v_basis(ldn, blksize)
+  SCALAR, intent(inout) :: v_basis(ldn, blksize)
+
+  !
+  !  Work variables:
+  !
+  !  idist (input) specifies the distribution of the random numbers
+  !      idist = 1:  uniform (0,1)
+  !      idist = 2:  uniform (-1,1)
+  !      idist = 3:  normal  (0,1)
+  integer, save :: idist = 2 
+
+  !  iseed (input/output) INTEGER array, dimension (4)
+  !  On input, the seed of the random number generator; 
+  !  the array elements must be between 0 and 4095, 
+  !  and ISEED(4) must be odd. On output, the seed is updated
+  !              .
+  integer, save :: iseed(4)
+  data iseed/1,1000,2000,4095/
+  !  data iseed/1,3000,700,4095/
+
+  integer :: jcol
+  !
+  !  External subroutines:
+  !!integer, intrinsic :: mod
+  external  dlarnv,  zlarnv
+
+  !-------------------------------------------------------------------
+
+  info = 0
+
+  !!! the following are not necessary at all, since idist is set to 2 
+  !
+  ! if (idist /= 1 .and. idist /= 2  .and. idist /= 3) then
+  !    write (9,*) "ERROR: idist input to random_array is illegal"
+  !    write (9,*) "idist must be 1 or 2 or 3"
+  !    ierr = idist
+  !    return
+  ! elseif (mod(iseed(4), 2) == 0) then
+  !    write (9,*) "ERROR: iseed(4) must be odd for random_array()"
+  !    ierr = -1
+  !    return
+  ! endif
+
+  do jcol = 1, blksize
+#ifdef CPLX
+     call zlarnv(idist, iseed, ndim, v_basis(1,jcol))
+#else
+     call dlarnv(idist, iseed, ndim, v_basis(1,jcol))
+#endif
+  enddo
+
+#ifdef CPLX
+  end subroutine zrandom_array
+#else
+  end subroutine random_array
+#endif
+!
+!=====================================================================

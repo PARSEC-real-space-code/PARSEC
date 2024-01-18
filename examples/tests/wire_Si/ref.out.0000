@@ -1,0 +1,1219 @@
+ Processor No             0   has started
+ Number of processors:             1
+ Laplacian number of directions:  0
+ Laplacian coefficients data:
+ 1.00  1.00  1.00  0.00  0.00  0.00
+                     ********************                    
+
+  Group partition information: 
+  I am processor rank             0  in group             0
+  I am master in my group, with master rank             0
+
+                     ********************                    
+
+ Setup messages:
+ ---------------
+ The Hamiltonian matrix size is         1896
+  reduced size is          1896
+  maximum distance between grid points and their images is
+   0.000      [bohr]
+
+ There are 36 laplacian-related non-diagonal elements per row
+ The local dimension is :         1896
+ INTERIOR POINTS Mvec - Prec           360         1631
+ Information to be send to neighbors:
+ send proc             0  #rows:            0
+ I communicate with             0  processors, a total of             0 
+  elements
+ I receive from these procs:             0
+
+ Non-local pseudopotential messages:
+ -----------------------------------
+ Max # of nonlocal points for one atom =           236
+
+ Sizes of all non-local blocks 
+   236   236
+
+ Transform atoms            2
+ My number of non-local rows:           472  of total           472
+# Poisson solver, return code =   0  convergence rate =   0.1239    
+ # the residual norm    1.2431912817521506E-004   1.2431912815128951E-004
+  starting from Vlocal 
+# Poisson solver, return code =   0  convergence rate =   0.1119    
+ # the residual norm    3.0246397362846947E-005   3.0246397362237835E-005
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    56.49634453029903       lowb= 
+    16.56097703934886     
+  % ===== num_iteration =            1
+ ritzmax=    1.279160373608739      tol_loc=   1.2791603412944301E-004
+ resnrm(   1)=.13074E+01   Ritz Val(   1)=-0.12792E+01
+ lowb=   -0.76875  upperb=   56.49634
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    2.084394952818533      tol_loc=   2.0843949001622875E-004
+ resnrm(   1)=.19635E-01   Ritz Val(   1)=-0.20844E+01
+ lowb=    0.13249  upperb=   56.49634
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    2.084825434529461      tol_loc=   2.0848253818623409E-004
+ resnrm(   1)=.15656E-02   Ritz Val(   1)=-0.20848E+01
+ lowb=    0.30312  upperb=   56.49634
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    2.084826249903148      tol_loc=   2.0848261972360066E-004
+ resnrm(   1)=.42443E-05   Ritz Val(   1)=-0.20848E+01
+ resnrm(   2)=.10759E-02   Ritz Val(   2)=-0.14264E+01
+ lowb=    1.18093  upperb=   56.49634
+ nconv=    1   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.271178553494106      tol_loc=   2.2711784961193095E-004
+ resnrm(   2)=.14792E-04   Ritz Val(   1)=-0.14264E+01
+ resnrm(   3)=.12440E-04   Ritz Val(   2)=-0.14261E+01
+ resnrm(   4)=.13528E-03   Ritz Val(   3)=-0.11022E+01
+ resnrm(   5)=.61450E-01   Ritz Val(   4)=-0.32637E+00
+ lowb=    1.75280  upperb=   56.49634
+ nconv=    4   hsize=   14   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.392328078897394      tol_loc=   2.3923280184621028E-004
+ resnrm(   5)=.78525E-02   Ritz Val(   1)=-0.32840E+00
+ lowb=    1.83631  upperb=   56.49634
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.916590015212111      tol_loc=   2.9165899415328501E-004
+ resnrm(   5)=.10018E-02   Ritz Val(   1)=-0.32846E+00
+ lowb=    2.17138  upperb=   56.49634
+ nconv=    4   hsize=   17   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.997673825341720      tol_loc=   2.9976737496141098E-004
+ resnrm(   5)=.63317E-04   Ritz Val(   1)=-0.32846E+00
+ resnrm(   6)=.28946E-04   Ritz Val(   2)=-0.32653E+00
+ resnrm(   7)=.90483E-04   Ritz Val(   3)=-0.25792E+00
+ resnrm(   8)=.71667E-01   Ritz Val(   4)= 0.64626E-02
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            11
+ lowb=    2.30896  upperb=   56.49634
+ nconv=    7   hsize=   20   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    2.997673825341720      tol_loc=   2.9976737496141098E-004
+ resnrm(   8)=.10925E-01   Ritz Val(   1)= 0.18084E-02
+ lowb=    1.35748  upperb=   56.49634
+ nconv=    7   hsize=   14   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    3.277032993476323      tol_loc=   3.2770329106915060E-004
+ resnrm(   8)=.22145E-02   Ritz Val(   1)= 0.16711E-02
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            11
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            11
+ lowb=    2.14815  upperb=   56.49634
+ nconv=    7   hsize=   17   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    3.277032993476323      tol_loc=   3.2770329106915060E-004
+ resnrm(   8)=.23479E-03   Ritz Val(   1)= 0.16681E-02
+ resnrm(   9)=.43264E-03   Ritz Val(   2)= 0.50408E-01
+ resnrm(  10)=.32438E-02   Ritz Val(   3)= 0.13998E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            11
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    1.28649  upperb=   56.49634
+ nconv=    9   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    3.277032993476323      tol_loc=   3.2770329106915060E-004
+ resnrm(  10)=.31639E-03   Ritz Val(   1)= 0.13997E+00
+ resnrm(  11)=.86220E-03   Ritz Val(   2)= 0.17363E+00
+ hsize=    3, dim_subsp=   13, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    10
+  num_iter =      12,  max_iter =   25000
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.3277E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             1  spin = 
+             1  iteration =             1
+  maxmvs =           861  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    58.96418053524779       lowb= 
+    17.48242456780946     
+  % ===== num_iteration =            1
+ ritzmax=    1.101212344257879      tol_loc=   1.1012123164389149E-004
+ resnrm(   1)=.10261E+01   Ritz Val(   1)=-0.11012E+01
+ lowb=   -0.64715  upperb=   58.96418
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    2.033970055633727      tol_loc=   2.0339700042513212E-004
+ resnrm(   1)=.58537E-01   Ritz Val(   1)=-0.20340E+01
+ lowb=   -0.02536  upperb=   58.96418
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    2.037782170205129      tol_loc=   2.0377821187264210E-004
+ resnrm(   1)=.19090E-02   Ritz Val(   1)=-0.20378E+01
+ lowb=    0.30226  upperb=   58.96418
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    2.037783393419657      tol_loc=   2.0377833419409186E-004
+ resnrm(   1)=.39999E-05   Ritz Val(   1)=-0.20378E+01
+ resnrm(   2)=.73699E-04   Ritz Val(   2)=-0.13823E+01
+ resnrm(   3)=.43954E-03   Ritz Val(   3)=-0.13693E+01
+ lowb=    1.06097  upperb=   58.96418
+ nconv=    2   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.264617069696815      tol_loc=   2.2646170124877756E-004
+ resnrm(   3)=.59805E-05   Ritz Val(   1)=-0.13693E+01
+ resnrm(   4)=.39162E-04   Ritz Val(   2)=-0.12284E+01
+ resnrm(   5)=.34642E-01   Ritz Val(   3)=-0.28594E+00
+ lowb=    1.49345  upperb=   58.96418
+ nconv=    4   hsize=   13   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.513891798184379      tol_loc=   2.5138917346781300E-004
+ resnrm(   5)=.20921E-01   Ritz Val(   1)=-0.28931E+00
+ lowb=    1.70120  upperb=   58.96418
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.613274458532556      tol_loc=   2.6132743925156898E-004
+ resnrm(   5)=.12410E-01   Ritz Val(   1)=-0.28988E+00
+ lowb=    2.00924  upperb=   58.96418
+ nconv=    4   hsize=   17   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.945438981118043      tol_loc=   2.9454389067099955E-004
+ resnrm(   5)=.27047E-02   Ritz Val(   1)=-0.29004E+00
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            14
+ lowb=    2.27632  upperb=   58.96418
+ nconv=    4   hsize=   20   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    2.945438981118043      tol_loc=   2.9454389067099955E-004
+ resnrm(   5)=.18601E-03   Ritz Val(   1)=-0.29004E+00
+ resnrm(   6)=.83385E-03   Ritz Val(   2)=-0.27327E+00
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            13
+ lowb=    1.30359  upperb=   58.96418
+ nconv=    5   hsize=   17   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    2.945438981118043      tol_loc=   2.9454389067099955E-004
+ resnrm(   6)=.23397E-04   Ritz Val(   1)=-0.27327E+00
+ resnrm(   7)=.42815E-04   Ritz Val(   2)=-0.25863E+00
+ resnrm(   8)=.36337E-04   Ritz Val(   3)=-0.22072E+00
+ resnrm(   9)=.83375E-03   Ritz Val(   4)=-0.14518E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            13
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=            10
+ lowb=    1.37200  upperb=   58.96418
+ nconv=    8   hsize=   16   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    2.945438981118043      tol_loc=   2.9454389067099955E-004
+ resnrm(   9)=.23293E-04   Ritz Val(   1)=-0.14518E+00
+ resnrm(  10)=.22504E-03   Ritz Val(   2)= 0.93482E-01
+ resnrm(  11)=.62189E-03   Ritz Val(   3)= 0.10841E+00
+ hsize=    3, dim_subsp=   13, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    10
+  num_iter =      11,  max_iter =   25000
+  num_mv  =     798,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.2945E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             2  spin = 
+             1  iteration =             1
+  maxmvs =           798  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    58.98295985596963       lowb= 
+    17.35127538783854     
+  % ===== num_iteration =            1
+ ritzmax=   0.9491330315195032      tol_loc=   9.4913300754238616E-005
+ resnrm(   1)=.10077E+01   Ritz Val(   1)=-0.94913E+00
+ lowb=   -0.37538  upperb=   58.98296
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    1.940923341530540      tol_loc=   1.9409232924986927E-004
+ resnrm(   1)=.56045E-01   Ritz Val(   1)=-0.19409E+01
+ lowb=   -0.00647  upperb=   58.98296
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    1.945067986262573      tol_loc=   1.9450679371260226E-004
+ resnrm(   1)=.15288E-02   Ritz Val(   1)=-0.19451E+01
+ lowb=    0.33135  upperb=   58.98296
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    1.945068811991275      tol_loc=   1.9450687628547034E-004
+ resnrm(   1)=.61381E-05   Ritz Val(   1)=-0.19451E+01
+ resnrm(   2)=.11027E-03   Ritz Val(   2)=-0.14580E+01
+ resnrm(   3)=.56406E-03   Ritz Val(   3)=-0.12552E+01
+ lowb=    0.85238  upperb=   58.98296
+ nconv=    2   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.179655549245169      tol_loc=   2.1796554941824381E-004
+ resnrm(   3)=.90191E-05   Ritz Val(   1)=-0.12552E+01
+ resnrm(   4)=.19198E-04   Ritz Val(   2)=-0.12341E+01
+ resnrm(   5)=.46064E-02   Ritz Val(   3)=-0.57216E+00
+ lowb=    1.44929  upperb=   58.98296
+ nconv=    4   hsize=   13   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.647513240238545      tol_loc=   2.6475131733567345E-004
+ resnrm(   5)=.77342E-03   Ritz Val(   1)=-0.57217E+00
+ lowb=    1.69671  upperb=   58.98296
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.890512760435003      tol_loc=   2.8905126874145088E-004
+ resnrm(   5)=.19186E-04   Ritz Val(   1)=-0.57217E+00
+ resnrm(   6)=.11698E-03   Ritz Val(   2)=-0.56788E+00
+ resnrm(   7)=.14187E-01   Ritz Val(   3)=-0.15461E+00
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    2.03757  upperb=   58.98296
+ nconv=    6   hsize=   17   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.890512760435003      tol_loc=   2.8905126874145088E-004
+ resnrm(   7)=.21005E-02   Ritz Val(   1)=-0.15510E+00
+ lowb=    1.73714  upperb=   58.98296
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    2.890816817071358      tol_loc=   2.8908167440431826E-004
+ resnrm(   7)=.14055E-03   Ritz Val(   1)=-0.15510E+00
+ resnrm(   8)=.12299E-03   Ritz Val(   2)=-0.15395E+00
+ resnrm(   9)=.26532E-03   Ritz Val(   3)=-0.94802E-01
+ resnrm(  10)=.18700E-01   Ritz Val(   4)= 0.22111E+00
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    2.25388  upperb=   58.98296
+ nconv=    9   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    2.890816817071358      tol_loc=   2.8908167440431826E-004
+ resnrm(  10)=.59456E-02   Ritz Val(   1)= 0.22071E+00
+ lowb=    1.34454  upperb=   58.98296
+ nconv=    9   hsize=   12   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    3.009785800400453      tol_loc=   3.0097857243668690E-004
+ resnrm(  10)=.42037E-03   Ritz Val(   1)= 0.22068E+00
+ resnrm(  11)=.31043E-03   Ritz Val(   2)= 0.22268E+00
+ resnrm(  12)=.95913E-03   Ritz Val(   3)= 0.30653E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=             9
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             7
+ lowb=    1.97011  upperb=   58.98296
+ nconv=   11   hsize=   15   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    3.009785800400453      tol_loc=   3.0097857243668690E-004
+ resnrm(  12)=.13872E-03   Ritz Val(   1)= 0.30653E+00
+ resnrm(  13)=.57741E-02   Ritz Val(   2)= 0.52946E+00
+ ===================================================
+ ---------  Full convergence in chebdav ------------
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   12,  true nconv=    12
+  num_iter =      12,  max_iter =   25000
+  num_mv  =     761,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.3010E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             3  spin = 
+             1  iteration =             1
+  maxmvs =           761  nec =            12  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    57.10619175525298       lowb= 
+    17.09822904723044     
+  % ===== num_iteration =            1
+ ritzmax=    1.073082899153112      tol_loc=   1.0730828720447575E-004
+ resnrm(   1)=.10585E+01   Ritz Val(   1)=-0.10731E+01
+ lowb=   -0.83285  upperb=   57.10619
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    1.809491714752290      tol_loc=   1.8094916690406841E-004
+ resnrm(   1)=.23722E-01   Ritz Val(   1)=-0.18095E+01
+ lowb=    0.20802  upperb=   57.10619
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    1.981861714118511      tol_loc=   1.9818616640524726E-004
+ resnrm(   1)=.22733E-02   Ritz Val(   1)=-0.18098E+01
+ lowb=    1.20101  upperb=   57.10619
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    2.080663870509667      tol_loc=   2.0806638179476762E-004
+ resnrm(   1)=.15511E-04   Ritz Val(   1)=-0.18098E+01
+ resnrm(   2)=.31787E-04   Ritz Val(   2)=-0.16435E+01
+ resnrm(   3)=.47030E-02   Ritz Val(   3)=-0.10851E+01
+ lowb=    1.48361  upperb=   57.10619
+ nconv=    2   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.236628708507380      tol_loc=   2.2366286520053867E-004
+ resnrm(   3)=.19210E-03   Ritz Val(   1)=-0.10851E+01
+ resnrm(   4)=.43845E-03   Ritz Val(   2)=-0.10750E+01
+ lowb=    1.68642  upperb=   57.10619
+ nconv=    3   hsize=   13   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.480756849230055      tol_loc=   2.4807567865608657E-004
+ resnrm(   4)=.98318E-05   Ritz Val(   1)=-0.10750E+01
+ resnrm(   5)=.44493E-04   Ritz Val(   2)=-0.85183E+00
+ resnrm(   6)=.34404E-03   Ritz Val(   3)=-0.84794E+00
+ lowb=    1.96367  upperb=   57.10619
+ nconv=    5   hsize=   15   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.628117966518253      tol_loc=   2.6281179001264092E-004
+ resnrm(   6)=.15060E-04   Ritz Val(   1)=-0.84794E+00
+ resnrm(   7)=.29360E-01   Ritz Val(   2)= 0.16249E-01
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            13
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    2.21545  upperb=   57.10619
+ nconv=    6   hsize=   16   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.788356483888140      tol_loc=   2.7883564134483299E-004
+ resnrm(   7)=.61571E-02   Ritz Val(   1)= 0.15424E-01
+ lowb=    1.66613  upperb=   57.10619
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    3.201272594024974      tol_loc=   3.2012725131540259E-004
+ resnrm(   7)=.94338E-02   Ritz Val(   1)= 0.15262E-01
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    1.78336  upperb=   57.10619
+ nconv=    6   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    3.201272594024974      tol_loc=   3.2012725131540259E-004
+ resnrm(   7)=.18908E-02   Ritz Val(   1)= 0.15161E-01
+ lowb=    1.15809  upperb=   57.10619
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    3.241745951460180      tol_loc=   3.2417458695667889E-004
+ resnrm(   7)=.33872E-04   Ritz Val(   1)= 0.15160E-01
+ resnrm(   8)=.63271E-04   Ritz Val(   2)= 0.17010E-01
+ resnrm(   9)=.95333E-04   Ritz Val(   3)= 0.38910E-01
+ resnrm(  10)=.16714E-02   Ritz Val(   4)= 0.19071E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    2.41662  upperb=   57.10619
+ nconv=    9   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    3.241745951460180      tol_loc=   3.2417458695667889E-004
+ resnrm(  10)=.68059E-04   Ritz Val(   1)= 0.19071E+00
+ resnrm(  11)=.10244E-02   Ritz Val(   2)= 0.24629E+00
+ hsize=    3, dim_subsp=   13, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    10
+  num_iter =      12,  max_iter =   25000
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.3242E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             4  spin = 
+             1  iteration =             1
+  maxmvs =           861  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    59.08992966741042       lowb= 
+    17.53198334026042     
+  % ===== num_iteration =            1
+ ritzmax=    1.176224720477325      tol_loc=   1.1762246907633889E-004
+ resnrm(   1)=.11205E+01   Ritz Val(   1)=-0.11762E+01
+ lowb=   -0.45062  upperb=   59.08993
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    2.029892890636824      tol_loc=   2.0298928393574161E-004
+ resnrm(   1)=.26947E-01   Ritz Val(   1)=-0.20299E+01
+ lowb=    0.14294  upperb=   59.08993
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    2.030492301446179      tol_loc=   2.0304922501516287E-004
+ resnrm(   1)=.51862E-03   Ritz Val(   1)=-0.20305E+01
+ lowb=    0.47201  upperb=   59.08993
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    2.030492387644351      tol_loc=   2.0304923363497989E-004
+ resnrm(   1)=.12321E-05   Ritz Val(   1)=-0.20305E+01
+ resnrm(   2)=.10665E-03   Ritz Val(   2)=-0.13762E+01
+ resnrm(   3)=.17080E-03   Ritz Val(   3)=-0.13758E+01
+ resnrm(   4)=.19053E-02   Ritz Val(   4)=-0.10436E+01
+ lowb=    0.80183  upperb=   59.08993
+ nconv=    3   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.261297488105334      tol_loc=   2.2612974309801543E-004
+ resnrm(   4)=.40829E-04   Ritz Val(   1)=-0.10436E+01
+ resnrm(   5)=.19546E-01   Ritz Val(   2)=-0.29176E+00
+ lowb=    1.37891  upperb=   59.08993
+ nconv=    4   hsize=   12   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.568418903645665      tol_loc=   2.5684188387619457E-004
+ resnrm(   5)=.62093E-02   Ritz Val(   1)=-0.29205E+00
+ lowb=    1.95022  upperb=   59.08993
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.801350869978724      tol_loc=   2.8013507992106487E-004
+ resnrm(   5)=.96312E-02   Ritz Val(   1)=-0.29241E+00
+ lowb=    2.00726  upperb=   59.08993
+ nconv=    4   hsize=   17   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.950594845436761      tol_loc=   2.9505947708984655E-004
+ resnrm(   5)=.13063E-02   Ritz Val(   1)=-0.29249E+00
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            14
+ lowb=    2.15593  upperb=   59.08993
+ nconv=    4   hsize=   20   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    2.950594845436761      tol_loc=   2.9505947708984655E-004
+ resnrm(   5)=.93690E-04   Ritz Val(   1)=-0.29250E+00
+ resnrm(   6)=.16362E-03   Ritz Val(   2)=-0.29045E+00
+ resnrm(   7)=.37233E-04   Ritz Val(   3)=-0.22793E+00
+ resnrm(   8)=.32738E-02   Ritz Val(   4)= 0.35311E-01
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            11
+ lowb=    1.46408  upperb=   59.08993
+ nconv=    7   hsize=   17   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    2.950594845436761      tol_loc=   2.9505947708984655E-004
+ resnrm(   8)=.12119E-03   Ritz Val(   1)= 0.35306E-01
+ resnrm(   9)=.48313E-03   Ritz Val(   2)= 0.74553E-01
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            11
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=            10
+ lowb=    1.68122  upperb=   59.08993
+ nconv=    8   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    2.950594845436761      tol_loc=   2.9505947708984655E-004
+ resnrm(   9)=.77493E-04   Ritz Val(   1)= 0.74553E-01
+ resnrm(  10)=.26272E-03   Ritz Val(   2)= 0.18145E+00
+ resnrm(  11)=.30970E-02   Ritz Val(   3)= 0.22387E+00
+ hsize=    3, dim_subsp=   13, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    10
+  num_iter =      11,  max_iter =   25000
+  num_mv  =     798,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.2951E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             1  spin = 
+             2  iteration =             1
+  maxmvs =           798  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    59.40102700959586       lowb= 
+    17.68942209645394     
+  % ===== num_iteration =            1
+ ritzmax=    1.342947570315403      tol_loc=   1.3429475363896943E-004
+ resnrm(   1)=.10650E+01   Ritz Val(   1)=-0.13429E+01
+ lowb=   -0.74934  upperb=   59.40103
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    1.980891711336518      tol_loc=   1.9808916612949846E-004
+ resnrm(   1)=.50991E-01   Ritz Val(   1)=-0.19809E+01
+ lowb=    0.02406  upperb=   59.40103
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    1.983331906793264      tol_loc=   1.9833318566900854E-004
+ resnrm(   1)=.21451E-02   Ritz Val(   1)=-0.19833E+01
+ lowb=    0.42468  upperb=   59.40103
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    2.225720239609515      tol_loc=   2.2257201833830923E-004
+ resnrm(   1)=.54792E-05   Ritz Val(   1)=-0.19833E+01
+ resnrm(   2)=.61557E-03   Ritz Val(   2)=-0.13311E+01
+ lowb=    1.42156  upperb=   59.40103
+ nconv=    1   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.423894827869002      tol_loc=   2.4238947666362686E-004
+ resnrm(   2)=.86994E-05   Ritz Val(   1)=-0.13311E+01
+ resnrm(   3)=.88873E-05   Ritz Val(   2)=-0.13191E+01
+ resnrm(   4)=.64506E-04   Ritz Val(   3)=-0.11719E+01
+ resnrm(   5)=.84081E-01   Ritz Val(   4)=-0.24308E+00
+ lowb=    1.77470  upperb=   59.40103
+ nconv=    4   hsize=   14   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.487657658507713      tol_loc=   2.4876575956641944E-004
+ resnrm(   5)=.20604E-01   Ritz Val(   1)=-0.24820E+00
+ lowb=    2.03132  upperb=   59.40103
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.946756452533276      tol_loc=   2.9467563780919467E-004
+ resnrm(   5)=.17829E-01   Ritz Val(   1)=-0.24927E+00
+ lowb=    2.06733  upperb=   59.40103
+ nconv=    4   hsize=   17   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    3.197053146729621      tol_loc=   3.1970530659652653E-004
+ resnrm(   5)=.58133E-02   Ritz Val(   1)=-0.24991E+00
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            14
+ lowb=    2.36812  upperb=   59.40103
+ nconv=    4   hsize=   20   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    3.197053146729621      tol_loc=   3.1970530659652653E-004
+ resnrm(   5)=.15909E-02   Ritz Val(   1)=-0.24995E+00
+ lowb=    1.63309  upperb=   59.40103
+ nconv=    4   hsize=   17   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    3.246771282491901      tol_loc=   3.2467712004715591E-004
+ resnrm(   5)=.43647E-04   Ritz Val(   1)=-0.24995E+00
+ resnrm(   6)=.80861E-04   Ritz Val(   2)=-0.23619E+00
+ resnrm(   7)=.21126E-03   Ritz Val(   3)=-0.22092E+00
+ resnrm(   8)=.28071E-03   Ritz Val(   4)=-0.17153E+00
+ resnrm(   9)=.24332E-02   Ritz Val(   5)=-0.10762E+00
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            10
+ lowb=    2.29554  upperb=   59.40103
+ nconv=    8   hsize=   20   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    3.246771282491901      tol_loc=   3.2467712004715591E-004
+ resnrm(   9)=.13201E-03   Ritz Val(   1)=-0.10762E+00
+ resnrm(  10)=.96218E-03   Ritz Val(   2)= 0.12048E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            10
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    1.63731  upperb=   59.40103
+ nconv=    9   hsize=   13   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    3.246771282491901      tol_loc=   3.2467712004715591E-004
+ resnrm(  10)=.55674E-04   Ritz Val(   1)= 0.12048E+00
+ resnrm(  11)=.78756E-04   Ritz Val(   2)= 0.13247E+00
+ resnrm(  12)=.69337E-03   Ritz Val(   3)= 0.29350E+00
+ hsize=    2, dim_subsp=   13, nconv=   11
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    11
+  num_iter =      12,  max_iter =   25000
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.3247E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             2  spin = 
+             2  iteration =             1
+  maxmvs =           861  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    59.44298102659336       lowb= 
+    17.42550462107609     
+  % ===== num_iteration =            1
+ ritzmax=   0.9342301103451275      tol_loc=   9.3423008674448980E-005
+ resnrm(   1)=.10899E+01   Ritz Val(   1)=-0.93423E+00
+ lowb=   -0.53956  upperb=   59.44298
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    1.882772707763939      tol_loc=   1.8827726602011001E-004
+ resnrm(   1)=.79477E-01   Ritz Val(   1)=-0.18828E+01
+ lowb=    0.17604  upperb=   59.44298
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    1.890374264685580      tol_loc=   1.8903742169307090E-004
+ resnrm(   1)=.32791E-02   Ritz Val(   1)=-0.18904E+01
+ lowb=    0.44348  upperb=   59.44298
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    1.890378090752952      tol_loc=   1.8903780429979847E-004
+ resnrm(   1)=.30175E-04   Ritz Val(   1)=-0.18904E+01
+ resnrm(   2)=.40097E-03   Ritz Val(   2)=-0.14018E+01
+ lowb=    0.83668  upperb=   59.44298
+ nconv=    1   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.535765051407764      tol_loc=   2.5357649873489511E-004
+ resnrm(   2)=.29550E-05   Ritz Val(   1)=-0.14018E+01
+ resnrm(   3)=.17230E-04   Ritz Val(   2)=-0.12050E+01
+ resnrm(   4)=.37604E-04   Ritz Val(   3)=-0.11838E+01
+ resnrm(   5)=.20429E-01   Ritz Val(   4)=-0.52207E+00
+ lowb=    1.86214  upperb=   59.44298
+ nconv=    4   hsize=   14   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.655188094055312      tol_loc=   2.6551880269796188E-004
+ resnrm(   5)=.11363E-02   Ritz Val(   1)=-0.52230E+00
+ lowb=    1.98981  upperb=   59.44298
+ nconv=    4   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(   5)=.58608E-04   Ritz Val(   1)=-0.52230E+00
+ resnrm(   6)=.10728E-03   Ritz Val(   2)=-0.51768E+00
+ resnrm(   7)=.58875E-02   Ritz Val(   3)=-0.11909E+00
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            14
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    2.20052  upperb=   59.44298
+ nconv=    6   hsize=   17   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(   7)=.12408E-02   Ritz Val(   1)=-0.11912E+00
+ lowb=    1.91612  upperb=   59.44298
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(   7)=.11634E-03   Ritz Val(   1)=-0.11912E+00
+ resnrm(   8)=.19366E-03   Ritz Val(   2)=-0.11788E+00
+ resnrm(   9)=.11597E-02   Ritz Val(   3)=-0.64717E-01
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            10
+ lowb=    2.12699  upperb=   59.44298
+ nconv=    8   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(   9)=.14565E-03   Ritz Val(   1)=-0.64718E-01
+ resnrm(  10)=.11788E-01   Ritz Val(   2)= 0.24658E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            10
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    1.64886  upperb=   59.44298
+ nconv=    9   hsize=   13   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(  10)=.71584E-02   Ritz Val(   1)= 0.24530E+00
+ lowb=    1.47910  upperb=   59.44298
+ nconv=    9   hsize=   12   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    2.961189619473604      tol_loc=   2.9611895446676626E-004
+ resnrm(  10)=.56344E-03   Ritz Val(   1)= 0.24525E+00
+ hsize=    4, dim_subsp=   13, nconv=    9
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=     9
+  num_iter =      12,  max_iter =   25000
+  num_mv  =     861,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.2961E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             3  spin = 
+             2  iteration =             1
+  maxmvs =           861  nec =            13  nstate =            12  info =  
+            0
+  eigval (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           12           12            0
+flag=new , nec( 1)=    0
+  computed upper bound=    59.06441120703843       lowb= 
+    17.67580821123688     
+  % ===== num_iteration =            1
+ ritzmax=    1.132446521892732      tol_loc=   1.1324464932847271E-004
+ resnrm(   1)=.10955E+01   Ritz Val(   1)=-0.11324E+01
+ lowb=   -0.66738  upperb=   59.06441
+ nconv=    0   hsize=    3   dim_subsp=    3 current kactmax=   24
+  % ===== num_iteration =            2
+ ritzmax=    1.752797326338875      tol_loc=   1.7527972820594905E-004
+ resnrm(   1)=.46761E-01   Ritz Val(   1)=-0.17528E+01
+ lowb=    0.08520  upperb=   59.06441
+ nconv=    0   hsize=    6   dim_subsp=    6 current kactmax=   24
+  % ===== num_iteration =            3
+ ritzmax=    1.754696569897769      tol_loc=   1.7546965255704048E-004
+ resnrm(   1)=.30455E-02   Ritz Val(   1)=-0.17547E+01
+ lowb=    0.58016  upperb=   59.06441
+ nconv=    0   hsize=    9   dim_subsp=    9 current kactmax=   24
+  % ===== num_iteration =            4
+ ritzmax=    1.962177209548718      tol_loc=   1.9621771599799529E-004
+ resnrm(   1)=.16755E-04   Ritz Val(   1)=-0.17547E+01
+ resnrm(   2)=.61277E-04   Ritz Val(   2)=-0.15878E+01
+ resnrm(   3)=.69283E-02   Ritz Val(   3)=-0.10349E+01
+ lowb=    1.26964  upperb=   59.06441
+ nconv=    2   hsize=   12   dim_subsp=   12 current kactmax=   24
+  % ===== num_iteration =            5
+ ritzmax=    2.531421599717423      tol_loc=   2.5314215357683347E-004
+ resnrm(   3)=.10833E-03   Ritz Val(   1)=-0.10349E+01
+ resnrm(   4)=.73164E-04   Ritz Val(   2)=-0.10249E+01
+ resnrm(   5)=.11169E-02   Ritz Val(   3)=-0.80167E+00
+ lowb=    1.64009  upperb=   59.06441
+ nconv=    4   hsize=   13   dim_subsp=   15 current kactmax=   24
+  % ===== num_iteration =            6
+ ritzmax=    2.620123589663423      tol_loc=   2.6201235234735344E-004
+ resnrm(   5)=.55471E-04   Ritz Val(   1)=-0.80167E+00
+ resnrm(   6)=.24802E-03   Ritz Val(   2)=-0.79798E+00
+ resnrm(   7)=.44466E-01   Ritz Val(   3)= 0.56593E-01
+ lowb=    2.01657  upperb=   59.06441
+ nconv=    6   hsize=   14   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            7
+ ritzmax=    2.952822460883955      tol_loc=   2.9528223862893850E-004
+ resnrm(   7)=.20057E-01   Ritz Val(   1)= 0.53650E-01
+ lowb=    2.16419  upperb=   59.06441
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =            8
+ ritzmax=    3.057959836076765      tol_loc=   3.0579597588262014E-004
+ resnrm(   7)=.16013E-01   Ritz Val(   1)= 0.53082E-01
+  *** Outer-restart: num_outrst=            1 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            1 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    2.32437  upperb=   59.06441
+ nconv=    6   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =            9
+ ritzmax=    3.057959836076765      tol_loc=   3.0579597588262014E-004
+ resnrm(   7)=.16890E-01   Ritz Val(   1)= 0.51297E-01
+ lowb=    1.43678  upperb=   59.06441
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           10
+ ritzmax=    3.277321389549779      tol_loc=   3.2773213067576769E-004
+ resnrm(   7)=.27121E-02   Ritz Val(   1)= 0.50990E-01
+  *** Outer-restart: num_outrst=            2 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            2 ,  dim_subsp=  
+           18  hsizerst=            12
+ lowb=    2.04776  upperb=   59.06441
+ nconv=    6   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           11
+ ritzmax=    3.277321389549779      tol_loc=   3.2773213067576769E-004
+ resnrm(   7)=.39398E-03   Ritz Val(   1)= 0.50984E-01
+ lowb=    1.21839  upperb=   59.06441
+ nconv=    6   hsize=   15   dim_subsp=   21 current kactmax=   24
+  % ===== num_iteration =           12
+ ritzmax=    3.277321389549779      tol_loc=   3.2773213067576769E-004
+ resnrm(   7)=.14127E-03   Ritz Val(   1)= 0.50984E-01
+ resnrm(   8)=.32611E-04   Ritz Val(   2)= 0.53098E-01
+ resnrm(   9)=.92661E-04   Ritz Val(   3)= 0.70143E-01
+ resnrm(  10)=.53510E-02   Ritz Val(   4)= 0.22465E+00
+  *** Outer-restart: num_outrst=            3 ,  dim_subsp=            18 
+  hsizerst=            12
+  *** Outer-restart update: num_outrst=            3 ,  dim_subsp=  
+           18  hsizerst=             9
+ lowb=    2.17359  upperb=   59.06441
+ nconv=    9   hsize=   18   dim_subsp=   18 current kactmax=   24
+  % ===== num_iteration =           13
+ ritzmax=    3.277321389549779      tol_loc=   3.2773213067576769E-004
+ resnrm(  10)=.30008E-03   Ritz Val(   1)= 0.22464E+00
+ resnrm(  11)=.58319E-03   Ritz Val(   2)= 0.28218E+00
+ hsize=    3, dim_subsp=   13, nconv=   10
+ no swap necessary in subsp
+ ===================================================
+ ****** chebdav: exit before full convergence ******
+  ndim=    1896,  blksize=  3,  n_spdim=   24
+  nwant  =   12,  nconv=   13,  true nconv=    10
+  num_iter =      13,  max_iter =   25000
+  num_mv  =     924,   num_restart=       3
+  num_outrst =    3,   max_outrst =    2
+  conv_tol=0.1000E-03,   ritzmax=0.3277E+01
+  kactmax =   24,   polym=   20
+ ===================================================
+  Eigensolver, representation =             1  k-point =             4  spin = 
+             2  iteration =             1
+  maxmvs =           924  nec =            13  nstate =            12  info =  
+            0
+
+ Diagonalization time [sec] :      24.36,      tdiag_sum =        0.00
+
+# Poisson solver, return code =   0  convergence rate =   0.1137    
+ # the residual norm    1.0103452414367430E-005   1.0103452407692558E-005
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.24629E+00  upperb=.57513E+02  maxritz=.17257E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.49035E+00  upperb=.59004E+02  maxritz=.16771E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.49035E+00  upperb=.59164E+02  maxritz=.15813E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.49035E+00  upperb=.58642E+02  maxritz=.14412E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.28218E+00  upperb=.57547E+02  maxritz=.16881E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.52417E+00  upperb=.57653E+02  maxritz=.16394E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.52417E+00  upperb=.58480E+02  maxritz=.15435E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.52417E+00  upperb=.58639E+02  maxritz=.14030E+01  polym=15
+
+ Diagonalization time [sec] :       5.34,      tdiag_sum =       24.36
+
+# Poisson solver, return code =   0  convergence rate =   0.1123    
+ # the residual norm    2.7596874043390525E-006   2.7596873922414929E-006
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.49035E+00  upperb=.58473E+02  maxritz=.12887E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58152E+02  maxritz=.12386E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59461E+02  maxritz=.11394E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59894E+02  maxritz=.99363E+00  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.52417E+00  upperb=.57836E+02  maxritz=.12768E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58814E+02  maxritz=.12266E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58691E+02  maxritz=.11273E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59342E+02  maxritz=.98144E+00  polym=15
+
+ Diagonalization time [sec] :       5.33,      tdiag_sum =       29.70
+
+# Poisson solver, return code =   0  convergence rate =   0.1106    
+ # the residual norm    4.5150772711855523E-006   4.5150772848003245E-006
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.57484E+02  maxritz=.13740E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.57686E+02  maxritz=.13245E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58582E+02  maxritz=.12266E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58697E+02  maxritz=.10830E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.57073E+02  maxritz=.13529E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58050E+02  maxritz=.13032E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58308E+02  maxritz=.12050E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.60335E+02  maxritz=.10608E+01  polym=15
+
+ Diagonalization time [sec] :       5.24,      tdiag_sum =       35.03
+
+# Poisson solver, return code =   0  convergence rate =   0.1093    
+ # the residual norm    2.9423185438863927E-006   2.9423185519431617E-006
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58515E+02  maxritz=.13298E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59628E+02  maxritz=.12802E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58226E+02  maxritz=.11822E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58489E+02  maxritz=.10385E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.57640E+02  maxritz=.13137E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59575E+02  maxritz=.12640E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59325E+02  maxritz=.11657E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59078E+02  maxritz=.10214E+01  polym=15
+
+ Diagonalization time [sec] :       5.43,      tdiag_sum =       40.27
+
+# Poisson solver, return code =   0  convergence rate =   0.1141    
+ # the residual norm    1.7457798389861655E-007   1.7457798749462894E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58893E+02  maxritz=.13082E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58569E+02  maxritz=.12585E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58969E+02  maxritz=.11603E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59996E+02  maxritz=.10163E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59145E+02  maxritz=.12977E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58992E+02  maxritz=.12479E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59247E+02  maxritz=.11495E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59123E+02  maxritz=.10051E+01  polym=15
+
+ Diagonalization time [sec] :       5.33,      tdiag_sum =       45.70
+
+# Poisson solver, return code =   0  convergence rate =   0.1101    
+ # the residual norm    1.8722125527772276E-007   1.8722126431658861E-007
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58561E+02  maxritz=.13022E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58887E+02  maxritz=.12524E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58524E+02  maxritz=.11541E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.60207E+02  maxritz=.10099E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59384E+02  maxritz=.12951E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59759E+02  maxritz=.12453E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58794E+02  maxritz=.11468E+01  polym=15
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59164E+02  maxritz=.10023E+01  polym=15
+
+ Diagonalization time [sec] :       5.33,      tdiag_sum =       51.04
+
+# Poisson solver, return code =   0  convergence rate =   0.1094    
+ # the residual norm    8.6428513877178102E-008   8.6428511011398098E-008
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.57674E+02  maxritz=.12968E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58261E+02  maxritz=.12471E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58590E+02  maxritz=.11487E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59281E+02  maxritz=.10043E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58296E+02  maxritz=.12938E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.57885E+02  maxritz=.12440E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59698E+02  maxritz=.11455E+01  polym=14
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58843E+02  maxritz=.10010E+01  polym=14
+
+ Diagonalization time [sec] :       4.97,      tdiag_sum =       56.37
+
+# Poisson solver, return code =   0  convergence rate =   0.1101    
+ # the residual norm    5.9556291132005338E-008   5.9556285446847945E-008
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58752E+02  maxritz=.12933E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.60270E+02  maxritz=.12435E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.58361E+02  maxritz=.11450E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            1 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.85763E+00  upperb=.59311E+02  maxritz=.10005E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            1            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.58910E+02  maxritz=.12931E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            2            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.57944E+02  maxritz=.12433E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            3            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59172E+02  maxritz=.11448E+01  polym=13
+  subspace (irp,kplp,isp,mm,nn,nec) =             1            4            2 
+           11           11            6
+  kssmax=  11  kssmax0=  11  ncomp=  11  ncompcnt=  11  irp=   1
+  Subspace rotation with LAPACK/ESSL
+  irp=  1  lowerb=.86806E+00  upperb=.59810E+02  maxritz=.10003E+01  polym=13
+
+ Diagonalization time [sec] :       4.71,      tdiag_sum =       61.34
+
+# Poisson solver, return code =   0  convergence rate =   0.1096    
+ # the residual norm    4.5464833702957805E-008   4.5464856536450415E-008
+  I received L =             0  for atom #            1  with mnloc =  
+          236
+  I received L =             0  for atom #            2  with mnloc =  
+          236
+
+ Closing file on PE #            0
+
+  Error code ierr =            -1

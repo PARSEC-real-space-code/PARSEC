@@ -1,0 +1,24 @@
+# Compiled source #
+###################
+*.o
+*.so
+obj
+tmp
+
+# Packages #
+############
+*.tar
+
+# Logs and databases #
+######################
+*.log
+
+# OS generated files #
+######################
+.svn
+._*
+.Trashes
+
+# make file stuff #
+# ############### #
+make.*
