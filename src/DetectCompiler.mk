@@ -14,6 +14,14 @@ ifeq ($(findstring mpif90,$(notdir $(realpath $(pathF90)))),mpif90)
 endif
 
 # ================================
+# Detect "mpiifx" and decontstruct - special intel family wrappers
+# ================================
+ifeq ($(findstring mpiifx,$(notdir $(realpath $(pathF90)))),mpiifx)
+	tF90:=$(firstword $(shell $(pathF90) --version))
+	TAG_COMPILER:=$(MACH)-
+endif
+
+# ================================
 # Detect "mpiifort" and decontstruct - special intel family wrappers
 # ================================
 ifeq ($(findstring mpiifort,$(notdir $(realpath $(pathF90)))),mpiifort)
@@ -61,6 +69,19 @@ $(info DEBUG: tF90 is $(tF90))
 
 
 
+# =================
+# Detect "icx"
+# =================
+#Check if $F90 filename has "icc" in it, but don't be fooled if path has "icc"
+ifeq ($(shell echo $(tF90) | sed 's,^ifort.*$$,ifx,g'),ifx)
+	IS_ICC := 1
+	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell $(pathF90) --version))
+	MODULE_IN :=-I
+	MODULE_OUT :=-module  
+	TAG_COMPILER :=$(TAG_COMPILER)$(tF90)-$(TAG_COMPILER_VERSION)
+else
+	IS_ICC := 0
+endif
 
 # =================
 # Detect "icc"

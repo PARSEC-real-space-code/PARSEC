@@ -19,6 +19,8 @@
 # Fortran module files
 *.mod
 *.smod
+src/obj
+src/tmp
 
 # Compiled Static libraries
 *.lai
@@ -30,3 +32,4 @@
 *.exe
 *.out
 *.app
+src/*.mpi
