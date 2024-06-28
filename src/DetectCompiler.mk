@@ -41,10 +41,9 @@ endif
 # Detect "ftn" and deconstruct - special cray compiler wrapper - can be one of 3 compilers
 # ========================================================================================
 ifeq ($(findstring ftn,$(rF90)),ftn)
-	tF90:=$(filter pgf90% ifort%, $(shell $(pathF90) --version))
+	tF90:=$(filter pgf90% ifort% GNU%, $(shell $(pathF90) --version))
 	TAG_COMPILER:=$(MACH)-ftn-
 endif
-
 
 # ================================
 # Detect "openmpi's mpif90"
@@ -54,7 +53,6 @@ ifeq ($(findstring opal_wrapper,$(notdir $(realpath $(pathF90)))),opal_wrapper)
 	TAG_COMPILER:=$(MACH)-
 endif
 
-
 # ===================================
 # Neither worked - figure its serial
 # ===================================
@@ -63,11 +61,11 @@ ifeq ($(TAG_COMPILER),)
 	TAG_COMPILER:=$(MACH)-
 endif
 
-
+ifeq ($(tF90),GNU)
+	tF90:=gfortran
+endif
 
 $(info DEBUG: tF90 is $(tF90))
-
-
 
 # =================
 # Detect "icx"
@@ -112,26 +110,6 @@ else
 	IS_GCC := 0
 endif
 
-
-
-# =================
-# Detect "GNU", do the same things as "gcc" option
-# This part is needed for recognizing gnu compiler on Ubuntu
-# =================
-#Check if $F90 filename has "gcc" in it, but don't be fooled if path has "gcc"
-ifeq ($(tF90),GNU)
-	tF90:=gfortran
-	IS_GCC := 1
-	TAG_COMPILER_VERSION  := $(shell ./dumpgccversion.sh $(tF90))
-	INCLUDE_VERB :=-I
-	MODULE_IN :=-I
-	MODULE_OUT :=-J
-	TAG_COMPILER :=$(TAG_COMPILER)$(tF90)-$(value TAG_COMPILER_VERSION)
-else
-	IS_GCC := 0
-endif
-
-
 # =================
 # Detect "pgf90"
 # =================
@@ -145,7 +123,6 @@ ifeq ($(tF90),pgf90)
 else
 	IS_PGF90 := 0
 endif
-
 
 # =================
 # Detect "g95"
