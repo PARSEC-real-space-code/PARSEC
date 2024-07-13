@@ -78,9 +78,9 @@ CPPOPT += -DNEIGHCOLLETIVE -DIALLREDUCE
 # For optimal performance, knowledge of the specific hardware PARSEC will run on is required.
 ########
 # compilation flags...
-FFLAGS += -march=raptorlake
+FFLAGS += -xHost
 FFLAGS += -O3
-#FFLAGS += -g -traceback
+FFLAGS += -g -traceback
 #FFLAGS += -warn all
 #FFLAGS += -static
 #FFLAGS += -align rec32byte

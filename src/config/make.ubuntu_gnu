@@ -1,7 +1,7 @@
 #
 # Architecture name
 #
-KSEIG_ARCH = ubuntu
+KSEIG_ARCH = ubuntu_gnu
 ##### config/make.<thisfile> documentation: ##########
 #  
 # This config file has been tested on a virtual machine with Ubuntu and also a Oden Institute workstation of UT Austin, 2020

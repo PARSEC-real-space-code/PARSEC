@@ -5,7 +5,7 @@
 # get rid of this line and use:
 # make  MACH=yourfilename-without-prefixhere -f Makefile
 #
-MACH ?= cori_knl_intel
+MACH ?= stampede3
 include config/make.$(MACH)
 
 # Detect Compiler - modified from original 762Studios under DWTFYWTPL2

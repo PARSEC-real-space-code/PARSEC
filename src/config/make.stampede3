@@ -2,7 +2,7 @@
 # Architecture name
 #
 KSEIG_ARCH = stampede3
-##### config/make.stampede2_knl_intel #####
+##### config/make.stampede3 #####
 #
 #    Currently Loaded Modules:
 #  1) intel/24.0   2) impi/21.11   3) autotools/1.3   4) cmake/3.28.1   5) xalt/3.0.1   6) TACC
@@ -96,7 +96,7 @@ CPPOPT += -DNEIGHCOLLETIVE -DIALLREDUCE
 ########
 # compilation flags...
 FFLAGS += -O3 -g -traceback
-FFLAGS += -axCORE-AVX512
+FFLAGS += -xCORE-AVX512
 
 #library archiver
 AR = ar
