@@ -1,4 +1,4 @@
-# Pseudopotential algorithm for real-space electronic structure calculations (PARSEC)
+# PARSEC: Pseudopotential algorithm for real-space electronic structure calculations
 
 ## Current release
 
