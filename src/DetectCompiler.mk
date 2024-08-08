@@ -49,7 +49,7 @@ endif
 # Detect "openmpi's mpif90"
 # ================================
 ifeq ($(findstring opal_wrapper,$(notdir $(realpath $(pathF90)))),opal_wrapper)
-	tF90:=$(firstword $(shell $(pathF90) -show))
+	tF90:=$(firstword $(shell $(pathF90) --version))
 	TAG_COMPILER:=$(MACH)-
 endif
 
@@ -68,10 +68,10 @@ endif
 $(info DEBUG: tF90 is $(tF90))
 
 # =================
-# Detect "icx"
+# Detect "ifx"
 # =================
-#Check if $F90 filename has "icc" in it, but don't be fooled if path has "icc"
-ifeq ($(shell echo $(tF90) | sed 's,^ifort.*$$,ifx,g'),ifx)
+#Check if $F90 filename has "ifx" in it, but don't be fooled if path has "ifx"
+ifeq ($(shell echo $(tF90) | sed 's,^ifx.*$$,ifx,g'),ifx)
 	IS_ICC := 1
 	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell $(pathF90) --version))
 	MODULE_IN :=-I
@@ -82,9 +82,9 @@ else
 endif
 
 # =================
-# Detect "icc"
+# Detect "ifort"
 # =================
-#Check if $F90 filename has "icc" in it, but don't be fooled if path has "icc"
+#Check if $F90 filename has "ifort" in it, but don't be fooled if path has "ifort"
 ifeq ($(shell echo $(tF90) | sed 's,^ifort.*$$,ifort,g'),ifort)
 	IS_ICC := 1
 	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell $(pathF90) --version))
@@ -139,4 +139,17 @@ else
 	IS_G95 := 0
 endif
 
+# =================
+# Detect "nvfortran"
+# =================
+#Check if $F90 filename has "icc" in it, but don't be fooled if path has "icc"
+ifeq ($(shell echo $(tF90) | sed 's,^nvfortran.*$$,nvfortran,g'),nvfortran)
+	IS_NVFORTRAN := 1
+	TAG_COMPILER_VERSION :=$(wordlist 2, 2, $(shell $(pathF90) --version))
+	MODULE_IN :=-I
+	MODULE_OUT :=-module  
+	TAG_COMPILER :=$(TAG_COMPILER)$(tF90)-$(TAG_COMPILER_VERSION)
+else
+	IS_NVFORTRAN := 0
+endif
 F90:=$(pathF90) $(filter-out $(firstword $(F90)), $(F90))

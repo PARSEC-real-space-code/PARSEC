@@ -1,11 +1,11 @@
 #
 # Architecture name
 #
-KSEIG_ARCH = stampede3
-##### config/make.stampede3 #####
+KSEIG_ARCH = vista_gg
+##### config/make.vista_gg #####
 #
-#    Currently Loaded Modules:
-#  1) intel/24.0   2) impi/21.11   3) autotools/1.3   4) cmake/3.28.1   5) xalt/3.0.1   6) TACC
+# Currently Loaded Modules:
+#   1) nvidia/24.7   2) ucx/1.17.0   3) openmpi/5.0.5   4) TACC   5) nvpl/24.7
 #
 # Also, you might want to use the FLAGS_OMP.sh in the tools directory
 # to properly setup the openmp shell env parameters, i.e.:
@@ -19,7 +19,7 @@ KSEIG_ARCH = stampede3
 #   that has been tuned for your hardware
 #   for mkl - don't need to link anything explicitly
 #####
-LIBBLAS = -qmkl
+LIBBLAS = -mp -L${TACC_NVPL_LIB} -lnvpl_blas_lp64_seq -lnvpl_lapack_lp64_seq -lnvpl_blacs_lp64_openmpi5 -lnvpl_scalapack_lp64
 
 ######### RECOMMENDED: FFTW3
 # FFTW libraries should be downloaded from
@@ -31,7 +31,7 @@ LIBBLAS = -qmkl
 #   for mkl - don't need to link anything explicitly
 #####
 CPPOPT += -DUSEFFTW3 
-LIBFFTW =
+LIBFFTW = -L/work/09183/zt3324/vista/fftw-3.3.10/lib -lfftw3
 
 ########### OPTIONAL: TRLANC
 # TRLAN libraries are included with PARSEC - but you must compile them separately
@@ -90,8 +90,11 @@ CPPOPT += -DNEIGHCOLLETIVE -DIALLREDUCE
 # For optimal performance, knowledge of the specific hardware PARSEC will run on is required.
 ########
 # compilation flags...
-FFLAGS += -O3 -g -traceback
-FFLAGS += -xCORE-AVX512
+FFLAGS += -Ofast
+FFLAGS += -mcpu=neoverse-v2
+#FFLAGS += -mcpu=native
+FFLAGS += -g -traceback
+FFLAGS += -I${TACC_NVPL_INC} -I/work/09183/zt3324/vista/fftw-3.3.10/include
 
 #library archiver
 AR = ar
