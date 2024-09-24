@@ -175,25 +175,35 @@ subroutine irrbz(elec_st,symm,pbc,lpr,ierr)
   enddo
 
   if (lpr) then
-     write(7,'(/,a)') ' K-point generation:'
-     write(7,'(a)') ' -------------------'
-     write(7,'(1x,i5,a,/,4x,a,3i5,6x,a,3f8.4,/)') elec_st%nkpt, &
-          ' K points generated from Monkhorst-Pack grid :','order = ', &
-          mpgrid,'shift = ',mpshift  
-     write(7,'(4x,a,5x,a,8x,a,8x,a,5x,a,/)') 'I','weight', &
-          'relative coord.','Cartesian coord.','E_kin (Ry)'
-     do ikpt = 1, elec_st%nkpt
-        ktest = kibz(:,ikpt)
-        do itest = 1, 3
-           ktest(itest) = ktest(itest) - anint(ktest(itest))
-        enddo
-        call matvec3('N',pbc%bvec,ktest,kprot)
-        norm2 = dot_product(kprot,kprot)
-        write(7,'(1x,i4,1x,f11.7,1x,3f8.4,3x,3f7.3,3x,f7.3)') &
-             ikpt, elec_st%kpwt(ikpt),kibz(:,ikpt), &
-             elec_st%kpts(:,ikpt),ekin(ikpt)
-     enddo
-  endif
+    write(7,'(/,a)') ' K-point generation:'
+    write(7,'(a)') ' -------------------'
+    write(7,'(1x,i5,a,/,4x,a,3i5,6x,a,3f8.4,/)') elec_st%nkpt, &
+        ' K points generated from Monkhorst-Pack grid :','order = ', &
+        mpgrid,'shift = ',mpshift  
+    write(7,'(4x,a,5x,a,8x,a,8x,a,5x,a,/)') 'I','weight', &
+         'relative coord.','Cartesian coord.','E_kin (Ry)'
+    open (2024001, file="qpoints.dat", form="formatted", status="replace")
+    write (2024001, "(a)") "begin qpoints"
+    do ikpt = 1, elec_st%nkpt
+      ktest = kibz(:,ikpt)
+      do itest = 1, 3
+        ktest(itest) = ktest(itest) - anint(ktest(itest))
+      end do
+      call matvec3('N',pbc%bvec,ktest,kprot)
+      norm2 = dot_product(kprot,kprot)
+      write(7,'(1x,i4,1x,f11.7,1x,3f8.4,3x,3f7.3,3x,f7.3)') &
+          ikpt, elec_st%kpwt(ikpt),kibz(:,ikpt), &
+          elec_st%kpts(:,ikpt),ekin(ikpt)
+      ii = 0
+      if (kibz(1,ikpt)**2 + kibz(2,ikpt)**2 + kibz(3,ikpt)**2 < 1.d-6) then
+        ii = 1
+      end if
+      write (2024001, "(3f14.10,a,i1)") kibz(1,ikpt), kibz(2,ikpt), &
+          kibz(3,ikpt), "  1.0  ", ii
+    end do
+    write (2024001, "(a)") "end qpoints"
+    close (2024001)
+  end if
 
   if (allocated(kibz)) deallocate(kibz)
   if (allocated(kptrep)) deallocate(kptrep)

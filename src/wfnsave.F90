@@ -94,17 +94,17 @@ subroutine wfnsave(elec_st,grid,pbc,rsymm,parallel,vnew,rho,iunit,spin3d)
   !---------------------------------------------------------------
 
   if (elec_st%nkpt > 0) then 
-     kpnum = elec_st%nkpt
-     allocate(kpts(3,kpnum))
-     kpts = elec_st%kpts
-     allocate(weight(kpnum))
-     weight = elec_st%kpwt
+    kpnum = elec_st%nkpt
+    allocate(kpts(3,kpnum))
+    kpts = elec_st%kpts
+    allocate(weight(kpnum))
+    weight = elec_st%kpwt
   else
-     kpnum = 1
-     allocate(kpts(3,kpnum))
-     kpts = zero
-     allocate(weight(kpnum))
-     weight = one
+    kpnum = 1
+    allocate(kpts(3,kpnum))
+    kpts = zero
+    allocate(weight(kpnum))
+    weight = one
   endif
 
   !  Open unit.
