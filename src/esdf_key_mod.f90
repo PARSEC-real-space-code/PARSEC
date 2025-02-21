@@ -347,7 +347,7 @@ module esdf_key
   data kw_typ(88)      / 'L:B' /
   data kw_dscrpt(88)   / '*! Apply SO correction to specific atom!*'/
 
-  data kw_label(89)    / 'scfso' /
+  data kw_label(89)    / 'scf_so' /
   data kw_typ(89)      / 'L:B' /
   data kw_dscrpt(89)   / '*!Apply SO correction self-consistently!*'/
 

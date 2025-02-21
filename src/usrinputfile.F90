@@ -2054,7 +2054,7 @@ endif
 
   so_start = .false.
   ! read spin-orbit flag for scf (default is perturbation theory)
-  elec_st%scf_so = esdf_boolean ('SCFSO',boolean_default)
+  elec_st%scf_so = esdf_boolean ('SCF_SO',boolean_default)
   if (elec_st%scf_so) write(7,'(a,/)') &
        ' Self-Consistent Spin-Orbit Correction!'
   allocate (p_pot%rws(naty))

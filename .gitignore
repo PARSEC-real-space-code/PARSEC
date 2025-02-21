@@ -29,6 +29,7 @@ src/tmp
 *.lib
 
 # Executables
+*/*.x
 *.exe
 *.out
 *.app
