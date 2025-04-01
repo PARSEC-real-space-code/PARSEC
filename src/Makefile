@@ -5,7 +5,7 @@
 # get rid of this line and use:
 # make  MACH=yourfilename-without-prefixhere -f Makefile
 #
-MACH ?= stampede3
+MACH ?= ubuntu_intel
 include config/make.$(MACH)
 
 # Detect Compiler - modified from original 762Studios under DWTFYWTPL2
