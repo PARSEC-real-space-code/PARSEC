@@ -1291,7 +1291,10 @@ endif
      ! Find total energy.
      ! ===============================================================
      call totnrg(elec_st,pot,pbc,parallel,exc,enuc,grid%hcub, &
-         clust%atom_num,bdev,.FALSE.)  !<=last argument is hack for vdw_flag
+         clust%atom_num,bdev,.FALSE.,ierr)  ! .FALSE. argument is hack for vdw_flag
+     call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
+         move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel, &
+         file_id,ierr)
      ! ===============================================================
      ! Compute the self-consistent residual error (SRE).
      ! ===============================================================
@@ -1470,7 +1473,10 @@ endif
             endif
 
              call totnrg(elec_st,pot,pbc,parallel,exc,enuc,grid%hcub, &
-                 clust%atom_num,bdev,elec_st%do_vdw) 
+                 clust%atom_num,bdev,elec_st%do_vdw,ierr)
+             call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
+                 move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel, &
+                 file_id,ierr)
          end if
 
         if (nloc_p_pot%is_so) then 

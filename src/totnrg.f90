@@ -8,7 +8,7 @@
 ! 3470 (1984). 
 !
 !---------------------------------------------------------------
-subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag)
+subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,ierr)
 
   use constants
   use electronic_struct_module
@@ -61,7 +61,12 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag)
   integer kpnum, kplp
   !
   logical add_vdw
+
+  integer, intent(out) :: ierr
   !--------------------------------------------------------------- 
+
+  ierr = 0
+
   if(present(vdw_flag)) then
 !      write(9,*) 'found the vdw flag (DEBUG)', vdw_flag
       add_vdw = vdw_flag
@@ -161,10 +166,8 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag)
      write(7,46) totexc
      write(7,47) eion 
      write(7,49) enuc
-  if (add_vdw) then
-     write(7,56) elec_st%evdw
-  end if
-!     write(7,48) eeig-ehnew/two+totexc !T+Vion?
+     if (add_vdw) write(7,56) elec_st%evdw
+     ! write(7,48) eeig-ehnew/two+totexc !T+Vion?
      if (elec_st%etot_plusu /= zero) write(7,45) elec_st%etot_plusu
      if (pbc%per == 3) write(7,55) pbc%ealpha
 
@@ -173,6 +176,13 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag)
      write(7,52) etot 
      write(7,54) bdev 
      write(7,*)
+     if (isnan(excnew) .or. isnan(totexc)) then
+        write (7,'(A)') " ERROR: NaNs were observed when using the PBE functional with a large radius."
+        write (7,'(A)') "        If this is the case, try reducing the radius."
+        call myflush(7)
+        ierr = 600
+     end if
+
 !48   format(2x,' QES like? "one electron E"     = ',f20.8,' [Ry]')
 40   format(2x,' Eigenvalue Energy             = ',f20.8,' [Ry]')
 42   format(2x,' Hartree Energy                = ',f20.8,' [Ry]')
