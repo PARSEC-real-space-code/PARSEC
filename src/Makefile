@@ -15,8 +15,6 @@ include config/make.$(MACH)
 # often used flags
 include DetectCompiler.mk
 
-#$(shell echo "$(TAG_COMPILER)")
-
 #
 # source files without preprocessing
 #
@@ -72,11 +70,9 @@ OBJ=$(addprefix $(BUILDDIR)/,$(POBJF) $(POBJZ) $(OBJF))
 MODULE_PATH=-I./ $(MODULE_IN)$(BUILDDIR) $(MODULE_OUT)$(BUILDDIR) $(TRLAN_MOD_PATH) \
 	    $(BGW_MOD_PATH) $(HDF5_MOD_PATH)
 
-#Makes temporary directories
+# Makes temporary directories
 $(shell mkdir -p $(BUILDDIR))
 $(shell mkdir -p $(TMPSRCDIR))
-
-Q = @
 
 .PHONY: all vars
 
@@ -110,35 +106,28 @@ $(OBJ) : $(addprefix $(BUILDDIR)/,$(MODULE))
 
 
 $(BUILDDIR)/%.o: %.f
-	$(Q)$(FC) -c $(FOPTS) $*.f $(MODULE_PATH) -o $(BUILDDIR)/$*.o
-	$(Q)echo "$(FC) $<"
+	$(FC) -c $(FOPTS) $*.f $(MODULE_PATH) -o $(BUILDDIR)/$*.o
 
 $(BUILDDIR)/%.o: %.f90
-	$(Q)$(F90) -c $(FOPTS) $*.f90 $(MODULE_PATH) -o $(BUILDDIR)/$*.o
-	$(Q)echo "$(F90) $<"
+	$(F90) -c $(FOPTS) $*.f90 $(MODULE_PATH) -o $(BUILDDIR)/$*.o
 
 $(BUILDDIR)/usrinputfile.o: usrinputfile.F90
-	$(Q)echo '#define GIT_COMMIT "$(shell git log -1 --pretty=format:"%h")"' > $(TMPSRCDIR)/tmp_$<
-	$(Q)echo '#define MACH "$(MACH)"' >> $(TMPSRCDIR)/tmp_$<
-	$(Q)cat $< >> $(TMPSRCDIR)/tmp_$<
-	$(Q)$(F90) $(CPPOPT) -c $(FOPTS) $(MODULE_PATH) $(TMPSRCDIR)/tmp_$< -o $*.o
-	$(Q)echo "$(F90) $<"
+	@echo '#define GIT_COMMIT "$(shell git log -1 --pretty=format:"%h")"' > $(TMPSRCDIR)/tmp_$<
+	@echo '#define MACH "$(MACH)"' >> $(TMPSRCDIR)/tmp_$<
+	@cat $< >> $(TMPSRCDIR)/tmp_$<
+	$(F90) $(CPPOPT) -c $(FOPTS) $(MODULE_PATH) $(TMPSRCDIR)/tmp_$< -o $*.o
 
 $(BUILDDIR)/%.o: %.F90
-	$(Q)$(F90) $(CPPOPT) -c $(FOPTS) $(MODULE_PATH) $< -o $(BUILDDIR)/$*.o
-	$(Q)echo "$(F90) $<"
+	$(F90) $(CPPOPT) -c $(FOPTS) $(MODULE_PATH) $< -o $(BUILDDIR)/$*.o
 
 $(BUILDDIR)/%.o: %.f90p
 	$(CPP) $(CPPOPT) $< | sed '/^#pragma/d' > $(TMPSRCDIR)/$*.tmp.f90
 	$(F90) -c $(FOPTS) $(MODULE_PATH) $(TMPSRCDIR)/$*.tmp.f90 -o $(BUILDDIR)/$*.o
 
 $(BUILDDIR)/%.o: %.f90z
-	$(Q)$(CPP) $(CPPOPT) $< | sed '/^#pragma/d' > $(TMPSRCDIR)/$*.tmp.f90
-	$(Q)echo "$(CPP) $<"
-	$(Q)$(CPP) $(CPPOPT) -DCPLX $< | sed '/^#pragma/d' >> $(TMPSRCDIR)/$*.tmp.f90
-	$(Q)echo "$(CPP) -DCPLX $<"
-	$(Q)$(F90) -c $(FOPTS) $(MODULE_PATH) $(TMPSRCDIR)/$*.tmp.f90 -o $(BUILDDIR)/$*.o
-	$(Q)echo "$(F90) $<"
+	$(CPP) $(CPPOPT) $< | sed '/^#pragma/d' > $(TMPSRCDIR)/$*.tmp.f90
+	$(CPP) $(CPPOPT) -DCPLX $< | sed '/^#pragma/d' >> $(TMPSRCDIR)/$*.tmp.f90
+	$(F90) -c $(FOPTS) $(MODULE_PATH) $(TMPSRCDIR)/$*.tmp.f90 -o $(BUILDDIR)/$*.o
 
 cleanall: clean
 	/bin/rm -f parsec-*.ser* parsec-*.mpi*
@@ -161,6 +150,7 @@ cleantmp:
 
 tags:
 	ctags --if0=yes --language-force=Fortran -R *.f90z *.F90 *.f90 *.f -h ".h,.inc" 
+
 ############################################
 # Dependencies on "include" or "use" files #
 ############################################
