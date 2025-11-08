@@ -155,7 +155,8 @@ subroutine usrinput(clust,band_st,elec_st,grid,pot,p_pot,mol_dynamic,pbc,mixer, 
   ! flag for selecting which atoms are allows to move
   ! flag is used for constructing mvat only.
   ! flag is NOT passed to the main code
-  integer nslctflg
+  integer :: nslctflg, repflg
+  real(dp) :: cr6, cex, rex, renfor
   ! default values for the different types
   integer integer_default
   real(dp) ::  double_default
@@ -210,6 +211,7 @@ subroutine usrinput(clust,band_st,elec_st,grid,pot,p_pot,mol_dynamic,pbc,mixer, 
   ! temporary arrays for atom information
   integer, parameter :: maxatm = 100000
   integer, allocatable :: tmove(:)
+  integer, allocatable :: trep(:)
   integer, allocatable :: atype(:)
   real(dp), allocatable :: acoord(:,:)
   real(dp), allocatable :: initmag(:,:)
@@ -258,6 +260,7 @@ subroutine usrinput(clust,band_st,elec_st,grid,pot,p_pot,mol_dynamic,pbc,mixer, 
   boolean_default = .false.
 
   allocate(tmove(maxatm))
+  allocate(trep(maxatm))
   allocate(acoord(3,maxatm))
   allocate(atype(maxatm))
 
@@ -381,6 +384,58 @@ subroutine usrinput(clust,band_st,elec_st,grid,pot,p_pot,mol_dynamic,pbc,mixer, 
 
   ! read in Langevin molecular dynamics flag 
   mol_dynamic%is_on = esdf_boolean ('Molecular_Dynamics',boolean_default)
+  mol_dynamic%class = esdf_boolean ('Classical_Dynamics',boolean_default)
+  mol_dynamic%hybrid= esdf_boolean ('Hybrid_Dynamics',boolean_default)
+  mol_dynamic%seq   = esdf_boolean ('Seq_Dynamics',boolean_default)
+  mol_dynamic%uhist   = esdf_boolean ('use_history',boolean_default)
+  mol_dynamic%read_inivel = esdf_boolean ('Read_Init_Vel',boolean_default)
+  mol_dynamic%rescale_bo = esdf_boolean ('Rescale_BO',boolean_default)
+  mol_dynamic%disfor = esdf_boolean ('Disable_Force',boolean_default)
+  mol_dynamic%check=.false. 
+  mol_dynamic%class_restart=.false. 
+  mol_dynamic%sc=esdf_boolean('smooth_cutoff', .false.) 
+  mol_dynamic%nose=esdf_double('Nose_Hoover', -1.d0) 
+  mol_dynamic%nchain=esdf_integer('NH_chain', 1) 
+  mol_dynamic%every_save=esdf_integer('MD_Every', 1) 
+  mol_dynamic%cnmax=esdf_integer('Max_Class', 100) 
+  mol_dynamic%iso_energy = esdf_double ('isolated_energy',0.d0)
+  if(mol_dynamic%is_on) then
+    if(mol_dynamic%nose > zero) then
+      write(7,*) "Performing MD with Nose-Hoover-Chain thermostat"
+    else 
+      write(7,*) "Performing MD with/without thermostat(Langevin), see below"
+    endif
+  endif
+  if(mol_dynamic%hybrid .OR. mol_dynamic%class) then
+    strflag = esdf_reduce(esdf_string('Classical_pot_type', 'xx'))
+    select case (trim(strflag))
+    case('mo') 
+       mol_dynamic%ptype = 1
+       write(7,*) "Morse potential is used for MD!"
+    case('dm')
+       mol_dynamic%ptype = 2
+       write(7,*) "Double morse potential is used for MD!"
+    case('lm')
+       mol_dynamic%ptype = 3
+       write(7,*) "LJ/Morse potential is used for MD!"
+    case('mt')
+       mol_dynamic%ptype = 4
+       write(7,*) "Morse + bond agle potential is used for MD!"
+    case('lt')
+       mol_dynamic%ptype = 5
+       write(7,*) "Morse-LJ + bond agle potential is used for MD!"
+    case('ea')
+       mol_dynamic%ptype = 6
+       write(7,*) "Morse + EAM potential is used for MD!"
+    case('sw')
+       mol_dynamic%ptype = 7
+       write(7,*) "Stillinger-Webber potential is used for MD!"
+    end select
+    mol_dynamic%md_thr = esdf_double ('md_threshold',1.d-3)
+    mol_dynamic%dist_thr = esdf_double ('distance_threshold',0.5d0)
+    mol_dynamic%energy_thr = esdf_double ('energy_threshold',0.01d0)
+    write(7,*) "The threshold for distance is ", mol_dynamic%dist_thr
+  endif
 
   write(7,*)
   ! read in boundary condition type 
@@ -1050,7 +1105,7 @@ subroutine usrinput(clust,band_st,elec_st,grid,pot,p_pot,mol_dynamic,pbc,mixer, 
                   band_st%blines(i)%line_num, band_st%blines(i)%start(1:3), &
                   band_st%blines(i)%end(1:3), band_st%blines(i)%line_name
       enddo
-      itmp=20
+      itmp=100
       band_st%npoints=esdf_integer('bandstruc_points',itmp)
       write(7,*) 'Calculating band structure'
     endif
@@ -1891,7 +1946,7 @@ endif
 
      ! read initial spin polarization; this is used only in spin-polarized
      ! calculations and when not restating from previous charge density.
-     dtmp = 0.1d0
+     dtmp = 0.1
      p_pot%spol(ity) = esdf_double('Initial_Spin_Polarization',dtmp)
 
      !this is now only available for pbc
@@ -1910,7 +1965,26 @@ endif
      p_pot%uspline(ity) = esdf_boolean ('Cubic_spline', boolean_default)
      ! read number of atoms of this type
      nslctflg  = esdf_integer ('Move_Flag', integer_default)
+     repflg = esdf_integer ('Rep_Flag', integer_default)
+     cr6 = esdf_double('r6_coef', 50.d0)
+     cex = esdf_double('ex_coef', 5.d0)
+     rex = esdf_double('ex_r', 2.91d0)
+     renfor = esdf_double('renorm_force', 1.00d0)
      clust%ylmdos_cutoff(ity) = esdf_physical ('ylm_dos_cutoff',one,'bohr')
+     !--------------------ADDITION---------------------
+     if (repflg > 0) then
+       clust%cr6 = cr6 
+       clust%cex = cex 
+       clust%rex = rex 
+       clust%rf = renfor 
+       write (7, *) '--------------------------------------------------------'
+       write (7, *) 'Artificial repulsive potential with C6 =', cr6, 'for 2.5 < rij < 5.0 bohr'
+       write (7, *) 'Artificial repulsive potential with Cex=', cex, 'for rij < 2.5 bohr'
+       write (7, *) 'Artificial repulsive potential with rex=', rex, 'for rij < 2.5 bohr'
+       write (7, *) 'Force will be renormalized if larger than 1.0, to', renfor
+       write (7, *) '--------------------------------------------------------'
+     end if
+     !--------------------ADDITION---------------------
      ! read their coordinates
      if (esdf_block ('Atom_Coord',clust%natmi(ity) )) then   
         if(nslctflg > clust%natmi(ity)) then
@@ -1935,6 +2009,14 @@ endif
               ierr = 141
               return
            endif
+           if (repflg > 0) then
+              write (7, *) 'Repulsive potential is introduced for', i, 'th atoms'
+              if (i <= repflg) then 
+                 trep(natom) = 1
+              else
+                 trep(natom) = 0
+              end if
+           end if
            if (nslctflg == 0) then
               read(block_data(i),*) acoord(:,natom)
               tmove(natom) = 1
@@ -2130,12 +2212,14 @@ endif
   if( naty > 0  ) then
       call create_cluster (natom,clust)
       clust%mvat(1:natom) = tmove(1:natom)
+      clust%rpat(1:natom) = trep(1:natom)
       clust%xatm(1:natom) = acoord(1,1:natom)
       clust%yatm(1:natom) = acoord(2,1:natom)
       clust%zatm(1:natom) = acoord(3,1:natom)
       clust%atype(1:natom) = atype(1:natom)
 
       deallocate(tmove)
+      deallocate(trep)
       deallocate(acoord)
       if (allocated(initmag)) deallocate(initmag)
       write(7,'(/,a,i7,/)') ' Tot. number of atoms = ', clust%atom_num
@@ -2144,12 +2228,12 @@ endif
   clust%has_ptchrg = esdf_boolean ('Add_Point_Charges',boolean_default)
 
   if (clust%has_ptchrg) then
-     if (pbc%is_on) then
-        write(7,*) 'ERROR: support for point charges is only available in'
-        write(7,*) 'non-periodic systems. STOP in usrinput'
-        ierr = 145
-        return
-     endif
+     !if (pbc%is_on) then
+     !   write(7,*) 'ERROR: support for point charges is only available in'
+     !   write(7,*) 'non-periodic systems. STOP in usrinput'
+     !   ierr = 145
+     !   return
+     !endif
      allocate(acoord(3,maxatm))
      write(7,*) 'Point Charge data:'
      write(7,*) '------------------'
@@ -2599,6 +2683,7 @@ endif
          MAX_EXPORT_OPTS, ntmp)
   export_griddata_flag = NONE
   i = 0
+  ntmp = 1
   do while (i < ntmp)
      i = i+1
      strflag = flag_words(i)
@@ -2780,6 +2865,10 @@ endif
        double_default)
   itmp = 250
   mol_dynamic%step_num = esdf_integer ('Step_num', itmp)
+  mol_dynamic%step_num_old = mol_dynamic%step_num
+  mol_dynamic%step_num_class = esdf_integer ('Step_num_class', itmp)
+  mol_dynamic%step_num_class_old = mol_dynamic%step_num_class
+  mol_dynamic%step_num_hybrid = esdf_integer ('Step_Num_Hybrid', 4000)
   ! For debug purposes - fix the rng seed
   itmp = 0
   mol_dynamic%rng_seed = esdf_integer('rng_seed', itmp)
@@ -2788,7 +2877,7 @@ endif
   if (.not.  mol_dynamic%is_on) then
      write(7,*) 'No molecular dynamics!'
   else
-     call molecular_dynamic_turn_on (mol_dynamic,clust%atom_num)
+     call molecular_dynamic_turn_on (mol_dynamic,clust%atom_num,clust%type_num)
      mol_dynamic%is_restart = esdf_boolean('Restart_mode',boolean_default)
 
      write(7,*) 'Molecular dynamics data:'
@@ -2864,6 +2953,43 @@ endif
   !let's keep things simple, since the graph communicator is messed up
   ! if there are groups - RIGHT NOW
   !ngroups = esdf_integer ('MPI_Groups', 1)
+
+  ! read in external potential file
+  pot%fex_is = esdf_boolean('Potential_Field', .FALSE.)
+  if (pot%fex_is) then
+    pot%fex_name = esdf_string('Potential_Field_Name', string_default)
+    write (7, *) 'External potential field is provided by user.'
+    strflag = esdf_reduce(esdf_string('Kinetic_Energy_Functional', 'xx'))
+    select case (trim(strflag))
+    case ('pw') 
+      pot%kin_name = 1
+      write (7, *) 'Kinetic Energy Functional is PW91K GGA.'
+    case ('pb')
+      pot%kin_name = 2
+      write (7, *) 'Kinetic Energy Functional is PBE-like GGA.'
+      !Default values of Toran and Weslowski, 2002.
+      dtmp = 0.2319d0
+      pot%vum = esdf_double('PBE_m', dtmp)
+      dtmp = 0.8438d0
+      pot%vuk = esdf_double('PBE_k', dtmp)
+      write (7, *) "PBE mu and kappa:"
+      write (7, *) "mu    = ", pot%vum
+      write (7, *) "kappa = ", pot%vuk
+    case ('tf')
+      pot%kin_name = 3
+      write (7, *) 'Kinetic Energy Functional is Thomas-Fermi LDA.'
+    case ('tw')
+      pot%kin_name = 4
+      write(7,*) 'Kinetic Energy Functional is Thomas-Fermi plus GEA.'
+    case('no')
+      pot%kin_name = 0
+      write(7,*) 'CAUTION! Kinetic Energy is not computed!'
+    case default
+      write (7, *) "No kinetic energy functional has been specified."
+      write (7, *) "Use Thomas Fermi (tf) functional)"
+      pot%kin_name = 3
+    end select
+  end if
 
   ! flag compatibility tests
   if((mol_dynamic%is_on) .or. (move%name /= NONE)) then

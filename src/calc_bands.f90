@@ -48,7 +48,7 @@ subroutine calc_bands(band_st,elec_st,pbc,pot,u_pot,solver,parallel, &
   !
   ! Work variables:
   !
-  integer :: istate,isp,kplp,scf_nkpt,i,offset,j,lastkpt,spnum,jj,nrep,nmax
+  integer :: irp,isp,kplp,scf_nkpt,i,offset,j,lastkpt,spnum,jj,nrep,nmax
   real(dp), dimension(3)  :: vec, ktmp
   real(dp) :: min_length  
   !
@@ -190,70 +190,19 @@ if (parallel%iammaster) then
 
    open(88, file='bands.dat',form='formatted',status='unknown')
 
-
-        ! Number of spins, number of states for each k-points, 
-        ! number of band segments, Fermi energy (in Ry)
-        write(88,*) '# of spins, # of states, # of segments, Ef (Ry)'
-        write(88,*) spnum, elec_st%nstate, band_st%nlines, elec_st%efermi
-
-        ! Number of k-points of each segment
-        write(88,*) 'idx of segment, # of k-points'
-        do jj = 1, band_st%nlines
-                write(88,*) jj, band_st%blines(jj)%nkpt
-        enddo
-
-        ! For each spin, print out one line of (spin, # seg., # kp, kp coord)
-        ! Then the eigenvalues (in Ry)
-        write(88,*) 'spin, segment, kpt, kpt coord. (1/bohr), &
-                &followed by eigs (Ry)'
-
-        do isp = 1, spnum    
-        do i = 1, band_st%nlines
-        do j = 1, band_st%blines(i)%nkpt
-                write(88,'(3i6,3(3x,f12.8))') isp, i, j, &
-                        band_st%blines(i)%kpts(:,j)
-
-                do istate = 1, elec_st%nstate
-                        write(88,*) &
-                        band_st%blines(i)%eigs(j,isp,istate)
-                enddo
-        enddo
-        enddo
-        enddo
-
-
-
-
-   !do i=1, band_st%nlines
-   !   do j=1,band_st%blines(i)%nkpt
-   !        write(88,'(3i6,3(3x,f12.8))') isp,i,j, band_st%blines(i)%kpts(:,j)
-   !        do istate = 1, elec_st%nstate
-   !            do isp = 1,spnum
-   !             write (88,'(i6,2(3x,f15.6))') &
-   !              istate,band_st%blines(i)%eigs(j,isp,istate),&
-   !              band_st%blines(i)%eigs(j,isp,istate)*rydberg
-   !            enddo
-   !        enddo
-   !   enddo
-   !enddo
-
-   close(88)
-
-   open(88, file="bands_plot.dat",form='formatted',status='unknown')
-   do istate = 1, elec_st%nstate
-      jj = 0
+   do isp=1, spnum    
       do i=1, band_st%nlines
-          do j=1,band_st%blines(i)%nkpt
-              jj = jj + 1
-              write(88,'(i6,3x,2(3x,f12.8))') jj,&
-               (band_st%blines(i)%eigs(j,isp,istate)*rydberg,isp=1,spnum)
-          enddo
+         do j=1,band_st%blines(i)%nkpt
+              write (88,*) isp,i,j, band_st%blines(i)%kpts(:,j)
+              write (88,*) band_st%blines(i)%eigs(j,isp,:)-elec_st%efermi
+         enddo
       enddo
-      write(88,'(1x)')
    enddo
+
    close(88)
 
 endif
 
 end subroutine calc_bands 
 
+  

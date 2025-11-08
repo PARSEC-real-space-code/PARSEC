@@ -198,6 +198,7 @@ end select
   if (elec_st%nspin == 1) then
      do i = 1, parallel%mydim
         pot%vxc(i,1) = elec_st%rho(i,1) + elec_st%rhoc(i)
+        if (pot%fex_is == .TRUE.) pot%vxc(i,1) = pot%vxc(i,1) + pot%rho0(i)
      enddo
   else
      do isp = 1, elec_st%nspin
@@ -234,7 +235,7 @@ end select
 
   if (elec_st%nspin == 1) then
      call exc_nspn(grid,parallel,elec_st%nrep,elec_st%icorr &
-          ,elec_st%dioniz,pot%vxc,vect,exc)
+          ,elec_st%dioniz,pot%vxc,vect,exc,pot%vnadd,pot%tnadd,pot)
   else
      call exc_spn(grid,parallel,elec_st%nrep,elec_st%icorr &
           ,elec_st%dioniz,pot%vxc,vect,exc)

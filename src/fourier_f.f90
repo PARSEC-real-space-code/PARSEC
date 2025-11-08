@@ -319,13 +319,24 @@ subroutine fourier_f(clust,p_pot,pbc,step,ipr)
              (fvion(2,ity) - fvion(1,ity))/delq**2
      enddo
      pbc%ealpha = alpht*ztot
+     
+     !alpht = zero
+     !ztot = zero
+     !if(clust%has_ptchrg) then
+     !   do ity = 1,clust%npttyp 
+     !      ztot = ztot + clust%qpt(ity)*real(clust%nptt(ity),dp)
+     !      alpht = alpht + two*pi*pi*real(clust%nptt(ity),dp)* &
+     !           (fvion(2,ity) - fvion(1,ity))/delq**2
+     !   enddo
+     !   pbc%ealpha = pbc%ealpha + alpht*ztot
+     !endif
   endif
 
   deallocate(qq,fvion,fdenc,frho,fvw)
 
 21 format(1x,a2,5x,'nql=',i5,5x,'delq=',f6.3)
-22 format(1x,a,6(1x,g11.4))
-23 format(1x,6(1x,g11.4))
+22 format(1x,a,6(1x,g10.4))
+23 format(1x,6(1x,g10.4))
 
 end subroutine fourier_f
 !===============================================================

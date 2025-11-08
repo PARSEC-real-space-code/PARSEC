@@ -216,9 +216,9 @@ subroutine  chebff_diag(kplp, max_spdim, nwant, nconv, max_mv, eval, &
   !then filter v_basis(1:ldn, 1:nwant+blksize), including the first 1:nconv columns in v_basis
 
 #ifdef CPLX
-     call zrandom_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv), info)
+     call zrandom_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv))
 #else
-     call random_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv), info)
+     call random_array(ldn, ndim, nwant-nconv, v_basis(1:ldn,1+nconv))
 #endif
 
      !set default max_iter to 2, i.e., filtering only twice 
@@ -356,24 +356,21 @@ subroutine  chebff_diag(kplp, max_spdim, nwant, nconv, max_mv, eval, &
 
         do jcol = 1, nwant
         current_buff=mod(jcol,2)+1
-           call buff_lap_check_comm(matvec_lap_buffer(current_buff), 1, parallel)
            call ZmatvecB(kplp, 1, v_basis(1,jcol), w_opv1d,ldn,matvec_lap_buffer(current_buff))
            num_mv = num_mv + 1
            
-         next_buff=mod(jcol+1,2)+1
            if (jcol<nwant) then
+         next_buff=mod(jcol+1,2)+1
       ! buffer the next jcol lap neighbors - try to hide communication
         call Zbuff_lap_pack(parallel,matvec_lap_buffer(next_buff),v_basis(:,jcol+1),1,1,1,ldn) 
         call Zbuff_lap_comm(parallel,matvec_lap_buffer(next_buff)) 
+           endif
+
 
           !depending on the mpi implementation, 
           !maybe this will get the comm going earlier. google 'progressing mpi' 
           !or read this http://htor.inf.ethz.ch/publications/img/hoefler-ib-threads-slides.pdf
-           !call buff_lap_just_test_comm(matvec_lap_buffer(next_buff), parallel)
-
-           endif
-
-
+           call buff_lap_just_test_comm(matvec_lap_buffer(next_buff))
 
         !this should be done with a single and threaded mv of some sort:
         ! but not quite like this - 
@@ -667,8 +664,7 @@ contains
           !depending on the mpi implementation, 
           !maybe this will get the comm going earlier. google 'progressing mpi' 
           !or read this http://htor.inf.ethz.ch/publications/img/hoefler-ib-threads-slides.pdf
-           !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
-           call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+           call buff_lap_just_test_comm(filter_lap_buffers(buffer_index))
     enddo
 !        write(9,*) v_basis(1,jc+blk)
        call ZmatvecB(kplp,blk,v_basis(1,jc), vout,ldn,filter_lap_buffers)
@@ -696,8 +692,7 @@ contains
     do buffer_index = 1,blk
         call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),vout(:,buffer_index),buffer_index,1,1,ldn) 
         call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
-        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
-        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+        call buff_lap_just_test_comm(filter_lap_buffers(buffer_index))
     enddo
 
           call ZmatvecB(kplp,blk,vout,vnew,ldn,filter_lap_buffers)
@@ -735,8 +730,7 @@ contains
     do buffer_index = 1,dimtmp
         call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),v_basis(:,n2-dimtmp+buffer_index),buffer_index,1,1,ldn) 
         call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
-        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
-        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+        call buff_lap_just_test_comm(filter_lap_buffers(buffer_index))
     enddo
 
        call ZmatvecB(kplp,dimtmp,v_basis(1,n2-dimtmp+1), vout(1,1),ldn,filter_lap_buffers)
@@ -755,8 +749,7 @@ contains
     do buffer_index = 1,dimtmp
         call Zbuff_lap_pack(parallel,filter_lap_buffers(buffer_index),vout(:,buffer_index),buffer_index,1,1,ldn) 
         call Zbuff_lap_comm(parallel,filter_lap_buffers(buffer_index)) 
-        !call buff_lap_just_test_comm(filter_lap_buffers(buffer_index), parallel)
-        call buff_lap_check_comm(filter_lap_buffers(buffer_index), buffer_index, parallel)
+        call buff_lap_just_test_comm(filter_lap_buffers(buffer_index))
     enddo
 
           call ZmatvecB(kplp,dimtmp,vout, vnew,ldn,filter_lap_buffers)

@@ -8,7 +8,7 @@
 ! 3470 (1984). 
 !
 !---------------------------------------------------------------
-subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,ierr)
+subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,newk,ierr)
 
   use constants
   use electronic_struct_module
@@ -41,6 +41,7 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
   !
   logical,intent(in),optional :: vdw_flag
   !
+  real(dp), intent(out) :: newk
   ! Work variables:
   !
   ! actual number of grid points
@@ -61,7 +62,11 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
   integer kpnum, kplp
   !
   logical add_vdw
-
+  !
+  real(dp), allocatable :: vtemp(:)
+  integer :: i
+  !Additional energy terms of FDE
+  real(dp) :: esh, enadd, etionsel, esionsel
   integer, intent(out) :: ierr
   !--------------------------------------------------------------- 
 
@@ -149,13 +154,49 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
   etot = eele + enuc
   if (pbc%per == 3) etot = etot + pbc%ealpha
 
+  !Old kinetic energy for FDE run
+  newk = eeig - ehxcold - eion
   ! Add dispersion corrections if necessary
   if (add_vdw) then
   etot = etot + elec_st%evdw
   end if
+  ! Add frozen density embedding part
+  if (pot%fex_is) then
+    enadd = dot_product (pot%vnadd,elec_st%rho(1:ndim,1))
+    psumvec = enadd
+    call psum(psumvec, 1, parallel%group_size, parallel%group_comm)
+    enadd = psumvec(1)
+    enadd = enadd*hcub * real(elec_st%nrep)
+
+    ! Tip-ion/Sample-electron interaction energy
+    allocate (vtemp(parallel%mydim))
+    do i = 1, parallel%mydim
+       vtemp(i) = pot%vion(i) - pot%vsion(i) - pot%vshart(i)
+    end do
+    etionsel = dot_product(vtemp, pot%rho0)
+    psumvec = etionsel
+    call psum(psumvec, 1, parallel%group_size, parallel%group_comm)
+    etionsel = psumvec(1)
+    etionsel = etionsel * hcub * real(elec_st%nrep)
+
+    !Sample electron-ion energy
+    esionsel = dot_product(pot%vsion,pot%rho0)
+    psumvec = esionsel
+    call psum(psumvec, 1, parallel%group_size, parallel%group_comm)
+    esionsel = psumvec(1)
+    esionsel = esionsel*hcub * real(elec_st%nrep)
+
+    !Sample Hartree energy
+    esh = dot_product(pot%vshart, pot%rho0)
+    psumvec = esh
+    call psum(psumvec, 1, parallel%group_size, parallel%group_comm)
+    esh = psumvec(1)
+    esh = esh*hcub * real(elec_st%nrep)
+
+    etot = etot + etionsel + esh/two + esionsel + pot%tnadd - enadd + pot%oldke
+  end if
   ! Total energy per atom/ in eV.
   bdev = rydberg*etot/real(natom,dp)
-  !TODO: Eli Kraisler suggests reporting/extracting  the kinetic energy part as well
 
   ! Report results.
   if (parallel%iammaster) then
@@ -167,6 +208,15 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
      write(7,47) eion 
      write(7,49) enuc
      if (add_vdw) write(7,56) elec_st%evdw
+
+     if (pot%fex_is) then
+        write(7, 61) pot%tnadd
+        write(7, 62) enadd 
+        write(7, 63) etionsel
+        write(7, 64) esh / two
+        write(7, 65) esionsel
+        write(7, 67) pot%oldke
+      end if
      ! write(7,48) eeig-ehnew/two+totexc !T+Vion?
      if (elec_st%etot_plusu /= zero) write(7,45) elec_st%etot_plusu
      if (pbc%per == 3) write(7,55) pbc%ealpha
@@ -196,6 +246,12 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
 56   format(2x,' TS-vDW correction (included)  = ',f20.8,' [Ry]')
 52   format(2x,' Total Energy = ',2x,f20.8,' [Ry]')
 54   format(2x,' Energy/atom  = ',2x,f20.8,' [eV]')
+61   format(2x,' Non-additive Kinetic Energy   = ',f20.8,' [Ry]')
+62   format(2x,' Integral_{Vnadd*rho}          = ',f20.8,' [Ry]')
+63   format(2x,' Tip-ion/Sample-electron Energy= ',f20.8,' [Ry]')
+64   format(2x,' Sample Hartree Energy         = ',f20.8,' [Ry]')
+65   format(2x,' Sample Electron-Ion Energy    = ',f20.8,' [Ry]')
+67   format(2x,' Sample Kinetic Energy         = ',f20.8,' [Ry]')
      elec_st%etot = etot
   endif
 

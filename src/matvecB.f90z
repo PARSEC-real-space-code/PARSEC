@@ -37,119 +37,101 @@ contains
 #endif
 
 subroutine ZmatvecB(kplp, blksize, v, w, ldn, ext_lap_buffer)
-
-use parsec_global_data
-use matvec_module
-use Zbuffer_module
-
+  use parsec_global_data
+  use matvec_module
+  use Zbuffer_module
 #ifdef OMPFUN
-!     include omp functions
-use omp_lib
+  !     include omp functions
+  use omp_lib
 #endif
-
-implicit none
-!
-!  Input/Output variables:
-!
-
+  implicit none
+  !
+  !  Input/Output variables:
+  !
 #ifdef ITAC
-include 'VT.inc'
-include 'vtcommon.inc'
+  include 'VT.inc'
+  include 'vtcommon.inc'
 #endif
 
-integer, intent(in) :: kplp
-integer, intent(in) :: blksize
-integer, intent(in) :: ldn
-SCALAR, intent(in) :: v(ldn,blksize)
-SCALAR, intent(out) :: w(ldn,blksize)
-type(lap_buffer), intent(inout), optional :: ext_lap_buffer(blksize)
-
-integer :: k,i
-integer :: almost_mydim,chunk,almost_inter,chunk_inter
-integer :: my_lapstart,my_lapend
-integer :: lap_leftovers
-integer :: num_lap_buffers,num_prebuffer
-integer :: prebuff_index,current_buffer,next_buffer
-
+  integer, intent(in) :: kplp
+  integer, intent(in) :: blksize
+  integer, intent(in) :: ldn
+  SCALAR, intent(in) :: v(ldn, blksize)
+  SCALAR, intent(out) :: w(ldn, blksize)
+  type (lap_buffer), intent(inout), optional :: ext_lap_buffer(blksize)
+  
+  integer :: k,i
+  integer :: almost_mydim,chunk,almost_inter,chunk_inter
+  integer :: my_lapstart,my_lapend
+  integer :: lap_leftovers
+  integer :: num_lap_buffers,num_prebuffer
+  integer :: prebuff_index,current_buffer,next_buffer
 #ifdef ITAC
-integer :: mvierr
+  integer :: mvierr
 #endif
-
-logical :: buffer_ext
-
+  logical :: buffer_ext
 #ifdef OMPFUN
-!     include omp functions
-integer :: omp_threads
-integer :: lap_quota
-integer :: mythread_id
+  !     include omp functions
+  integer :: omp_threads
+  integer :: lap_quota
+  integer :: mythread_id
 #endif
-
-!!BUFFERS
-type(lap_buffer) :: lap_buffers(parallel%max_lap_buffers)
-type(nloc_buffer) :: nloc_buff
-
-! -------------------------------------------------------------------
-
+  !!BUFFERS
+  type (lap_buffer) :: lap_buffers(parallel%max_lap_buffers)
+  type (nloc_buffer) :: nloc_buff
+  ! -------------------------------------------------------------------
 !  if (blksize > 1) write(9,*) 'Hello, doing matvecB  blksize=',blksize
 
-if (parallel%mxwd == 2) then 
-        ! This will be worked at later on.
-        ! call the old matvec instead
-        call zmatvec_so(kplp, nloc_p_pot, u_pot,solver, parallel, &
-                pot%vnew, v, w, blksize, ldn)
-
-        return
+  if (parallel%mxwd == 2) then 
+    ! This will be worked at later on.
+    ! call the old matvec instead
+    call zmatvec_so(kplp, nloc_p_pot, u_pot,solver, parallel, pot%vnew, v, w, blksize,ldn)
+    return
 endif
-
 #ifdef ITAC
-call VTBEGIN( vt_buffer, mvierr)
+  call VTBEGIN(vt_buffer, mvierr)
 #endif
-
-
-
 ! for parallel%mxwd == 1
 !{{{ Setup buffers and prebuffer
-if (present(ext_lap_buffer)) then
-        buffer_ext = .true.
-        !skip the buffer init and prebuffering - assume it was already done
-        num_lap_buffers=blksize
-        num_prebuffer=blksize
-else
-        buffer_ext = .false.
+  if (present(ext_lap_buffer)) then
+    buffer_ext = .TRUE.
+    !skip the buffer init and prebuffering - assume it was already done
+    num_lap_buffers=blksize
+    num_prebuffer=blksize
+  else
+    buffer_ext = .FALSE.
 
-        !get buffer number, hardcoded, capped by 5
-        if (blksize == 1) then
-                num_lap_buffers=2 !temporary fix 
-        else
-                num_lap_buffers=min(parallel%max_lap_buffers,blksize)
-        endif
+    !get buffer number, hardcoded, capped by 5
+    if (blksize == 1) then
+      num_lap_buffers=2 !temporary fix 
+    else
+      num_lap_buffers=min(parallel%max_lap_buffers,blksize)
+    endif
 
-        ! write(9,*) "matvecB: num_lap_buffers",num_lap_buffers
+    ! write(9,*) "matvecB: num_lap_buffers",num_lap_buffers
 
-        !init buffers up to num_lap_buffers
-        do k=1,num_lap_buffers
-                call init_lap_buffer(lap_buffers(k))
-                call allocate_lap_buffer(lap_buffers(k),parallel)
-        enddo
+    !init buffers up to num_lap_buffers
+    do k=1,num_lap_buffers
+      call init_lap_buffer(lap_buffers(k))
+      call allocate_lap_buffer(lap_buffers(k),parallel)
+    enddo
 
-        !prebuffer, all but the last one:
-        num_prebuffer=num_lap_buffers-1
-        num_prebuffer=max(1,num_prebuffer)
-        ! write(9,*) "matvecB: num_prebuffer",num_prebuffer
-        !start getting buffers
-        do k=1,num_prebuffer
-                prebuff_index=mod(k,num_lap_buffers)+1
+    !prebuffer, all but the last one:
+    num_prebuffer=num_lap_buffers-1
+    num_prebuffer=max(1,num_prebuffer)
+    ! write(9,*) "matvecB: num_prebuffer",num_prebuffer
+    !start getting buffers
+    do k=1,num_prebuffer
+      prebuff_index=mod(k,num_lap_buffers)+1
+      call Zbuff_lap_pack(parallel, lap_buffers(prebuff_index), v, k, k, blksize, ldn)
+      call Zbuff_lap_comm(parallel, lap_buffers(prebuff_index)) 
+    enddo
+  endif
 
-                call Zbuff_lap_pack(parallel, &
-                        lap_buffers(prebuff_index), v, k, k, blksize, ldn)
-                call Zbuff_lap_comm(parallel, lap_buffers(prebuff_index))
-        enddo
-endif
-
-! write(9,*) "matvecB: finished buffering"
+    ! write(9,*) "matvecB: finished buffering"
 
 #ifdef ITAC
-call VTEND( vt_buffer, mvierr)
+  call VTEND( vt_buffer, mvierr)
 #endif
 
 !shoot them off as a burst, thrash the network
@@ -169,45 +151,38 @@ call VTEND( vt_buffer, mvierr)
 !{{{do nonloc buffers for later
 
 !initialize nloc_buff
-!basic protection against 1 PE jobs
-! write(9,*) "matvecB: init nloc buffer"
-call init_nloc_buffer(nloc_buff)
-! write(9,*) "matvecB: allocating nloc buffer"
-call allocate_nloc_buffer(nloc_buff,nloc_p_pot%nlm,blksize)
+  !basic protection against 1 PE jobs
+  ! write(9,*) "matvecB: init nloc buffer"
+  call init_nloc_buffer(nloc_buff)
+  ! write(9,*) "matvecB: allocating nloc buffer"
+  call allocate_nloc_buffer(nloc_buff,nloc_p_pot%nlm,blksize)
 
 #ifdef ITAC
-mvierr=0
-call VTBEGIN( vt_matvec_ps, mvierr)
+  mvierr=0
+  call VTBEGIN( vt_matvec_ps, mvierr)
 #endif
 
-
-
-! write(9,*) "matvecB: computing kbdots"
+  ! write(9,*) "matvecB: computing kbdots"
 !compute the kb dot products
-do k=1,blksize
-        if (nloc_p_pot%nkpt == 0) then
-                call Zmatvec_nloc_kbdotsB_1D(nloc_buff%kbdots(:,k), &
-                        nloc_p_pot, solver, v(1:ldn,k), ldn)
-        else
-                call Zmatvec_nloc_kbdotsB_kpt_1D(nloc_buff%kbdots(:,k), &
-                        nloc_p_pot, solver, v(1:ldn,k), ldn, kplp)
-        endif
-enddo
+  do k=1,blksize
+    if (nloc_p_pot%nkpt == 0) then
+      call Zmatvec_nloc_kbdotsB_1D(nloc_buff%kbdots(:,k), nloc_p_pot, solver, v(1:ldn,k), ldn)
+    else
+      call Zmatvec_nloc_kbdotsB_kpt_1D(nloc_buff%kbdots(:,k), nloc_p_pot, solver, v(1:ldn,k), ldn, kplp)
+    endif
+  enddo
 
-! write(9,*) "matvecB: done computing kbdots"
-
+    ! write(9,*) "matvecB: done computing kbdots"
 #ifdef ITAC
-call VTEND( vt_matvec_ps, mvierr)
+  call VTEND( vt_matvec_ps, mvierr)
 #endif
-
-
 
 ! do the communication part of matvec_nlocB
 #ifdef IALLREDUCE
 !use (potentially nonblocking) allreduce for the kb dot products
 !this is here in case you are feeling adventurous. I find that it
 !works for intelMPI, and helps load balancing.
-call Zbuff_nloc_allreduce(parallel,nloc_buff)
+  call Zbuff_nloc_allreduce(parallel,nloc_buff)
 #endif
 
 !}}}
@@ -215,18 +190,17 @@ call Zbuff_nloc_allreduce(parallel,nloc_buff)
 !{{{ Buffered matvec part
 ! write(9,*) 'matvecB: inter1 = ',parallel%inter1
 #ifdef ITAC
-call VTBEGIN( vt_matvec, mvierr)
+  call VTBEGIN( vt_matvec, mvierr)
 #endif
 
 !write(9,*) "almost,mydim:,chunk",parallel%mydim,almost_mydim,chunk
 !==============OMP PARALLEL CONSTRUCT================!
 !$OMP PARALLEL &
-!$OMP& SHARED(Zwvec,blksize,num_lap_buffers,num_prebuffer,parallel) &
-!$OMP& SHARED(lap_buffers,v,w,ldn,solver, ext_lap_buffer,buffer_ext,nloc_p_pot,i) &
+!$OMP& SHARED(Zwvec,blksize,num_lap_buffers,num_prebuffer,parallel,lap_buffers,v,w,ldn,solver, ext_lap_buffer,buffer_ext,nloc_p_pot,i) &
 !$OMP& PRIVATE(omp_threads,mythread_id,lap_quota,my_lapstart,my_lapend,lap_leftovers,current_buffer,k,next_buffer,chunk,chunk_inter)
 !lets do some warm-up and finish the diagonal part with a parallel do
 !right now this inits the w elements also up till mydim. 
-call Zmatvec_diagonal(parallel%mydim,solver%adiag,v,w,ldn,blksize)
+  call Zmatvec_diagonal(parallel%mydim,solver%adiag,v,w,ldn,blksize)
 
 !now lets do the kinetic energy part
 
@@ -235,202 +209,176 @@ call Zmatvec_diagonal(parallel%mydim,solver%adiag,v,w,ldn,blksize)
 !also the master thread is forced to do an equal share of the work, which is bad
 !maybe we'll switch to dynamic schedule do loop later
 #ifdef OMPFUN
-omp_threads = omp_get_num_threads()
-mythread_id = omp_get_thread_num()
-! lap_quota = parallel%mydim/omp_threads
-! my_lapstart = mythread_id*lap_quota + 1
-! my_lapend = my_lapstart + lap_quota - 1
-! lap_leftovers = mod(parallel%mydim,omp_threads)
-!
-! I HAVE YET TO THINK ABOUT CHUNKING SMARTLY
-! MAYBE:
-!    chunk=parallel%mydim/((parallel%inter1+1)*2*(omp_threads-1))
-!chunk = parallel%mydim/(omp_threads*10)
-!chunk_inter
+  omp_threads = omp_get_num_threads()
+  mythread_id = omp_get_thread_num()
+  ! lap_quota = parallel%mydim/omp_threads
+  ! my_lapstart = mythread_id*lap_quota + 1
+  ! my_lapend = my_lapstart + lap_quota - 1
+  ! lap_leftovers = mod(parallel%mydim,omp_threads)
+  !
+  ! I HAVE YET TO THINK ABOUT CHUNKING SMARTLY
+  ! MAYBE:
+  !    chunk=parallel%mydim/((parallel%inter1+1)*2*(omp_threads-1))
+  !chunk = parallel%mydim/(omp_threads*10)
+  !chunk_inter
 #else
-! my_lapstart = 1
-! my_lapend = parallel%mydim
-! lap_leftovers = 0
-! chunk=min(parallel%inter1+10,parallel%mydim/10)
+  ! my_lapstart = 1
+  ! my_lapend = parallel%mydim
+  ! lap_leftovers = 0
+  ! chunk=min(parallel%inter1+10,parallel%mydim/10)
 #endif
 
 ! !}}}
 
+  do k = 1, blksize
+    current_buffer = mod(k,num_lap_buffers) + 1
 
+!$OMP MASTER
+    if (k+num_lap_buffers-1 > blksize) then
+      ! write(9,*) 'DEBUG MatvecB: not buffering k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
+    else
+      next_buffer = mod(k+num_lap_buffers+num_prebuffer, num_lap_buffers) + 1
+      ! still need to buffer
+      ! write(9,*) 'DEBUG MatvecB: buffering of k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
+      if (.NOT. buffer_ext) then
+        call Zbuff_lap_pack(parallel, lap_buffers(next_buffer), v, k, k+num_lap_buffers-1,blksize, ldn) 
+        call Zbuff_lap_comm(parallel, lap_buffers(next_buffer))
+      ! else
+        ! call Zbuff_lap_pack(parallel,ext_lap_buffer(next_buffer),v,k,k+num_lap_buffers-1,blksize,ldn) 
+        ! call Zbuff_lap_comm(parallel,ext_lap_buffer(next_buffer))
+      endif
+    endif
+!$OMP END MASTER
 
-do k = 1, blksize
-        current_buffer = mod(k,num_lap_buffers) + 1
+!$OMP SINGLE
+    Zwvec(parallel%nwedge+1) = Zzero
+!$OMP END SINGLE NOWAIT
 
-        !$OMP MASTER
-        if (k+num_lap_buffers-1 > blksize) then
-                ! write(9,*) 'DEBUG MatvecB: not buffering k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
-        else
-                next_buffer = mod(k+num_lap_buffers+num_prebuffer, &
-                        num_lap_buffers) + 1
-                ! still need to buffer
-                ! write(9,*) 'DEBUG MatvecB: buffering of k= ',k+num_lap_buffers-1,'on buffer-',next_buffer
-                if (.not. buffer_ext) then
-                        call Zbuff_lap_pack(parallel, &
-                                lap_buffers(next_buffer), &
-                                v, k, k+num_lap_buffers-1, blksize, ldn)
-                        call Zbuff_lap_comm(parallel, &
-                                lap_buffers(next_buffer))
-                !else
-                        ! call Zbuff_lap_pack(parallel,ext_lap_buffer(next_buffer),v,k,k+num_lap_buffers-1,blksize,ldn) 
-                        ! call Zbuff_lap_comm(parallel,ext_lap_buffer(next_buffer))
-                endif
-        endif
-        !$OMP END MASTER
+!$OMP DO &
+!$OMP& SCHEDULE(RUNTIME) & 
+!$OMP& PRIVATE(i)
+    do i=1,parallel%mydim
+      Zwvec(i) = v(i,k)
+    end do
+!$OMP END DO
+    ! write(9,*) 'MatvecB: finished copying Zwvec for k',k,'id:',mythread_id
 
-        !$OMP SINGLE
-        Zwvec(parallel%nwedge+1) = Zzero
-        !$OMP END SINGLE NOWAIT
+!$OMP MASTER
+      ! write(9,*) 'DEBUG MatvecB: checking on buffer -',current_buffer
+     if (parallel%group_size > 1) then
+       if (buffer_ext) then
+         call buff_lap_check_comm(ext_lap_buffer(k), k)
+         call Zbuffer_lap_unpack(parallel, Zwvec, ext_lap_buffer(k))
+       else
+         call buff_lap_check_comm(lap_buffers(current_buffer), k)
+         call Zbuffer_lap_unpack(parallel, Zwvec, lap_buffers(current_buffer))
+       endif
+     endif
+    ! write(9,*) 'MatvecB: finsihed unpacking to Zwvec'
 
-        !$OMP DO &
-        !$OMP& SCHEDULE(RUNTIME) & 
-        !$OMP& PRIVATE(i)
-        do i=1,parallel%mydim
-                Zwvec(i) = v(i,k)
-        end do
-        !$OMP END DO
-        ! write(9,*) 'MatvecB: finished copying Zwvec for k',k,'id:',mythread_id
+!$OMP END MASTER
 
-        !$OMP MASTER
-        ! write(9,*) 'DEBUG MatvecB: checking on buffer -',current_buffer
-        if (parallel%group_size > 1) then
-                if (buffer_ext) then
-                        call buff_lap_check_comm( &
-                                ext_lap_buffer(k), k, parallel)
-                        call Zbuffer_lap_unpack(parallel, Zwvec, &
-                                ext_lap_buffer(k))
-                else
-                        call buff_lap_check_comm( &
-                                lap_buffers(current_buffer), k, parallel)
-                        call Zbuffer_lap_unpack(parallel, Zwvec, &
-                                lap_buffers(current_buffer))
-                endif
-        endif
-        ! write(9,*) 'MatvecB: finsihed unpacking to Zwvec'
+  !AJB: check to see whether  master thread is sometimes not assigned any work if using dynamic/guided!
+  if (parallel%inter1>0) then
+    if (nloc_p_pot%nkpt == 0) then
+      call Zmatvec_ke_1D(1,parallel%inter1, solver, parallel, Zwvec, w(:,k), ldn)
+    else
+      call Zmatvec_ke_kpt_1D(1, parallel%inter1, kplp, solver, parallel, Zwvec, w(:,k), ldn)
+    endif
+  ! write(9,*) 'MatvecB: thread',mythread_id,': my middle i was:', i
+  endif
 
-        !$OMP END MASTER
+! probably uneeded now
+!$OMP BARRIER 
+  ! write(9,*) 'DEBUG MatvecB: k-',k,' buffer',current_buffer,'thread',mythread_id
 
-        !AJB: check to see whether  master thread is sometimes not assigned any work if using dynamic/guided!
-        if (parallel%inter1 > 0) then
-                if (nloc_p_pot%nkpt == 0) then
-                        call Zmatvec_ke_1D(1, parallel%inter1, &
-                                solver, parallel, Zwvec, w(:,k), ldn)
-                else
-                        call Zmatvec_ke_kpt_1D(1, parallel%inter1, kplp, &
-                                solver, parallel, Zwvec, w(:,k), ldn)
-                endif
+  if (nloc_p_pot%nkpt == 0) then
+    call Zmatvec_ke_1D(parallel%inter1+1, parallel%mydim, solver, parallel, Zwvec, w(:,k), ldn)
+  else
+    call Zmatvec_ke_kpt_1D(parallel%inter1+1, parallel%mydim, kplp, solver, parallel, Zwvec, w(:,k), ldn)
+  endif
 
-                ! write(9,*) 'MatvecB: thread',mythread_id,': my middle i was:', i
-        endif
+  !write(9,*) 'MatvecB: thread',mythread_id,': my final i was:', i
 
-        ! probably uneeded now
-        !$OMP BARRIER 
-        ! write(9,*) 'DEBUG MatvecB: k-',k,' buffer',current_buffer,'thread',mythread_id
-
-        if (nloc_p_pot%nkpt == 0) then
-                call Zmatvec_ke_1D(parallel%inter1+1, parallel%mydim, &
-                        solver, parallel, Zwvec, w(:,k), ldn)
-        else
-                call Zmatvec_ke_kpt_1D(parallel%inter1+1, parallel%mydim, &
-                        kplp, solver, parallel, Zwvec, w(:,k), ldn)
-        endif
-
-        !write(9,*) 'MatvecB: thread',mythread_id,': my final i was:', i
-
-        !write(9,*) 'MatvecB: thread',mythread_id,': finished do loop'
-enddo !k=1,blksize
+  !write(9,*) 'MatvecB: thread',mythread_id,': finished do loop'
+  enddo !k=1,blksize
 
 !$OMP END PARALLEL 
 
 
-
-
 !{{{ Finally , the last part of the non_local work,
 #ifdef ITAC
-call VTEND( vt_matvec,mvierr )
-call VTBEGIN( vt_matvec_ps, mvierr)
+  call VTEND( vt_matvec,mvierr )
+  call VTBEGIN( vt_matvec_ps, mvierr)
 #endif
 
 #ifndef IALLREDUCE
 !moved here in order to support mpi2 as well
 !use (potentially nonblocking) allreduce for the kb dot products
-call Zbuff_nloc_allreduce(parallel,nloc_buff)
+  call Zbuff_nloc_allreduce(parallel,nloc_buff)
 #endif
-
-
 
 !not in OMP right now
 !  MASTER
-! write(9,*) "check x2 iallreduce nloc",k
-!   write(9,*) "buffer%request",nloc_buffers(k)%request
+  ! write(9,*) "check x2 iallreduce nloc",k
+  ! write(9,*) "buffer%request",nloc_buffers(k)%request
 
-call buff_nloc_allreduce_check(nloc_buff)
-!debug:
-! do k=1,blksize
-!  write(9,*) "kbdots for k=",k
-!  write(9,*) nloc_buff%kbdots(:,k)
-! enddo
+  call buff_nloc_allreduce_check(nloc_buff)
+  !debug:
+  ! do k=1,blksize
+  !  write(9,*) "kbdots for k=",k
+  !  write(9,*) nloc_buff%kbdots(:,k)
+  ! enddo
 
-do k = 1, blksize
-        !   write(9,*) "after check 1 request ==",nloc_buffers(k)%request
-        !   call buff_nloc_iallreduce_check(nloc_buffers(k))
-        !   write(9,*) "after check 2 request == ",nloc_buffers(k)%request
-        !  END MASTER
-        !  BARRIER
-        if (nloc_p_pot%nkpt == 0) then
-                call Zmatvec_nlocB_1D(nloc_buff%kbdots(:,k), &
-                        nloc_p_pot, w(1:ldn,k), ldn)
-        else
-                call Zmatvec_nlocB_kpt_1D(nloc_buff%kbdots(:,k), &
-                        nloc_p_pot, w(1:ldn,k), ldn, kplp)
-        endif
+  do k = 1, blksize
+    ! write(9,*) "after check 1 request ==",nloc_buffers(k)%request
+    ! call buff_nloc_iallreduce_check(nloc_buffers(k))
+    ! write(9,*) "after check 2 request == ",nloc_buffers(k)%request
+    ! END MASTER
+    !  BARRIER
+    if (nloc_p_pot%nkpt == 0) then
+      call Zmatvec_nlocB_1D(nloc_buff%kbdots(:,k), nloc_p_pot, w(1:ldn,k), ldn)
+    else
+      call Zmatvec_nlocB_kpt_1D(nloc_buff%kbdots(:,k), nloc_p_pot, w(1:ldn,k), ldn, kplp)
+    endif
 
-        ! write(9,*) "DEBUG: got nonloc for vector",k
-enddo !k=1,blksize
-
+     ! write(9,*) "DEBUG: got nonloc for vector",k
+  enddo !k=1,blksize
 #ifdef ITAC
-call VTEND( vt_matvec_ps, mvierr)
+  call VTEND( vt_matvec_ps, mvierr)
 #endif
 
 
 !!! CLEANUP !{{{
-call destroy_nloc_buffer(nloc_buff)
-!write(9,*) '*** MatvecB: destroyed nloc buffer',k
-! this might not be here for long, since I want to merge the internal and external buffers
-if (.not. buffer_ext) then
-        do k = 1, num_lap_buffers
-                call destroy_lap_buffer(lap_buffers(k))
-                !write(9,*) '*** MatvecB: destroyed lap buffer',k
-        enddo
-endif
-
-
+  call destroy_nloc_buffer(nloc_buff)
+  !write(9,*) '*** MatvecB: destroyed nloc buffer',k
+  ! this might not be here for long, since I want to merge the internal and external buffers
+  if (.NOT. buffer_ext) then
+    do k = 1, num_lap_buffers
+      call destroy_lap_buffer(lap_buffers(k))
+    !write(9,*) '*** MatvecB: destroyed lap buffer',k
+    enddo
+  endif
 
 !{{{ +U
-! Last but not least , the onsite Coulomb interaction, if any.
-! However, no one has checked this subroutine in years!
-if (u_pot%maxnloc > 0) then
-        do k = 1, blksize
-                ! ..for each vector     
+  ! Last but not least , the onsite Coulomb interaction, if any.
+  ! However, no one has checked this subroutine in years!
+  if (u_pot%maxnloc > 0) then
+    do k = 1, blksize
+      ! ..for each vector     
 #ifdef CPLX
-                call zplusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
+      call zplusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
 #else
-                call plusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
+      call plusu(kplp,u_pot,solver,parallel,v(1,k),w(1,k))
 #endif
-        enddo
-endif
+    enddo
+  endif
   !}}}
 
 
 
 
 end subroutine ZmatvecB
-
-
 
 
 !===================================================================
@@ -600,6 +548,7 @@ end subroutine Zmatvec_nloc_kbdotsB_kpt_1D !}}}
 subroutine Zmatvec_nlocB_1D(kbdots,nloc_p_pot,q,ldn) !{{{
     use constants
     use non_local_psp_module
+    use mpi
     implicit none
   !
   ! Input/Output variables:
@@ -645,6 +594,7 @@ subroutine Zmatvec_nlocB_kpt_1D(kbdots,nloc_p_pot,q,ldn,kplp) !{{{
     use constants
     use non_local_psp_module
     use Zbuffer_module
+    use mpi
     implicit none
   !
   ! Input/Output variables:

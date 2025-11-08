@@ -217,7 +217,7 @@ subroutine inipbc(clust,p_pot,grid,pbc,symm,ipr,ierr)
   write(7,*)
 
 21 format(' Input grid spacing:', 1x, f6.3, 1x, 'bohr')
-22 format(' Final grid spacings:', 1x, 3(f6.3, 1x), 'bohr')
+22 format(' Final grid spacings:', 1x, 3(f16.12, 1x), 'bohr')
 24 format(' Number of grid points along each direction:',3(1x,i3))
 
 end subroutine inipbc
@@ -261,8 +261,7 @@ subroutine get_address(pbc,i,j,k,iadd,phase)
   if (gv(3) < pbc%mz) gv(3) = gv(3) + pbc%n3
   iadd = ( (k-1)*pbc%n2 + j-1 )*pbc%n1 + i
   phi = dot_product(gv,pbc%shift)
-  !phase = dcmplx(cos(phi),sin(phi))
-  phase = cmplx(cos(phi), sin(phi), kind=dp)
+  phase = dcmplx(cos(phi),sin(phi))
 
 end subroutine get_address
 !===============================================================

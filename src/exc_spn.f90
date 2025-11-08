@@ -133,7 +133,7 @@ subroutine exc_spn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
   ! Other parameters
   real(dp), parameter :: ac2 = four/three
   real(dp), parameter :: p75vpi = 0.75d0/pi
-  real(dp), parameter :: ax = -0.738558766382022405884230032680836d0
+  real(dp), parameter :: ax = -0.7385587663820224d0
   real(dp), parameter :: gamma = 0.5198421d0
   real(dp), parameter :: fzz = 1.709921d0
   ! other temporary holders

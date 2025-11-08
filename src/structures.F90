@@ -15,7 +15,12 @@ module cluster_module
      real(dp), dimension (:), pointer :: xatm
      real(dp), dimension (:), pointer :: yatm
      real(dp), dimension (:), pointer :: zatm
+     real(dp), dimension (:), pointer :: xatminit
+     real(dp), dimension (:), pointer :: yatminit
+     real(dp), dimension (:), pointer :: zatminit
      integer, dimension (:), pointer :: mvat 
+     integer, dimension (:), pointer :: rpat 
+     real(dp) cr6, cex, rex, rf
 
      ! amass - atomic mass of each ion
      real(dp),  dimension (:), pointer :: amass
@@ -86,7 +91,8 @@ contains
     implicit none
     type (cluster), intent (inout) :: clust
 
-    nullify(clust%xatm , clust%yatm, clust%zatm, clust%mvat, clust%amass, clust%natmi, clust%force)
+    nullify(clust%xatm , clust%yatm, clust%zatm, clust%mvat, clust%rpat, clust%amass, clust%natmi, clust%force)
+    nullify(clust%xatminit, clust%yatminit, clust%zatminit)
     nullify(clust%force_so, clust%name, clust%ylmdos_cutoff, clust%xpt, clust%ypt)
     nullify(clust%zpt, clust%qpt, clust%nptt, clust%atype)
     nullify(clust%number_charged_sheets_per_type,clust%sheet_charge_of_type,clust%z_charged_sheets)
@@ -100,7 +106,11 @@ contains
     if (associated (clust%xatm)) deallocate (clust%xatm) 
     if (associated (clust%yatm)) deallocate (clust%yatm) 
     if (associated (clust%zatm)) deallocate (clust%zatm)      
+    if (associated (clust%xatminit)) deallocate (clust%xatminit) 
+    if (associated (clust%yatminit)) deallocate (clust%yatminit) 
+    if (associated (clust%zatminit)) deallocate (clust%zatminit)      
     if (associated (clust%mvat)) deallocate (clust%mvat)    
+    if (associated (clust%rpat)) deallocate (clust%rpat)    
     if (associated (clust%amass)) deallocate (clust%amass)  
     if (associated (clust%natmi)) deallocate (clust%natmi)
     if (associated (clust%force)) deallocate (clust%force)
@@ -130,9 +140,13 @@ contains
 
     clust%atom_num = atom_num
     allocate (clust%mvat (atom_num))
+    allocate (clust%rpat (atom_num))
     allocate (clust%zatm (atom_num))
     allocate (clust%yatm (atom_num))
     allocate (clust%xatm (atom_num))
+    allocate (clust%zatminit (atom_num))
+    allocate (clust%yatminit (atom_num))
+    allocate (clust%xatminit (atom_num))
     allocate (clust%amass (atom_num))
     allocate (clust%atype (atom_num))
     allocate (clust%force (3,atom_num))
@@ -694,7 +708,7 @@ module grid_module
      ! are changed, update the broadcast statements in init_var
      !
      ! tells the different subroutines that experimental mode is on :)
-     logical :: experimental
+     integer :: experimental
      !number of buffers to use in matvec, read in here, fed to parallel later
      integer :: max_lap_buffers
 
@@ -1237,7 +1251,7 @@ module molecular_dynamic_module
      ! cooling scheme (1 - stair, 2- linear, 3 - log)
      integer :: cool_type
      ! how many step to apply
-     integer :: step_num      
+     integer :: step_num,step_num_class,step_num_old,step_num_class_old, step_num_hybrid 
      ! initial temperature (in kelvins)
      real(dp) :: tempi
      ! final temperature (in kelvins)
@@ -1263,25 +1277,48 @@ module molecular_dynamic_module
      ! flag indicates if molecular dynamic is on, in current
      ! computation (provided by the user)
      logical :: is_on
+     ! class or hybrid
+     logical :: class,hybrid,check,class_restart,seq,uhist,sc
+     integer :: ptype,cstep
+     real(dp) :: md_thr,iso_energy,dist_thr,energy_thr
+     real(dp) :: emin, emax, tke, initen
+     real(dp), dimension (:,:), pointer :: dist_min, dist_max
+     real(dp), dimension (:,:,:), pointer :: theta_min, theta_max
+     real(dp) :: nose
+     real(dp), dimension (:), pointer :: xnose, vnose
+     integer :: nchain
+     real(dp) :: nosez,nosezold, nosezd,nosezdd, nosezcur
+     real(dp) :: tav
+     ! class/DFT switch for hybrid MD
+     logical :: csw, contn
+     integer :: verbose
+     integer :: every_save
+     integer :: cnmax
+     real(dp) :: bdevprev, de
+     logical :: read_inivel, rescale_bo,disfor
 
      ! flag to turn on limited movement MD (some atoms fixed and some free)
      logical :: limited
 
      ! flag that indicates if this is a restart run
-     logical :: is_restart
+     logical :: is_restart 
 
      ! Langevin trajectory variables
 
      ! current positions
      real(dp), dimension (:), pointer :: xcur, ycur, zcur
+     real(dp), dimension (:), pointer :: xcur2, ycur2, zcur2
      ! old positions (from previous step)      
      real(dp), dimension (:), pointer :: xold, yold, zold
+     real(dp), dimension (:), pointer :: xold2, yold2, zold2
 
      ! old velocities (from previous step)
      real(dp), dimension (:), pointer :: vxold, vyold, vzold
+     real(dp), dimension (:), pointer :: vxold2, vyold2, vzold2
 
      ! old and older accelerations (from previous two steps)
      real(dp), dimension (:), pointer ::accxold,accyold,acczold
+     real(dp), dimension (:), pointer ::accxold2,accyold2,acczold2
 
      ! For testing/debugging: Use a simple RNG instead of system's
      logical :: use_test_rng 
@@ -1295,6 +1332,8 @@ module molecular_dynamic_module
      ! Random-number array. This array is reconstructed every time all
      ! numbers are used. See subroutine getrandom
      real(dp), dimension(:), pointer :: vrandom
+     real(dp) eclass
+     real(dp) mdtime
 
   end type molecular_dynamic
 
@@ -1307,16 +1346,34 @@ contains
     nullify(mol_dynamic%xcur)
     nullify(mol_dynamic%ycur)
     nullify(mol_dynamic%zcur)
+    nullify(mol_dynamic%xcur2)
+    nullify(mol_dynamic%ycur2)
+    nullify(mol_dynamic%zcur2)
     nullify(mol_dynamic%xold)
     nullify(mol_dynamic%yold)
     nullify(mol_dynamic%zold)
+    nullify(mol_dynamic%xold2)
+    nullify(mol_dynamic%yold2)
+    nullify(mol_dynamic%zold2)
     nullify(mol_dynamic%vxold)
     nullify(mol_dynamic%vyold)
     nullify(mol_dynamic%vzold)
+    nullify(mol_dynamic%vxold2)
+    nullify(mol_dynamic%vyold2)
+    nullify(mol_dynamic%vzold2)
     nullify(mol_dynamic%accxold)
     nullify(mol_dynamic%accyold)
     nullify(mol_dynamic%acczold)
+    nullify(mol_dynamic%accxold2)
+    nullify(mol_dynamic%accyold2)
+    nullify(mol_dynamic%acczold2)
     nullify(mol_dynamic%vrandom)
+    nullify(mol_dynamic%dist_min)
+    nullify(mol_dynamic%dist_max)
+    nullify(mol_dynamic%theta_min)
+    nullify(mol_dynamic%theta_max)
+    nullify(mol_dynamic%xnose)
+    nullify(mol_dynamic%vnose)
 
   end subroutine init_molecular_dynamic
 
@@ -1327,43 +1384,96 @@ contains
     if (associated (mol_dynamic%xcur)) deallocate (mol_dynamic%xcur)
     if (associated (mol_dynamic%ycur)) deallocate (mol_dynamic%ycur)
     if (associated (mol_dynamic%zcur)) deallocate (mol_dynamic%zcur)
+    if (associated (mol_dynamic%xcur2)) deallocate (mol_dynamic%xcur2)
+    if (associated (mol_dynamic%ycur2)) deallocate (mol_dynamic%ycur2)
+    if (associated (mol_dynamic%zcur2)) deallocate (mol_dynamic%zcur2)
     if (associated (mol_dynamic%xold)) deallocate (mol_dynamic%xold)
     if (associated (mol_dynamic%yold)) deallocate (mol_dynamic%yold)
     if (associated (mol_dynamic%zold)) deallocate (mol_dynamic%zold)
+    if (associated (mol_dynamic%xold2)) deallocate (mol_dynamic%xold2)
+    if (associated (mol_dynamic%yold2)) deallocate (mol_dynamic%yold2)
+    if (associated (mol_dynamic%zold2)) deallocate (mol_dynamic%zold2)
     if (associated (mol_dynamic%vxold)) deallocate (mol_dynamic%vxold)
     if (associated (mol_dynamic%vyold)) deallocate (mol_dynamic%vyold)
     if (associated (mol_dynamic%vzold)) deallocate (mol_dynamic%vzold)
+    if (associated (mol_dynamic%vxold2)) deallocate (mol_dynamic%vxold2)
+    if (associated (mol_dynamic%vyold2)) deallocate (mol_dynamic%vyold2)
+    if (associated (mol_dynamic%vzold2)) deallocate (mol_dynamic%vzold2)
     if (associated (mol_dynamic%accxold)) deallocate (mol_dynamic%accxold)
     if (associated (mol_dynamic%accyold)) deallocate (mol_dynamic%accyold)
     if (associated (mol_dynamic%acczold)) deallocate (mol_dynamic%acczold)
+    if (associated (mol_dynamic%accxold2)) deallocate (mol_dynamic%accxold2)
+    if (associated (mol_dynamic%accyold2)) deallocate (mol_dynamic%accyold2)
+    if (associated (mol_dynamic%acczold2)) deallocate (mol_dynamic%acczold2)
     if (associated (mol_dynamic%vrandom)) deallocate (mol_dynamic%vrandom)
+    if (associated (mol_dynamic%dist_min)) deallocate (mol_dynamic%dist_min)
+    if (associated (mol_dynamic%dist_max)) deallocate (mol_dynamic%dist_max)
+    if (associated (mol_dynamic%theta_min)) deallocate (mol_dynamic%theta_min)
+    if (associated (mol_dynamic%theta_max)) deallocate (mol_dynamic%theta_max)
+    if (associated (mol_dynamic%xnose)) deallocate (mol_dynamic%xnose)
+    if (associated (mol_dynamic%vnose)) deallocate (mol_dynamic%vnose)
 
   end subroutine destroy_molecular_dynamic
       
-  subroutine molecular_dynamic_turn_on (mol_dynamic,atom_num)
+  subroutine molecular_dynamic_turn_on (mol_dynamic,atom_num,type_num)
     implicit none
 
     type (molecular_dynamic), intent (inout) :: mol_dynamic
-    integer, intent(in) :: atom_num
+    integer, intent(in) :: atom_num,type_num
 
     mol_dynamic%is_restart = .false.
 
     allocate (mol_dynamic%xcur (atom_num))
     allocate (mol_dynamic%ycur (atom_num))
     allocate (mol_dynamic%zcur (atom_num))
+    allocate (mol_dynamic%xcur2(atom_num))
+    allocate (mol_dynamic%ycur2(atom_num))
+    allocate (mol_dynamic%zcur2(atom_num))
     allocate (mol_dynamic%xold (atom_num))
     allocate (mol_dynamic%yold (atom_num))
     allocate (mol_dynamic%zold (atom_num))
+    allocate (mol_dynamic%xold2(atom_num))
+    allocate (mol_dynamic%yold2(atom_num))
+    allocate (mol_dynamic%zold2(atom_num))
     allocate (mol_dynamic%vxold (atom_num))
     allocate (mol_dynamic%vyold (atom_num))
     allocate (mol_dynamic%vzold (atom_num))
+    allocate (mol_dynamic%vxold2(atom_num))
+    allocate (mol_dynamic%vyold2(atom_num))
+    allocate (mol_dynamic%vzold2(atom_num))
     allocate (mol_dynamic%accxold (atom_num))
     allocate (mol_dynamic%accyold (atom_num))
     allocate (mol_dynamic%acczold (atom_num))
+    allocate (mol_dynamic%accxold2(atom_num))
+    allocate (mol_dynamic%accyold2(atom_num))
+    allocate (mol_dynamic%acczold2(atom_num))
+   
+    allocate (mol_dynamic%dist_min(type_num,type_num))
+    mol_dynamic%dist_min(:,:) = 30.d0
+    allocate (mol_dynamic%dist_max(type_num,type_num))
+    mol_dynamic%dist_max(:,:) = 0.d0
+    allocate (mol_dynamic%theta_min(type_num,type_num,type_num))
+    allocate (mol_dynamic%theta_max(type_num,type_num,type_num))
+    mol_dynamic%theta_min(:,:,:) =  1.d0
+    mol_dynamic%theta_max(:,:,:) = -1.d0
+    mol_dynamic%emin = -123d15
+    mol_dynamic%emax = 0.d0
+    mol_dynamic%tke = 0.d0
+    mol_dynamic%contn = .false.
+    mol_dynamic%nosez = 0.d0 
+    mol_dynamic%vnose = 0.d0 
+    mol_dynamic%xnose = 0.d0 
+    mol_dynamic%nosezold = 0.d0 
+    mol_dynamic%tav = 0.d0 
+   allocate(mol_dynamic%xnose(mol_dynamic%nchain))
+   allocate(mol_dynamic%vnose(mol_dynamic%nchain))
 
     mol_dynamic%nrandom = 10000
     allocate (mol_dynamic%vrandom(mol_dynamic%nrandom))
     mol_dynamic%iset = 0
+    mol_dynamic%mdtime = 0
+    mol_dynamic%cstep = 0
+    mol_dynamic%verbose = 0
 
   end subroutine molecular_dynamic_turn_on
 
@@ -1764,6 +1874,7 @@ module pbc_module
      real(dp) :: shift(3)
      ! atomic coordinates with respect to the corner of FFT box
      real(dp), dimension(:,:,:), pointer :: rat
+     real(dp), dimension(:,:,:), pointer :: ratpt
 
      ! phase factors
      complex(dpc), dimension(:), pointer :: phase
@@ -1820,6 +1931,7 @@ contains
     nullify(pbc%vscr2)
     nullify(pbc%vscr4)
     nullify(pbc%rat)
+    nullify(pbc%ratpt)
     nullify(pbc%vloc)
     nullify(pbc%dcor)
     nullify(pbc%kpts)
@@ -1844,6 +1956,7 @@ contains
     if (associated (pbc%vscr2)) deallocate (pbc%vscr2)
     if (associated (pbc%vscr4)) deallocate (pbc%vscr4)
     if (associated (pbc%rat)) deallocate (pbc%rat)
+    if (associated (pbc%ratpt)) deallocate (pbc%ratpt)
     if (associated (pbc%vloc)) deallocate (pbc%vloc)
     if (associated (pbc%dcor)) deallocate (pbc%dcor)
     if (associated (pbc%kpts)) deallocate (pbc%kpts)
@@ -1948,6 +2061,26 @@ module potential_module
      ! array of coefficients for Hartree multipole expansion
      real(dp),  dimension (:,:), pointer ::  clm
 
+     ! potfield stuff  
+     real(dp), dimension (:), pointer :: vshart
+     real(dp), dimension (:), pointer :: vsion
+     !real(dp), dimension (:), pointer :: vsxc
+     real(dp), dimension (:), pointer :: rho0
+     logical  :: fex_is
+     character(len=50) :: fex_name
+     ! non-additive kinetic potential
+     real(dp), dimension (:), pointer :: vnadd
+     ! non-additive kinetic energy
+     real(dp) :: tnadd
+     ! approximation method of non-additive energy
+     integer :: kin_name
+     ! pbe parameters u and k
+     real(dp) :: vum, vuk
+     ! kinetic energy to be saved
+     real(dp) :: newke
+     ! old kinetic energy (i.e. sample kinetic energy)
+     real(dp) :: oldke
+     
      ! AMIR - changes of Doron - for current dft?
 
      ! current scalar potential
@@ -1979,6 +2112,13 @@ contains
     nullify (pot%vhxcold)
     nullify (pot%clm)
 
+    !potfield
+    nullify (pot%vshart)
+    nullify (pot%vsion)
+    !nullify (pot%vsxc)
+    nullify (pot%rho0)
+    nullify (pot%vnadd)
+
     ! AMIR - changes of Doron for current dft?
 
     nullify (pot%vxcj)
@@ -2000,6 +2140,13 @@ contains
     if (associated (pot%rho_gauss)) deallocate (pot%rho_gauss)
     if (associated (pot%vhxcold)) deallocate (pot%vhxcold)
     if (associated (pot%clm)) deallocate (pot%clm)
+
+    !potfield
+    if (associated (pot%vshart)) deallocate (pot%vshart)
+    if (associated (pot%vsion)) deallocate (pot%vsion)
+    !if (associated (pot%vsxc)) deallocate (pot%vsxc)
+    if (associated (pot%rho0)) deallocate (pot%rho0)
+    if (associated (pot%vnadd)) deallocate (pot%vnadd)
 
     ! AMIR - changes of Doron for current dft?
 
@@ -2048,12 +2195,37 @@ contains
 !        call alccheck('axc',3*ndim*nspin, alcstat)
 !    endif
 
+    !potfield
+    allocate (pot%vshart (ndim),stat=alcstat)
+    call alccheck('vshart',ndim, alcstat)
+    allocate (pot%vsion (ndim),stat=alcstat)
+    call alccheck('vsion',ndim, alcstat)
+    !allocate (pot%vsxc (ndim),stat=alcstat)
+    !call alccheck('vsxc',ndim, alcstat)
+    allocate (pot%rho0 (ndim),stat=alcstat)
+    call alccheck('rho0',ndim, alcstat)
+    allocate (pot%vnadd (ndim),stat=alcstat)
+    call alccheck('vnadd',ndim, alcstat)
+
+
     pot%vhart(:) = zero
 !    pot%vxc(:,:) = zero
 !    pot%vxcj(:,:) = zero
 !    pot%axch(:,:,:) = zero
 !    pot%axc(:,:,:) = zero
     pot%vxc(:,:) = zero
+
+    !potfield
+    pot%vshart(:) = zero
+    pot%vsion(:) = zero
+    !pot%vsxc(:) = zero
+    pot%rho0(:) = zero
+    pot%vnadd(:) = zero
+    pot%tnadd = zero
+    pot%oldke = zero
+    pot%newke = zero
+    !pot%vum = zero
+    !pot%vuk = zero
 
   end subroutine potential_set_ndim
 

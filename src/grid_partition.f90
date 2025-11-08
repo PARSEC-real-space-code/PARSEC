@@ -348,7 +348,7 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
   write(9,*) 'The Hamiltonian matrix size is', ndim
   write(9,*) ' reduced size is ',nwedge
   write(9,*) ' maximum distance between grid points and their images is'
-  write(9,'(2x,g11.4,a)') dmax,'  [bohr]'
+  write(9,'(2x,g10.4,a)') dmax,'  [bohr]'
 
   write(9,*)
   write(9,15) 6*nord2
@@ -360,7 +360,7 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
   write(7,*) ' reduced size is ',nwedge
   write(7,*) ' maximum distance between grid points' &
        ,' and their images is'
-  write(7,'(2x,g11.4,a)') dmax,'  [bohr]'
+  write(7,'(2x,g10.4,a)') dmax,'  [bohr]'
 
   write(7,*)
   write(7,15) 6*nord2
@@ -602,11 +602,11 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
   do ii=1,3
     if(grid%lap_dir(ii) /= 0) then
       do jj=1,3
-       if(grid%lap_neig(jj,ii)>0) then
+       if(grid%lap_neig(ii,jj)>0) then
          idx1(jj,1)=1
          idx1(jj,2)=3
        else
-         if(grid%lap_neig(jj,ii)<0) then
+         if(grid%lap_neig(ii,jj)<0) then
            idx1(jj,1)=3
            idx1(jj,2)=1
          else
@@ -624,9 +624,9 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
              , grid_limits(3,idx1(3,1)+1)
 
            grid%indexg(i,j,k)= &
-            grid%indexg(i+gwrap(1)*grid%lap_neig(1,ii) &
-                       ,j+gwrap(2)*grid%lap_neig(2,ii) &
-                       ,k+gwrap(3)*grid%lap_neig(3,ii))
+            grid%indexg(i+gwrap(1)*grid%lap_neig(ii,1) &
+                       ,j+gwrap(2)*grid%lap_neig(ii,2) &
+                       ,k+gwrap(3)*grid%lap_neig(ii,3))
        enddo
       enddo
      enddo
@@ -639,9 +639,9 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
         do k = grid_limits(3,idx1(3,2)) &
              , grid_limits(3,idx1(3,2)+1)
            grid%indexg(i,j,k)= &
-              grid%indexg(i-gwrap(1)*grid%lap_neig(1,ii) &
-                         ,j-gwrap(2)*grid%lap_neig(2,ii) &
-                         ,k-gwrap(3)*grid%lap_neig(3,ii))
+              grid%indexg(i-gwrap(1)*grid%lap_neig(ii,1) &
+                         ,j-gwrap(2)*grid%lap_neig(ii,2) &
+                         ,k-gwrap(3)*grid%lap_neig(ii,3))
        enddo
       enddo
      enddo
@@ -653,7 +653,7 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
      !permitted grid and the other 2 are outside. We assume that all
      !neighbor coordinates are +/- 1. 
 
-     if(sum(abs(grid%lap_neig(1:3,ii)))>2) then
+     if(sum(abs(grid%lap_neig(ii,1:3)))>2) then
        do jj=1,3
          idx2=idx1
          gwrap2=gwrap
@@ -669,9 +669,9 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
                , grid_limits(3,idx2(3,1)+1)
 
             grid%indexg(i,j,k)= &
-             grid%indexg(i+gwrap2(1)*grid%lap_neig(1,ii) &
-                        ,j+gwrap2(2)*grid%lap_neig(2,ii) &
-                        ,k+gwrap2(3)*grid%lap_neig(3,ii))
+             grid%indexg(i+gwrap2(1)*grid%lap_neig(ii,1) &
+                        ,j+gwrap2(2)*grid%lap_neig(ii,2) &
+                        ,k+gwrap2(3)*grid%lap_neig(ii,3))
             enddo
           enddo
          enddo
@@ -684,9 +684,9 @@ subroutine grid_partition(grid,pbc,rsymm,parallel,ierr)
                , grid_limits(3,idx2(3,2)+1)
 
             grid%indexg(i,j,k)= &
-             grid%indexg(i-gwrap2(1)*grid%lap_neig(1,ii) &
-                        ,j-gwrap2(2)*grid%lap_neig(2,ii) &
-                        ,k-gwrap2(3)*grid%lap_neig(3,ii))
+             grid%indexg(i-gwrap2(1)*grid%lap_neig(ii,1) &
+                        ,j-gwrap2(2)*grid%lap_neig(ii,2) &
+                        ,k-gwrap2(3)*grid%lap_neig(ii,3))
             enddo
           enddo
          enddo

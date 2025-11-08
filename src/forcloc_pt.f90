@@ -24,7 +24,7 @@
 !           the pseudopotential.
 !
 !---------------------------------------------------------------
-subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
+subroutine forcloc_pt(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
 
   use constants
   use cluster_module
@@ -102,9 +102,9 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
 
   !---------------------------------------------------------------
 
+  write(9,*) "pt 1"
   do ii = 1, parallel%mydim
-    rhotot(ii) = rho(ii) 
-    if(pot%fex_is) rhotot(ii) =  rhotot(ii) + pot%rho0(ii)
+    rhotot(ii) = rho(ii) + pot%rho0(ii)
   end do
 
   hcub = grid%hcub
@@ -132,7 +132,6 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
   if (pot%nspin == 1) then
      do ii = 1, parallel%mydim
         vxcav(ii) = pot%vxc(ii,1)
-        if(pot%fex_is) vxcav(ii) = vxcav(ii) + pot%vnadd(ii) 
      enddo
   else
      do ii = 1, parallel%mydim
@@ -149,7 +148,9 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
   !  Initialize atom counter, ja.
   ja = 0
   !  For all atom types...
-  do ity = 1, clust%type_num
+  write(9,*) "Npttyp and nptt" 
+  write(9,*) clust%npttyp, clust%nptt
+  do ity = 1, clust%npttyp
      !  Define temporary variables.
      jcore = p_pot%icore(ity)
 
@@ -163,7 +164,7 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
      binv = one/p_pot%par_b(ity)
      c_a = p_pot%par_c(ity) / p_pot%par_a(ity)
      !  For all atoms within each type...
-     do iat   = 1, clust%natmi(ity)
+     do iat   = 1, clust%nptt(ity)
         !  Update atom counter.
         ja = ja + 1
         !  Initialize all force accumulators (and core charge derivative)
@@ -181,9 +182,9 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
               call symop(rsymm,itrans,rw,rrw)
 
               !  Calculate distance from grid point to atom.
-              rr1(1) = rrw(1) - clust%xatm(ja)
-              rr1(2) = rrw(2) - clust%yatm(ja)
-              rr1(3) = rrw(3) - clust%zatm(ja)
+              rr1(1) = rrw(1) - clust%xpt(ja)
+              rr1(2) = rrw(2) - clust%ypt(ja)
+              rr1(3) = rrw(3) - clust%zpt(ja)
 
               r1sq = dot_product(rr1,rr1)
               r1 = sqrt(r1sq)
@@ -267,6 +268,7 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
            enddo            ! itrans = 1, rsymm%ntrans
         enddo               ! jgrid = 1, parallel%mydim
 
+        write(9,*) "pt 5",ity,iat
         call psum(f_l,3,parallel%group_size,parallel%group_comm)
         call psum(f_c,3,parallel%group_size,parallel%group_comm)
         call psum(f_core,3,parallel%group_size,parallel%group_comm)
@@ -278,11 +280,13 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
 
         !  Update total force arrays (adding the three components to the
         !  ion-ion forces).
+        write(9,*) "pt 6",ity,iat
         clust%force(:,ja) = clust%force(:,ja) + (f_l + f_c)*hcub
         if (jcore > 0) &
            clust%force(:,ja) = clust%force(:,ja) + f_core*hcub
      enddo                  ! jat = 1, clust%natmi(ity)
   enddo                     ! ity = 1, clust%type_num
+  write(9,*) "pt Fin"
 
 20 format('at',i4,1x,3(f11.6,1x),1x,3(f11.6,1x),/,7x,3(f11.6,1x))
 
@@ -290,5 +294,5 @@ subroutine forcloc(clust,grid,pot,p_pot,rsymm,parallel,rho,ipr,oldinpformat)
 
   deallocate(dvhxc, vxcav)
 
-end subroutine forcloc
+end subroutine forcloc_pt
 !===============================================================

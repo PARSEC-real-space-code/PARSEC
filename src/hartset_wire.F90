@@ -120,7 +120,7 @@ subroutine hartset_wire(grid,pbc,rsymm,parallel,norder,lpole, &
         cc = rw(2) * tmp1
         ss = rw(3) * tmp1
         ypiz(0) = zone
-        ypiz(1) = cmplx(cc,-ss,dpc)
+        ypiz(1) = cmplx(cc,-ss)
         do mm = 2, lpole
            ypiz(mm) = ypiz(mm-1) * ypiz(1)
         enddo
@@ -252,7 +252,7 @@ subroutine hartset_wire(grid,pbc,rsymm,parallel,norder,lpole, &
               cc = rw(2) * tmp1
               ss = rw(3) * tmp1
               ypiz(0) = zone
-              ypiz(1) = cmplx(cc,ss,dpc)
+              ypiz(1) = cmplx(cc,ss)
               do mm = 2, lpole
                  ypiz(mm) = ypiz(mm-1) * ypiz(1)
               enddo

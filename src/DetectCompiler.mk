@@ -21,6 +21,7 @@ TAG_COMPILER:=$(MACH)
 ifeq ($(findstring mpif90,$(notdir $(realpath $(pathF90)))),mpif90)
 	tF90:=$(firstword $(shell $(pathF90) -show))
 	TAG_COMPILER:=$(TAG_COMPILER)-mpif90
+	SHOW_VERB:=-show
 endif
 
 # ================================
@@ -28,7 +29,8 @@ endif
 # ================================
 ifeq ($(findstring mpiifx,$(notdir $(realpath $(pathF90)))),mpiifx)
 	tF90:=$(firstword $(shell $(pathF90) --version))
-	TAG_COMPILER:=$(MACH)-mpiifx
+	TAG_COMPILER:=$(TAG_COMPILER)-mpiifx
+	SHOW_VERB:=-show
 endif
 
 # ================================
@@ -36,7 +38,8 @@ endif
 # ================================
 ifeq ($(findstring mpiifort,$(notdir $(realpath $(pathF90)))),mpiifort)
 	tF90:=$(firstword $(shell $(pathF90) --version))
-	TAG_COMPILER:=$(MACH)-mpiifort
+	TAG_COMPILER:=$(TAG_COMPILER)-mpiifort
+	SHOW_VERB:=-show
 endif
 
 # ================================
@@ -44,7 +47,8 @@ endif
 # ================================
 ifeq ($(findstring mpifort,$(notdir $(realpath $(pathF90)))),mpifort)
 	tF90:=$(firstword $(shell $(pathF90) --version))
-	TAG_COMPILER:=$(MACH)-mpifort
+	TAG_COMPILER:=$(TAG_COMPILER)-mpifort
+	SHOW_VERB:=-show
 endif
 
 # ========================================================================================
@@ -52,7 +56,8 @@ endif
 # ========================================================================================
 ifeq ($(findstring ftn,$(rF90)),ftn)
 	tF90:=$(filter pgf90% ifort% GNU%, $(shell $(pathF90) -craype-verbose -V 2>>/dev/null ))
-	TAG_COMPILER:=$(MACH)-ftn
+	TAG_COMPILER:=$(TAG_COMPILER)-ftn
+	SHOW_VERB:=-craype-verbose -V
 endif
 
 # =====================================================================================================
@@ -61,14 +66,16 @@ endif
 ifeq ($(findstring driver,$(rF90)),driver)
 	tF90:=$(filter pgf90% ifort% GNU% ftn_driver.exe%, $(shell $(pathF90) -craype-verbose -V 2>>/dev/null ))
 	TAG_COMPILER:=$(TAG_COMPILER)-ftn
+	SHOW_VERB:=-craype-verbose -V
 endif
 
 # ================================
 # Detect "openmpi's mpif90"
 # ================================
 ifeq ($(findstring opal_wrapper,$(notdir $(realpath $(pathF90)))),opal_wrapper)
-	tF90:=$(firstword $(shell $(pathF90) --version))
-	TAG_COMPILER:=$(MACH)-$(notdir $(pathF90))
+	tF90:=$(firstword $(shell $(pathF90) -show))
+	TAG_COMPILER:=$(TAG_COMPILER)-$(notdir $(pathF90))
+	SHOW_VERB:=-show
 endif
 
 # ===================================
@@ -76,6 +83,7 @@ endif
 # ===================================
 ifeq ($(TAG_COMPILER),$(MACH))
 	tF90:=$(firstword $(F90))
+	SHOW_VERB:= #
 endif
 
 ifeq ($(tF90),GNU)
@@ -97,9 +105,8 @@ IS_GCC := 0
 # =================
 # Detect "ifx"
 # =================
-# Check if $F90 filename has "ifx" in it, but don't be fooled if path has "ifx"
-ifeq ($(shell echo $(tF90) | sed 's,^ifx.*$$,ifx,g'),ifx)
-	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell $(pathF90) --version))
+ifeq ($(shell echo $(notdir $(tF90)) | sed 's,^ifx.*$$,ifx,g'),ifx)
+	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell ifx --version))
 	MODULE_IN :=-I
 	MODULE_OUT :=-module 
 	CFLAGS += -std=c99
@@ -110,12 +117,12 @@ endif
 # Detect "ifort"
 # =================
 # Check if $F90 filename has "ifort" in it, but don't be fooled if path has "ifort"
-ifeq ($(shell echo $(tF90) | sed 's,^ifort.*$$,ifort,g'),ifort)
-	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell $(pathF90) --version))
+ifeq ($(shell echo $(notdir $(tF90)) | sed 's,^ifort.*$$,ifort,g'),ifort)
+	TAG_COMPILER_VERSION :=$(wordlist 3, 3, $(shell ifort --version))
 	MODULE_IN :=-I
 	MODULE_OUT :=-module 
 	CFLAGS += -std=c99
-	TAG_COMPILER :=$(TAG_COMPILER)-$(tF90)-$(TAG_COMPILER_VERSION)
+	TAG_COMPILER :=$(TAG_COMPILER)-ifort-$(TAG_COMPILER_VERSION)
 endif
 
 # =================
@@ -123,7 +130,7 @@ endif
 # =================
 # Check if $F90 filename has "gfortran" in it, but don't be fooled if path has "gfortran"
 ifeq ($(shell echo $(notdir $(tF90)) | sed 's,gfortran[-mp].*,gfortran,g'),gfortran)
-	TAG_COMPILER_VERSION := $(shell ./dumpgccversion.sh $(tF90))
+	TAG_COMPILER_VERSION := $(shell ./build/dumpgccversion.sh $(tF90))
 	INCLUDE_VERB :=-I
 	MODULE_IN :=-I
 	MODULE_OUT :=-J
@@ -147,10 +154,10 @@ endif
 # Detect Cray Compiler
 # ======================
 ifeq ($(shell echo $(notdir $(tF90)) | sed 's,^ftn_driver.*,ftn_driver,g'),ftn_driver)
-    TAG_COMPILER_VERSION :=$(wordlist 5, 5, $(shell $(pathF90) -V 2>&1))
-    MODULE_IN :=-I
-    MODULE_OUT :=-J
-    TAG_COMPILER :=$(TAG_COMPILER)-cray-$(TAG_COMPILER_VERSION)
+	TAG_COMPILER_VERSION :=$(wordlist 5, 5, $(shell $(pathF90) -V 2>&1))
+	MODULE_IN :=-I
+	MODULE_OUT :=-J
+	TAG_COMPILER :=$(TAG_COMPILER)-cray-$(TAG_COMPILER_VERSION)
 endif
 
 # =================
@@ -177,3 +184,4 @@ ifeq ($(shell echo $(tF90) | sed 's,^nvfortran.*$$,nvfortran,g'),nvfortran)
 endif
 
 F90:=$(pathF90) $(filter-out $(firstword $(F90)), $(F90))
+

@@ -141,8 +141,8 @@ subroutine domove(clust,move,pbc,etot,bindev,ipr,ierr)
         allocate(move%lower(3*nmovable))
         allocate(move%upper(3*nmovable))
         allocate(move%ibfgs(44+9*nmovable))
-        allocate(move%wbfgs((2*move%mmax + 5)*3*nmovable + 11 &
-             *move%mmax*move%mmax + 8*move%mmax))
+        allocate(move%wbfgs((2*move%mmax + 4)*3*nmovable + 12 &
+             *move%mmax*move%mmax + 12*move%mmax))
         allocate(move%lbfgs(4))
         allocate(move%dbfgs(29))
 
@@ -371,12 +371,11 @@ subroutine domove(clust,move,pbc,etot,bindev,ipr,ierr)
      do j=1,29
         write(45,*) move%dbfgs(j)
      enddo
-! not flushing because file is being closed now
-!     call myflush(45) !or is it 46?
      close(45)
 ! #ifdef AJB_DEBUG
       write(7,*) '       finished writing stuff to relax_restart '
 ! #endif
+!     call myflush(45) !or is it 46?
   endif
   !
   ! Report new coordinates to file, unless this was the last step.
@@ -391,12 +390,11 @@ subroutine domove(clust,move,pbc,etot,bindev,ipr,ierr)
            write(66,34) clust%xatm(j), clust%yatm(j), clust%zatm(j)
         enddo
      enddo
+  endif
 ! #ifdef AJB_DEBUG
-      write(7,*) '       finished writing stuff to atom_cor '
+!      write(7,*) '       finished writing stuff to atom_cor '
 ! #endif
   call myflush(66)
-  endif
-
 32 format('Step #',1x,i3)
 34 format(3(3x,f10.6))
 

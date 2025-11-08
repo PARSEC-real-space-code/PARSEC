@@ -7,7 +7,7 @@
 !
 !---------------------------------------------------------------
 subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
-     elval,npolflg,field,ifield,istart,OutEvFlag,domain_shape, &
+     elval,npolflg,field,ifield,istart,OutEvFlag,domain_shape,bdev, &
      ierr)
 
   use constants
@@ -43,6 +43,8 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
   integer, intent(in) :: OutEvFlag
   ! the shape of the domain, for cluster (non-periodic) calculations
   integer, intent(in) :: domain_shape
+  ! energy/atom 
+  real(dp), intent(inout) :: bdev 
   ! error flag, 230 < ierr < 241
   integer, intent(out) :: ierr
   !
@@ -118,6 +120,18 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
              mol_dynamic%accyold(j),mol_dynamic%acczold(j), &
              amove(j)
      enddo
+     if(mol_dynamic%hybrid) then
+       do i = 1,clust%type_num
+         do j = 1,clust%type_num
+           read(76,*) mol_dynamic%dist_min(i,j), mol_dynamic%dist_max(i,j) 
+         enddo
+       enddo
+       read(76,*) bdev
+       read(76,*) mol_dynamic%de
+       if(.not. mol_dynamic%hybrid) mol_dynamic%de = zero
+       write(7,*) "Using",mol_dynamic%de,"as the maximum delta E within dt"
+       read(76,*) mol_dynamic%initen
+     endif
      close(76)
      ! Assign xatm, yatm and zatm to be xcur, ycur and zcur 
      ! They are moved to their rightful places right after this.
@@ -127,8 +141,18 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
         zatm(j) = mol_dynamic%zcur(j)  
         clust%mvat(j) = int(amove(j))
      enddo
+     if(mol_dynamic%nose .ge. zero) then
+       open(77,file='nhinit.dat',status='old',form='formatted',iostat=ii)
+       do j = 1, mol_dynamic%nchain
+         read(77,*) mol_dynamic%xnose(j), mol_dynamic%vnose(j)
+       enddo
+       close(77)
+     endif
+     if(mol_dynamic%hybrid) then
+        mol_dynamic%csw = .true.
+     endif
   endif
-20 format('Step #',i4)
+20 format('Step #',i9)
 
   if ((.not. pbc%is_on) .and. &
        (istart == 0) .and. (.not.(move%name == MANUAL))) then
@@ -161,41 +185,41 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
      ymov = half*(ymin+ymax)
      zmov = half*(zmin+zmax)
 
-     if (sqrt(xmov*xmov+ymov*ymov+zmov*zmov) > 0.1) then
-        write(7,*)
-        write(7,*) 'WARNING: atom coordinates were shifted so'
-        write(7,*) 'that the cluster is centered at the origin'
-        if((.not. pbc%is_on) .and. domain_shape > 0) then
-           ! note, this recentering should not cause problems for spherical
-           ! domains
-           write(7,*)
-           write(7,*) 'WARNING: This may cause atoms to be outside the domain.'
-           write(7,*) 'Coordinates in the input file may need to be adjusted.'
-        endif
-        write(7,*)
-        write(7,*) 'The new atom coordinates are:'
-
-        do j=1,natom
-           xatm(j) = xatm(j)-xmov
-           yatm(j) = yatm(j)-ymov
-           zatm(j) = zatm(j)-zmov
-           write(7,18) xatm(j),yatm(j),zatm(j)
-        enddo
-        if (clust%has_ptchrg) then
-           write(7,*)
-           write(7,*)'WARNING: point charge coordinates were shifted'
-           write(7,*)'in accordance with shift of atom coordinates!'
-           write(7,*)'The new point charge coordinates are:'
-
-           do j=1, clust%nptchrg
-              clust%xpt(j) = clust%xpt(j)-xmov
-              clust%ypt(j) = clust%ypt(j)-ymov
-              clust%zpt(j) = clust%zpt(j)-zmov
-              write(7,18) clust%xpt(j),clust%ypt(j),clust%zpt(j)
-           enddo
-        endif
+!     if (sqrt(xmov*xmov+ymov*ymov+zmov*zmov) > 0.1) then
+!        write(7,*)
+!        write(7,*) 'WARNING: atom coordinates were shifted so'
+!        write(7,*) 'that the cluster is centered at the origin'
+!        if((.not. pbc%is_on) .and. domain_shape > 0) then
+!           ! note, this recentering should not cause problems for spherical
+!           ! domains
+!           write(7,*)
+!           write(7,*) 'WARNING: This may cause atoms to be outside the domain.'
+!           write(7,*) 'Coordinates in the input file may need to be adjusted.'
+!        endif
+!        write(7,*)
+!        write(7,*) 'The new atom coordinates are:'
+!
+!        do j=1,natom
+!           xatm(j) = xatm(j)-xmov
+!           yatm(j) = yatm(j)-ymov
+!           zatm(j) = zatm(j)-zmov
+!           write(7,18) xatm(j),yatm(j),zatm(j)
+!        enddo
+!        if (clust%has_ptchrg) then
+!           write(7,*)
+!           write(7,*)'WARNING: point charge coordinates were shifted'
+!           write(7,*)'in accordance with shift of atom coordinates!'
+!           write(7,*)'The new point charge coordinates are:'
+!
+!           do j=1, clust%nptchrg
+!              clust%xpt(j) = clust%xpt(j)-xmov
+!              clust%ypt(j) = clust%ypt(j)-ymov
+!              clust%zpt(j) = clust%zpt(j)-zmov
+!              write(7,18) clust%xpt(j),clust%ypt(j),clust%zpt(j)
+!           enddo
+!        endif
 18      format(3(f15.9,3x))
-     endif
+!     endif
   elseif (pbc%is_on) then
 
      if ((pbc%per==2) .and. &
@@ -214,17 +238,17 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
      ! the negative direction.
        
        zmov = half*(zmin+zmax)
-       if (abs(zmov) > 0.1) then
-        write(7,*)
-        write(7,*) 'WARNING: atom coordinates were shifted so'
-        write(7,*) 'that the slab is centered at the origin'
-        write(7,*) 'The new atom coordinates are:'
-
-        do j=1,natom
-           zatm(j) = zatm(j)-zmov
-           write(7,18) xatm(j),yatm(j),zatm(j)
-        enddo
-       endif ! abs(zmov)>0.1
+!       if (abs(zmov) > 0.1) then
+!        write(7,*)
+!        write(7,*) 'WARNING: atom coordinates were shifted so'
+!        write(7,*) 'that the slab is centered at the origin'
+!        write(7,*) 'The new atom coordinates are:'
+!
+!        do j=1,natom
+!           zatm(j) = zatm(j)-zmov
+!           write(7,18) xatm(j),yatm(j),zatm(j)
+!        enddo
+!       endif ! abs(zmov)>0.1
      endif ! pbc%per==2
        
      ! If periodic system: make sure all atoms are inside the unit cell
@@ -367,11 +391,33 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
      write(92,90) natom
      write(92,*) 'Step # ', mol_dynamic%iframe
      ii = 0
-
      do i = 1, clust%type_num
         do j = 1, natmi(i)
            ii = ii + 1
            write(92,93) name(i), xatm(ii)*angs,yatm(ii)*angs, zatm(ii)*angs
+        enddo
+     enddo
+
+     open(931,file='xsf',status='unknown',form='formatted')
+     write(931,*) "ANIMSTEPS", mol_dynamic%step_num
+     if(pbc%per ==3) then
+       write(931,*) "CRYSTAL"
+       write(931,*) "PRIMVEC"
+       write(931,'(3f15.10)') pbc%latt_vec(:,1)*angs 
+       write(931,'(3f15.10)') pbc%latt_vec(:,2)*angs
+       write(931,'(3f15.10)') pbc%latt_vec(:,3)*angs
+     endif
+     if(pbc%per==0) then
+       write(931,*) 'ATOM', mol_dynamic%iframe+1
+     elseif(pbc%per==3) then    
+       write(931,*) 'PRIMCOORD', mol_dynamic%iframe+1
+       write(931,'(2i6)') natom, 1 
+     endif
+     ii = 0
+     do i = 1, clust%type_num
+        do j = 1, natmi(i)
+           ii = ii + 1
+           write(931,'(1i5,3f15.10)') natmi(i), xatm(ii)*angs,yatm(ii)*angs, zatm(ii)*angs
         enddo
      enddo
 
@@ -403,11 +449,19 @@ subroutine initial(clust,elec_st,pbc,mol_dynamic,move, &
         endif
         ! linear cooling - substract a fixed temperature step
      case (MD_LINEAR)
-        tscale = (tempf-tempi)/real(mol_dynamic%step_num,dp)
+        if(mol_dynamic%hybrid) then
+          tscale = (tempf-tempi)/real(mol_dynamic%step_num_hybrid,dp)
+        else
+          tscale = (tempf-tempi)/real(mol_dynamic%step_num,dp)
+        endif
         ! logarithm cooling - multiply the temperature by a fixed 
         ! ratio at each step
      case(MD_LOG)
-        tscale = (tempf/tempi)**(one/real(mol_dynamic%step_num,dp))
+        if(mol_dynamic%hybrid) then
+          tscale = (tempf/tempi)**(one/real(mol_dynamic%step_num_hybrid,dp))
+        else
+          tscale = (tempf/tempi)**(one/real(mol_dynamic%step_num,dp))
+        endif
      end select
      mol_dynamic%tscale = tscale
 

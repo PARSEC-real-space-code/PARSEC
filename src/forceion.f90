@@ -75,7 +75,17 @@ subroutine forceion(clust,zion,ipr,enuc)
                       two*(clust%yatm(ia)-clust%yatm(ja))*qdevr
                  clust%force(3,ia) = clust%force(3,ia) + &
                       two*(clust%zatm(ia)-clust%zatm(ja))*qdevr
-
+!                if(clust%rpat(ia) == 1 .and. clust%rpat(ja) == 1 .and. rij < 5) then
+!                  clust%force(1,ia) = clust%force(1,ia) + &
+!                       2.d0 * (clust%xatm(ia)-clust%xatm(ja)) / (rij2*rij2)
+!                  clust%force(2,ia) = clust%force(2,ia) + &
+!                       2.d0 * (clust%yatm(ia)-clust%yatm(ja)) / (rij2*rij2)
+!                  clust%force(3,ia) = clust%force(3,ia) + &
+!                       2.d0 * (clust%zatm(ia)-clust%zatm(ja)) / (rij2*rij2)
+!                  write(7,*) 'Forces from artificial interaction:'
+!                  write(7,*) '================================'
+!                  write(7,*) ia, 2.d0 / (rij2*rij)
+!                endif
                  ! Compute total nuclear energy.
                  ! Here there is no unit problem because the two of
                  ! Hartree->Rydberg cancels with the half resulting from

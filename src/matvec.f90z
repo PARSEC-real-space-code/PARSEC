@@ -850,9 +850,6 @@ subroutine Zmatvec_ke_new(solver, parallel, p, q, m,ldn) !{{{
 
   integer ii, mpinfo, reps, leftover, start
 !  integer(8) :: tim, flops
-
-  integer :: req(0:2*parallel%group_size*m), icomm
-
 #ifdef MPI
   ! send/rec buffers
   ! we pack all blocks together to save on message overhead
@@ -867,6 +864,7 @@ subroutine Zmatvec_ke_new(solver, parallel, p, q, m,ldn) !{{{
   integer :: sizeofscalar
 
   integer j_comm,nelem,msgtype,inode,jst,jelem,ipack
+  integer :: req(0:2*parallel%group_size*m), icomm
   integer status1(MPI_STATUS_SIZE,2*parallel%group_size*m)
   integer :: mxelem !size of communication buffer per block
 #endif
@@ -959,14 +957,13 @@ do k=1,m
 
 !$OMP BARRIER 
 !$OMP MASTER
-
 #ifdef NEIGHCOLLETIVE
 ! no need to wait if blocking comm is used
-call MPI_Wait(nonblock_req, nonblock_status, mpinfo)
+call MPI_WAITALL(1, nonblock_req, nonblock_status, mpinfo)
 
 #else
 
-call MPI_Waitall(icomm, req, status1, mpinfo)
+call MPI_WAITALL(icomm, req, status1, mpinfo)
 
 #endif
 !$OMP END MASTER

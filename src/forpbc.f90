@@ -13,7 +13,7 @@
 ! AJB 2015: URGENT - parallelize this
 !
 !---------------------------------------------------------------
-subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d)
+subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d,pot)
 
   use constants
   use cluster_module
@@ -21,6 +21,7 @@ subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d)
   use grid_module
   use pbc_module
   use parallel_data_module
+  use potential_module
   implicit none
   !
   ! Input/Output variables:
@@ -35,6 +36,8 @@ subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d)
   type (pbc_data), intent(inout) :: pbc
   ! parallel computation related data
   type (parallel_data), intent(inout) :: parallel
+  ! potential related data
+  type (potential), intent(in) :: pot
 
   ! distributed electron density and exchange-correlation potential
   ! (passed outside the structure to overcome a bug with the IBM compiler)
@@ -49,6 +52,7 @@ subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d)
   real(dp), allocatable :: vxc(:)
   ! total charge density collected to master processor
   real(dp), allocatable :: rho(:)
+  real(dp) rhotot(parallel%mydim)
   ! timing
   real(dp) t0,t1,tbase,t3
 
@@ -80,8 +84,11 @@ subroutine forpbc(clust,elec_st,grid,pbc,parallel,rho_d,vxc_d)
   enddo
   ! Collect charge density over all processors.
   ! AJB: This does not seem right? why loop over spin
+  do i = 1, parallel%mydim
+    rhotot(i) = rho_d(i) + pot%rho0(i)
+  end do
   do isp = 1, elec_st%nspin
-     call collect_function(parallel,rho_d)
+     call collect_function(parallel,rhotot)
      if (parallel%iammaster) call dcopy(grid%nwedge,parallel%ftmp,1,rho,1)
   enddo
 

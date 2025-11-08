@@ -464,7 +464,7 @@ subroutine exchpw91(d,s,u,v,ex,vx)
   real(dp), parameter :: a2=0.27430d0
   real(dp), parameter :: a3=0.15084d0
   real(dp), parameter :: a4=100.d0
-  real(dp), parameter :: ax=-0.738558766382022405884230032680836d0
+  real(dp), parameter :: ax=-0.7385587663820224d0
   real(dp), parameter :: a=7.7956d0
   real(dp), parameter :: b1=0.004d0
   real(dp), parameter :: thrd4 = four/three

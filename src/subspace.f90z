@@ -21,7 +21,9 @@ subroutine  subspace(kplp,nstate, nec, maxmvs, eval, evec, irp, isp, iprint, blk
 #endif
   use constants
   use parsec_global_data   !!includes constants
+  use matvec_module
   use matvecB_interface
+  use Zbuffer_module
   implicit none
 #ifdef ITAC
     include 'VT.inc'
@@ -54,6 +56,8 @@ subroutine  subspace(kplp,nstate, nec, maxmvs, eval, evec, irp, isp, iprint, blk
   !
   !  Work variables:
   !
+  type (lap_buffer) :: matvec_lap_buffer(2)
+  integer  :: next_buffer,current_buffer,buff_index
   !
   integer, parameter :: lohi = -1  !compute the smallest eigenvalues
   integer, save    :: kssmax     !maximum subspace dimension
@@ -340,22 +344,43 @@ subroutine  subspace(kplp,nstate, nec, maxmvs, eval, evec, irp, isp, iprint, blk
 
 
 
-!  compute h_proj = evec'*(OP)*evec
-!  compute only the lower triangular part 
-!  AJB: but 1d matvec is not efficent :/
+  !  compute h_proj = evec'*(OP)*evec
+  !  compute only the lower triangular part 
+  !  AJB: but 1d matvec is not efficent :/
 
-do j = 1, sdim
-        call ZmatvecB(kplp, 1, evec(1,j), w_opv, ldn)
-        maxmvs = maxmvs + 1
+  do buff_index=1,2
+    call init_lap_buffer(matvec_lap_buffer(buff_index))
+    call allocate_lap_buffer(matvec_lap_buffer(buff_index), parallel)
+  enddo
 
-        do i = j, sdim
-                h_proj(i,j) = Zdot(ndim, evec(1:ndim,i), 1, w_opv(1:ndim), 1)
-        enddo
-enddo
+  ! buffer the first jcol lap neighbors
+  call Zbuff_lap_pack(parallel, matvec_lap_buffer(2), evec(:,1), 1, 1, 1, ldn) 
+  call Zbuff_lap_comm(parallel, matvec_lap_buffer(2)) 
 
+  do j = 1, sdim
+    current_buffer=mod(j,2)+1
+    call ZmatvecB(kplp, 1, evec(1,j), w_opv, ldn, matvec_lap_buffer(current_buffer))
+    maxmvs = maxmvs + 1
 
+    if (j < sdim) then
+      next_buffer=mod(j+1,2)+1
+      ! buffer the next jcol lap neighbors
+      call Zbuff_lap_pack(parallel, matvec_lap_buffer(next_buffer), evec(:,j+1), 1, 1, 1, ldn) 
+      call Zbuff_lap_comm(parallel, matvec_lap_buffer(next_buffer))
+    end if
 
+          !depending on the mpi implementation, 
+          !maybe this will get the comm going earlier.
+    call buff_lap_just_test_comm(matvec_lap_buffer(next_buffer))
+    do i = j, sdim
+      h_proj(i,j) = Zdot(ndim, evec(1:ndim,i), 1, w_opv(1:ndim), 1)
+    end do
+  end do
 
+  ! destroy the buffers
+  call destroy_lap_buffer(matvec_lap_buffer(1))
+  call destroy_lap_buffer(matvec_lap_buffer(2))
+  ! 
         !AJB consider using mpi dervied datatypes
         ! something like
         ! do i=1,nwant

@@ -543,8 +543,7 @@ module esdf_key
 
   data kw_label(138)   / 'output_grid_data' /
   data kw_typ(138)     / 'T:I' /
-  data kw_dscrpt(138)  / '*! Output grid data to external file. &
-        &Options: charge_density, v_external, v_hartree, v_external+v_hartree (sum) !*' /
+  data kw_dscrpt(138)  / '*! Output grid data to external file. Options: charge_density, v_external, v_hartree, v_external+v_hartree (sum) !*' /
 
   data kw_label(139)    / 'ff_maxiter' /
   data kw_typ(139)      / 'I:E' /
@@ -577,5 +576,121 @@ module esdf_key
   data kw_label(146)   / 'Output_Data' /
   data kw_typ(146)     / 'L:E' /
   data kw_dscrpt(146)  / '*! Whether to write raw data at all or not!*'/
+ 
+  data kw_label(147)   / 'Potential_Field'/
+  data kw_typ(147)     / 'L:E' /
+  data kw_dscrpt(147)  / '*!External potential field for AFM simulations!*' /
+
+  data kw_label(148)   / 'Potential_Field_Name' /
+  data kw_typ(148)     / 'T:E' /
+  data kw_dscrpt(148)  / '*!External potential name for AFM simulations!*' /
+
+  data kw_label(149)   / 'Kinetic_Energy_Functional' /
+  data kw_typ(149)     / 'T:E' /
+  data kw_dscrpt(149)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(150)   / 'PBE_m' /
+  data kw_typ(150)     / 'D:E' /
+  data kw_dscrpt(150)  / '*! PBE mu !*' /
+
+  data kw_label(151)   / 'PBE_k' /
+  data kw_typ(151)     / 'D:E' /
+  data kw_dscrpt(151)  / '*!PBE kappa!*' /
+
+  data kw_label(152)   / 'classical_dynamics' /
+  data kw_typ(152)     / 'L:E' /
+  data kw_dscrpt(152)  / '*! Flag for calculating molecular dynamics !*' /
+
+  data kw_label(153)   / 'hybrid_dynamics' /
+  data kw_typ(153)     / 'L:E' /
+  data kw_dscrpt(153)  / '*! Flag for calculating molecular dynamics !*' /
+
+  data kw_label(154)   / 'step_num_class' /
+  data kw_typ(154)     / 'I:E' /
+  data kw_dscrpt(154)  / '*! Number of steps !*' /
+
+  data kw_label(155)   / 'classical_pot_type' /
+  data kw_typ(155)     / 'T:E' /
+  data kw_dscrpt(155)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(156)   / 'seq_dynamics' /
+  data kw_typ(156)     / 'L:E' /
+  data kw_dscrpt(156)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(157)   / 'use_history' /
+  data kw_typ(157)     / 'L:E' /
+  data kw_dscrpt(157)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(158)   / 'md_threshold' /
+  data kw_typ(158)     / 'D:E' /
+  data kw_dscrpt(158)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(159)   / 'smooth_cutoff' /
+  data kw_typ(159)     / 'L:E' /
+  data kw_dscrpt(159)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(160)   / 'isolated_energy' /
+  data kw_typ(160)     / 'D:E' /
+  data kw_dscrpt(160)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(161)   / 'distance_threshold' /
+  data kw_typ(161)     / 'D:E' /
+  data kw_dscrpt(161)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(162)   / 'energy_threshold' /
+  data kw_typ(162)     / 'D:E' /
+  data kw_dscrpt(162)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(163)   / 'Nose_Hoover' /
+  data kw_typ(163)     / 'D:E' /
+  data kw_dscrpt(163)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(164)   / 'step_num_hybrid' /
+  data kw_typ(164)     / 'I:E' /
+  data kw_dscrpt(164)  / '*! Number of steps !*' /
+
+  data kw_label(165)   / 'NH_Chain' /
+  data kw_typ(165)     / 'I:E' /
+  data kw_dscrpt(165)  / '*! Number of steps !*' /
+
+  data kw_label(166)   / 'MD_Every' /
+  data kw_typ(166)     / 'I:E' /
+  data kw_dscrpt(166)  / '*! Number of steps !*' /
+
+  data kw_label(167)   / 'Max_Class' /
+  data kw_typ(167)     / 'I:E' /
+  data kw_dscrpt(167)  / '*! Number of steps !*' /
+
+  data kw_label(168)   / 'Read_Init_Vel' /
+  data kw_typ(168)     / 'L:E' /
+  data kw_dscrpt(168)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(169)   / 'Rescale_BO' /
+  data kw_typ(169)     / 'L:E' /
+  data kw_dscrpt(169)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(170)   / 'Disable_Force' /
+  data kw_typ(170)     / 'L:E' /
+  data kw_dscrpt(170)  / '*!Kinetic Energy Functional Approximation!*' /
+
+  data kw_label(171)   / 'rep_flag' /
+  data kw_typ(171)     / 'I:I' /
+  data kw_dscrpt(171)  / '*Additional repulsive term'/
+
+  data kw_label(172)   / 'r6_coef' /
+  data kw_typ(172)     / 'D:E' /
+  data kw_dscrpt(172)  / '*!Coefficient for r6 repulsive potential!*' /
+
+  data kw_label(173)   / 'ex_coef' /
+  data kw_typ(173)     / 'D:E' /
+  data kw_dscrpt(173)  / '*!Coefficient for exponential rep potential!*' /
+
+  data kw_label(174)   / 'ex_r' /
+  data kw_typ(174)     / 'D:E' /
+  data kw_dscrpt(174)  / '*!Coefficient for exponential rep potential!*' /
+
+  data kw_label(175)   / 'renorm_force' /
+  data kw_typ(175)     / 'D:E' /
+  data kw_dscrpt(175)  / '*!Coefficient for exponential rep potential!*' /
 end module esdf_key
 !===============================================================

@@ -246,13 +246,13 @@ subroutine setup(grid,pbc,rsymm,parallel,nspin,kpnum,ierr)
               do k=1,3 
                if(grid%lap_dir(k) /= 0) then
                  indx(j) = grid%indexg( &
-                      grid%kx(numb)-ishell*grid%lap_neig(1,k), &
-                      grid%ky(numb)-ishell*grid%lap_neig(2,k), &
-                      grid%kz(numb)-ishell*grid%lap_neig(3,k))
+                      grid%kx(numb)-ishell*grid%lap_neig(k,1), &
+                      grid%ky(numb)-ishell*grid%lap_neig(k,2), &
+                      grid%kz(numb)-ishell*grid%lap_neig(k,3))
                  indx(j+1) = grid%indexg( &
-                      grid%kx(numb)+ishell*grid%lap_neig(1,k), &
-                      grid%ky(numb)+ishell*grid%lap_neig(2,k), &
-                      grid%kz(numb)+ishell*grid%lap_neig(3,k))
+                      grid%kx(numb)+ishell*grid%lap_neig(k,1), &
+                      grid%ky(numb)+ishell*grid%lap_neig(k,2), &
+                      grid%kz(numb)+ishell*grid%lap_neig(k,3))
                   
                  tmp2(neib+j,ii,1)=grid%rindex(indx(j))
                  tmp2(neib+j,ii,2)=grid%rtrans(indx(j))
@@ -379,7 +379,7 @@ subroutine setup(grid,pbc,rsymm,parallel,nspin,kpnum,ierr)
   call topo_aware(parallel) !,grid%experimental)
   !dunno where to put it
   ! this whole hack smells. need to reorder parsec structures anyhoo
-#endif
   parallel%max_lap_buffers=grid%max_lap_buffers
+#endif
 end subroutine setup
 !===============================================================

@@ -52,6 +52,8 @@ subroutine forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel,rho,ipr)
   !
   !  hcub = h**3
   real(dp) :: hcub
+  ! totrho
+  real(dp) :: rhotot(parallel%mydim)
 
   !  temporary variables defined at the beginning of the loop over ity
   integer jcore, npoint
@@ -117,6 +119,10 @@ subroutine forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel,rho,ipr)
   allocate(vxcav(parallel%mydim),stat=alcstat)
   call alccheck('vxcav',parallel%mydim,alcstat)
 
+  do ii = 1, parallel%mydim
+    rhotot(ii) = rho(ii) + pot%rho0(ii)
+  end do
+
   !  Prepare difference of Hartree-exchange-correlation with respect
   !  to previous iteration (for accelerating force convergence).
   do ii = 1, parallel%mydim
@@ -151,7 +157,7 @@ subroutine forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel,rho,ipr)
   call alccheck('grad_vh',3*parallel%mydim,alcstat)
   allocate(wvec(parallel%nwedge+1),stat=alcstat)
   call alccheck('wvec',parallel%nwedge+1,alcstat)
-  call gradmvs(grid,parallel,pot%vhart,grad_vh,grid%coe1,grid%norder,wvec)
+  call gradmvs(grid,parallel,pot%vhart+pot%vshart,grad_vh,grid%coe1,grid%norder,wvec)
   deallocate(wvec)
 
   !  Header, if printing.
@@ -286,7 +292,7 @@ subroutine forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel,rho,ipr)
                  !  Update force components according to the formulas given
                  !  in the beginning.
                  !
-                 fl = dv*rho(jgrid)/r1
+                 fl = dv*rhotot(jgrid)/r1
                  fc = drhoat*dvhxc(jgrid)/r1
                  f_l = f_l + fl*rr1
                  f_c = f_c + fc*rr1
@@ -325,6 +331,173 @@ subroutine forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel,rho,ipr)
            clust%force(:,ja) = clust%force(:,ja) + f_core*hcub
      enddo                  ! jat = 1, clust%natmi(ity)
   enddo                     ! ity = 1, clust%type_num
+
+! if(pot%fx_is) then
+!   !  Initialize atom counter, ja.
+!   ja = 0
+!   !  For all atom types...
+!   do ity = 1,clust%npttyp
+!      !  Define temporary variables.
+!      jcore = p_pot%icore(ity)
+
+!      npoint = p_pot%ns(ity)
+!      !  Factor "two" comes from unit change (hartrees -> rydbergs).
+!      zcore  = -two*p_pot%zion(ity)
+!      rmin = p_pot%rs(2,ity) 
+!      rlarge = p_pot%rs(npoint-6,ity)
+
+!      !  Choose Gaussian distributions with dispersion proportional to
+!      !  the pseudoatom cut-off radius.
+!      sigma = sigmafac * p_pot%rcore(ity)
+!      fdens = p_pot%zion(ity) / sigma / sigma / sigma / sqrt(pi) / pi
+!      twosqrtpi = two / sqrt(pi) / sigma
+!      !  The potential of Gaussian distributions cancels the long-range
+!      !  local potential very fast. We do not need to sum over more than
+!      !  2 or 3 replicas around the periodic cell.
+!      nreplicax = nint( six * sigma / pbc%box_size(1) ) + 1
+!      nreplicay = nint( six * sigma / pbc%box_size(2) ) + 1
+!      ainv = one/p_pot%par_a(ity)
+!      binv = one/p_pot%par_b(ity)
+!      c_a = p_pot%par_c(ity) / p_pot%par_a(ity)
+!      !  For all atoms within each type...
+!      do iat   = 1, clust%nptt(ity)
+!         !  Update atom counter.
+!         ja = ja + 1
+!         !  Initialize all force accumulators (and core charge derivative)
+!         !  to zero.
+!         f_l(:) = zero
+!         f_g(:) = zero
+!         f_c(:) = zero
+!         f_core(:) = zero
+!         do icellx = -nreplicax, nreplicax
+!          do icelly = -nreplicay, nreplicay
+
+!            !  For all grid points...
+!            do jgrid = 1, parallel%mydim
+!               igrid = jgrid + parallel%irows(parallel%group_iam) - 1
+!               rw(1) = (grid%shift(1) + grid%kx(igrid)) * grid%step(1) &
+!                    + real(icellx,dp)*pbc%box_size(1)
+!               rw(2) = (grid%shift(2) + grid%ky(igrid)) * grid%step(2)  &
+!                    + real(icelly,dp)*pbc%box_size(2)
+!               rw(3) = (grid%shift(3) + grid%kz(igrid)) * grid%step(3)
+!               call matvec3('N',pbc%avec_norm,rw,rrw1)
+!               do itrans = 1, rsymm%ntrans
+!                  call symop(rsymm,itrans,rrw1,rrw)
+
+!                  !  Calculate distance from grid point to atom.
+!                  rr1(1) = rrw(1) - clust%xatm(ja)
+!                  rr1(2) = rrw(2) - clust%yatm(ja)
+!                  rr1(3) = rrw(3) - clust%zatm(ja)
+
+!                  r1sq = dot_product(rr1,rr1)
+!                  r1 = sqrt(r1sq)
+
+!                  !  If distance to atom negligible, all forces are zero all 
+!                  !  charge and potential derivatives vanish, so skip.
+!                  if(r1 < rmin) cycle
+!                  invr1 = one/r1
+!                  !
+!                  !  If distance to atom larger than the largest value in 
+!                  !  pseudopotential file, zion/r is used as the potential. 
+!                  if (r1 >= rlarge) then
+!                     dv = -zcore/r1sq
+!                     drhoat = zero 
+!                  else
+!                     !  Define index variables for interpolation between radial
+!                     !  grid points.
+!                     ind = idint(binv*log(c_a+ainv*r1)) + 1
+!                     delinv=one/(p_pot%rs(ind+1,ity)-p_pot%rs(ind,ity))
+
+!                     dv = ( (p_pot%rs(ind+1,ity)-r1)*p_pot%dvion(ind,ity)* &
+!                          p_pot%rs(ind,ity)*p_pot%rs(ind,ity) + &
+!                          (r1-p_pot%rs(ind,ity))*p_pot%dvion(ind+1,ity) &
+!                          *p_pot%rs(ind+1,ity)*p_pot%rs(ind+1,ity))* &
+!                          delinv*invr1*invr1
+!                     drhoat = ((p_pot%rs(ind+1,ity)-r1) *  &
+!                          p_pot%drhodr(ind,ity) + (r1-p_pot%rs(ind,ity))* &
+!                          p_pot%drhodr(ind+1,ity)) * delinv
+!                     if (p_pot%uspline(ity)) then
+!                        call splint(p_pot%rs(-p_pot%norder:npoint,ity), &
+!                                    p_pot%vion(-p_pot%norder:npoint,ity), &
+!                                    p_pot%d2vion(-p_pot%norder:npoint,ity), &
+!                                    npoint+1+p_pot%norder,r1,dv0,dv)
+!                        call splint(p_pot%rs(-p_pot%norder:npoint,ity), &
+!                                    p_pot%drhodr(-p_pot%norder:npoint,ity), &
+!                                    p_pot%d2rhodr(-p_pot%norder:npoint,ity), &
+!                                    npoint+1+p_pot%norder,r1,rhoat,drhoat)
+!                     endif
+!                  endif
+
+!                  !
+!                  !  Add contribution from the Gaussian charge.
+!                  distsigma = r1/sigma
+!                  dv = dv + zcore * ( one - erfc(distsigma) ) / r1sq - &
+!                       zcore * twosqrtpi * exp(-distsigma*distsigma) / r1
+!                  !
+!                  !  Interpolate core charge...
+!                  if (jcore > 0) then
+!                     if (r1 >= rlarge) then
+!                        drhoc = zero
+!                     else
+!                        ind = idint(binv*log(c_a+ainv*r1)) + 1
+!                        delinv = one/(p_pot%rs(ind+1,ity)-p_pot%rs(ind,ity))
+
+!                        drhoc = ((p_pot%rs(ind+1,ity)-r1)* &
+!                             p_pot%ddenc(ind,ity) + (r1-p_pot%rs(ind,ity))* &
+!                             p_pot%ddenc(ind+1,ity)) * delinv
+!                        if (p_pot%uspline(ity)) then
+!                           call splint(p_pot%rs(-p_pot%norder:npoint,ity), &
+!                                       p_pot%denc(-p_pot%norder:npoint,ity), &
+!                                       p_pot%d2denc(-p_pot%norder:npoint,ity), &
+!                                       npoint+1+p_pot%norder,r1,rhoc,drhoc)
+!                        endif
+!                     endif
+
+!                  endif
+!                  !
+!                  !  Update force components according to the formulas given
+!                  !  in the beginning.
+!                  !
+!                  fl = dv*rhotot(jgrid)/r1
+!                  fc = drhoat*dvhxc(jgrid)/r1
+!                  f_l = f_l + fl*rr1
+!                  f_c = f_c + fc*rr1
+!                  if (jcore > 0) then
+!                     fcore = drhoc*vxcav(jgrid)/r1
+!                     f_core = f_core + fcore*rr1
+!                  endif
+
+!                  !  Add contribution from the negative of Gaussian charge.
+!                  !  We get this from the Hartree potential.
+!                  distsigma = distsigma*distsigma
+!                  do ii = 1, 3
+!                     f_g(ii) = f_g(ii) + grad_vh(ii,jgrid) * &
+!                          chi_grad(itrans,ii) * fdens * exp(-distsigma)
+!                  enddo
+
+!               enddo            ! itrans = 1, rsymm%ntrans
+!            enddo               ! jgrid = 1, parallel%mydim
+!         enddo                  ! icelly = -nreplicay, nreplicay
+!        enddo                   ! icellx = -nreplicax, nreplicax
+
+!         call psum(f_l,3,parallel%group_size,parallel%group_comm)
+!         call psum(f_g,3,parallel%group_size,parallel%group_comm)
+!         call psum(f_c,3,parallel%group_size,parallel%group_comm)
+!         call psum(f_core,3,parallel%group_size,parallel%group_comm)
+
+!         !  Report forces explicitly, if asked (only for debugging).
+!         if (parallel%iammaster .and. ipr >= 2) then
+!            write(7,20) ja,f_l*hcub,f_c*hcub,f_core*hcub,f_g*hcub
+!         endif
+
+!         !  Update total force arrays (adding the three components to the
+!         !  ion-ion forces).
+!         clust%force(:,ja) = clust%force(:,ja) + (f_l + f_c + f_g)*hcub
+!         if (jcore > 0) &
+!            clust%force(:,ja) = clust%force(:,ja) + f_core*hcub
+!      enddo                  ! jat = 1, clust%natmi(ity)
+!   enddo                     ! ity = 1, clust%type_num
+! endif
 
 20 format('at',i4,1x,3(f11.6,1x),1x,3(f11.6,1x),/,7x,3(f11.6,1x),1x,3(f11.6,1x))
 

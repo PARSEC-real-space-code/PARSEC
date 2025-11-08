@@ -60,7 +60,7 @@ subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
   real(dp), dimension(ldn) :: w0
 #endif
   real(dp), parameter :: tol = 2.5e-16
-  real(dp) :: alpha(1), beta(1), nrmtmp(1)
+  real(dp) :: alpha, beta, nrmtmp
   integer  :: j, isbreak, info, k
 #ifndef BETA
   integer jj
@@ -89,79 +89,79 @@ subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
 
   !! v = 1.d0  !..all ones' may not be a good initial vector
 #ifdef CPLX
-  call zrandom_array(ldn, n, 1, v, info)
+  call random_array(ldn * 2, n * 2, 1, v)  !weird call, v becomes length ldn*2 real vector ?? 
 #else
   call random_number(v)  !in fact, the starting v can be real, no problem with that!
 #endif
 
 !!no need for this, dot_product() takes care of inner product of complex vectors
 #ifdef CPLX
-  nrmtmp(1) = real(dot_product(v(1:n), v(1:n)), dp)  
+  nrmtmp = real(dot_product(v(1:n), v(1:n)), dp)  
 #else
-  nrmtmp(1) = dot_product(v(1:n), v(1:n))
+  nrmtmp = dot_product(v(1:n), v(1:n))
 #endif
-  call psum(nrmtmp(1), 1, parallel%group_size, parallel%group_comm)
-  nrmtmp(1) = sqrt(nrmtmp(1))
+  call psum(nrmtmp, 1, parallel%group_size, parallel%group_comm)
+  nrmtmp = sqrt(nrmtmp)
 
-  v = v/nrmtmp(1)
+  v = v/nrmtmp
 
   ! compute the matrix-vector product, f=A*v (A is the hamiltonian)
   call ZmatvecB(kplp,1,v,f,ldn)
 
-  alpha(1) = zero
+  alpha = zero
 #ifndef BETA
   do jj = 1, n
 
 #ifdef CPLX
-     alpha(1) = alpha(1) + real( conjg(v(jj)) * f(jj) , dp)
+     alpha = alpha + real( conjg(v(jj)) * f(jj) , dp)
 #else
-     alpha(1) = alpha(1) + v(jj) * f(jj)
+     alpha = alpha + v(jj) * f(jj)
 #endif
   enddo
 
 
 #else
 
-  alpha(1) = real(dot_product(f(1:n), v(1:n)),  dp)
+  alpha = real(dot_product(f(1:n), v(1:n)), dp)
 #endif
-  call psum(alpha(1), 1,  parallel%group_size, parallel%group_comm)
+  call psum(alpha, 1, parallel%group_size, parallel%group_comm)
 
-  f = f - alpha(1)*v
-  h_proj(1,1)= alpha(1)
+  f = f - alpha*v
+  h_proj(1,1) = alpha
 
   isbreak = 0
   do j = 2, k         !perform (at most) k steps Lanczos
 #ifdef CPLX
-     beta(1) = real(dot_product(f(1:n), f(1:n)),dp)
+     beta = real(dot_product(f(1:n), f(1:n)),dp)
 #else
-     beta(1) = dot_product(f(1:n), f(1:n))
+     beta = dot_product(f(1:n), f(1:n))
 #endif
-     call psum(beta(1), 1, parallel%group_size, parallel%group_comm)
-     beta(1) = sqrt(beta(1))
+     call psum(beta, 1, parallel%group_size, parallel%group_comm)
+     beta = sqrt(beta)
 
-     if (beta(1) > tol) then
+     if (beta > tol) then
         v0 = v
-        v  = f/beta(1)
+        v  = f/beta
         !.. call the matrix-vector product subroutine: f=A*v
         call ZmatvecB(kplp,1,v,f,ldn)
-        f  = f - beta(1)*v0
-        alpha(1) = zero
+        f  = f - beta*v0
+        alpha = zero
 #ifndef BETA
         do jj = 1, n
 #ifdef CPLX
-           alpha(1) = alpha(1) + real( conjg(v(jj)) * f(jj) , dp)
+           alpha = alpha + real( conjg(v(jj)) * f(jj) , dp)
 #else
-           alpha(1) = alpha(1) + v(jj) * f(jj)
+           alpha = alpha + v(jj) * f(jj)
 #endif
         enddo
 #else
-        alpha(1) = real(dot_product(f(1:n), v(1:n)),  dp) 
+        alpha = real(dot_product(f(1:n), v(1:n)),  dp) 
 #endif
-        call psum(alpha(1), 1,  parallel%group_size, parallel%group_comm)
-        f  = f - alpha(1)*v
-        h_proj(j,j-1) = beta(1)
-        h_proj(j-1,j) = beta(1)
-        h_proj(j,j)   = alpha(1)
+        call psum(alpha, 1, parallel%group_size, parallel%group_comm)
+        f  = f - alpha*v
+        h_proj(j,j-1) = beta
+        h_proj(j-1,j) = beta
+        h_proj(j,j)   = alpha
      else
         isbreak = 1
         exit
@@ -187,19 +187,19 @@ subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
 
 #ifdef CPLX
   !  use alpha to store max(abs(w0(1:k))),   note: the new bound does not need the abs()
-     alpha(1)  = maxval(w0(1:k))
+     alpha = maxval(w0(1:k))
 #ifndef BETA
-  nrmtmp(1) = abs(minval(w0(1:k)))
+  nrmtmp = abs(minval(w0(1:k)))
 #endif
 #else
   !  use alpha to store max(abs(v0(1:k))), note: the new bound does not need the abs()
-     alpha(1)  = maxval(v0(1:k))
+     alpha = maxval(v0(1:k))
 #ifndef BETA
-  nrmtmp(1) = abs(minval(v0(1:k)))
+  nrmtmp = abs(minval(v0(1:k)))
 #endif
 #endif
 #ifndef BETA
-  if (nrmtmp(1) > alpha(1))  alpha(1) = nrmtmp(1)  !!(the new bound means this is not necessary)
+  if (nrmtmp > alpha) alpha = nrmtmp  !!(the new bound means this is not necessary)
 #endif
 #ifdef CPLX
      if (present(lowb))  lowb = minval(w0(1:k))
@@ -221,14 +221,14 @@ subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
 
 #ifdef CPLX
      !  use alpha to store max(abs(w0(1:k-1)))
-     alpha(1)  = maxval(w0(1:k-1))
-     nrmtmp(1) = abs(minval(w0(1:k-1)))
+     alpha = maxval(w0(1:k-1))
+     nrmtmp = abs(minval(w0(1:k-1)))
 #else
      !  use alpha to store max(abs(v0(1:k-1)))
-     alpha(1)  = maxval(v0(1:k-1))
-     nrmtmp(1) = abs(minval(v0(1:k-1)))
+     alpha = maxval(v0(1:k-1))
+     nrmtmp = abs(minval(v0(1:k-1)))
 #endif
-     if (nrmtmp(1) > alpha(1))  alpha(1) = nrmtmp(1)
+     if (nrmtmp > alpha) alpha = nrmtmp
 #ifdef CPLX
      if (present(lowb))  lowb = minval(w0(1:k-1))
 #else
@@ -237,23 +237,23 @@ subroutine  lancz_bound(kplp, upperb, n, kk, ldn, lowb, middle)
 
   end if
 #endif
-  if (present(middle))  middle = (alpha(1) + lowb)/2.d0
+  if (present(middle)) middle = (alpha + lowb)/2.d0
 
-  if (beta(1) < 1d-2) then
-     beta(1) = beta(1)*10d0
-  elseif (beta(1) < 1d-1) then
-     beta(1) = beta(1)*5d0
+  if (beta < 1d-2) then
+     beta = beta*10d0
+  elseif (beta < 1d-1) then
+     beta = beta*5d0
 #ifdef BETA
-  elseif (beta(1) < 1d0) then
-     beta(1) = beta(1)*2d0
-  elseif (beta(1) < 10d1) then
-     beta(1) = beta(1)*1.5d0
-  elseif (beta(1) < 10d2) then
-     beta(1) = beta(1)*1.01d0
+  elseif (beta < 1d0) then
+     beta = beta*2d0
+  elseif (beta < 10d1) then
+     beta = beta*1.5d0
+  elseif (beta < 10d2) then
+     beta = beta*1.01d0
 #endif
   end if
 
-  upperb = alpha(1) + beta(1)
+  upperb = alpha + beta
   deallocate(h_proj)
 #ifdef ITAC
     call VTEND( vt_lancz, vtierr)

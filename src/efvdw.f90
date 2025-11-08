@@ -1,107 +1,82 @@
 subroutine efvdw(clust, elec_st, grid, parallel, pbc, vdw_forces)
+        !subroutine efvdw(clust,elec_st,grid,parallel,pbc,evdw,vconv,vdw_forces)
+	use cluster_module
+	use electronic_struct_module
+	use grid_module
+	use parallel_data_module
+	use pbc_module 
+	implicit none
 
-use cluster_module
-use electronic_struct_module
-use grid_module
-use parallel_data_module
-use pbc_module 
-implicit none
-
-type(cluster), intent(in) :: clust
-type(electronic_struct), intent(inout) :: elec_st
-type(grid_data), intent(in) :: grid
-type(parallel_data), intent(in) :: parallel
-type(pbc_data), intent(in) :: pbc
-real (dp), intent(inout) :: vdw_forces(clust%atom_num,3)
-
-
-integer :: atmn,ja,itype,iat,ieff,jeff,n_cell,i1,i2,i3,atmn1,atmn2,i_per
-integer :: num_cells_super 
-
-! denominator of eq. (8) 
-real (dp) :: srhof(parallel%mydim,1)
-
-! hirshfeld atomic partitioning weight for the atoms
-real (dp) :: watm(parallel%mydim,clust%atom_num)
-
-! the integrand of the numertor and denominator of eq. (7) 
-real (dp) :: v_d(parallel%mydim,clust%atom_num)
-real (dp) :: v_u(parallel%mydim,clust%atom_num)
-real (dp) :: v_d_pbc(parallel%mydim,clust%atom_num)
-real (dp) :: v_u_pbc(parallel%mydim,clust%atom_num)
-
-! free and effective volume
-real (dp) :: v_free(clust%atom_num),v_eff(clust%atom_num)
-real (dp) :: v_free_pbc(clust%atom_num),v_eff_pbc(clust%atom_num)
-
-! v_eff/v_free
-real (dp) :: v_eff_free(clust%atom_num)
-
-! c6, alpha and R0 free
-real (dp) :: c6ii_free(clust%atom_num),alpha_free(clust%atom_num),R0(clust%atom_num)
-
-! c6, alpha and R eff
-real (dp) :: c6ii_eff(clust%atom_num),alpha_eff(clust%atom_num),R_eff(clust%atom_num)
-
-! c6ij eff
-real (dp) :: c6ij_eff
-
-! distance between pairs of atoms
-real (dp) :: R_cor
-
-! Reff_i+Reff_j
-real (dp) :: R_eff_ij
-
-! f_damp
-real (dp) :: f_damp
-
-! the van der waals energy from each pair of atoms
-real (dp) :: evdw_add
-
-! forces between pairs of atoms in x y and z directions
-real (dp) :: Fx_ij(clust%atom_num,1),Fy_ij(clust%atom_num,1),Fz_ij(clust%atom_num,1)
-
-! total force on each atom in x y and z directions
-real (dp) :: Ft_xyz(clust%atom_num,3)
-
-! storge variable
-real (dp) :: rr0,rexp,aexp,rfac,ffac,rphi,maxchange
-real(dp) :: evdw_pbc,evdw_pbc_add,Ft_xyz_pbc(clust%atom_num,3),F_xyz_pbc(clust%atom_num,3)
-real(dp) :: C6_pbc
-real(dp) :: R_pbc
-real(dp) :: coord_rep_x(clust%atom_num),coord_rep_y(clust%atom_num),coord_rep_z(clust%atom_num),coord_diff(3,1)
-real(dp) :: d2_pbc,d6_pbc,d_pbc,exp_arg,exp_pbc,f_dump_pbc
-logical pbc_conv
-
-! --------------------------------------------------------------
-
+	type (cluster), intent(in) :: clust
+	type (electronic_struct), intent(inout) :: elec_st
+	type (grid_data), intent(in) :: grid
+	type (parallel_data), intent(in) :: parallel
+	type (pbc_data), intent(in) :: pbc
+    real (dp), intent(inout) :: vdw_forces(clust%atom_num,3)
+    !
+    !        real (dp), intent(in) :: vconv !AJB: what's this
+    !
+	integer :: atmn, ja, itype, iat, ieff, jeff, n_cell, i1, i2, i3, atmn1, atmn2, i_per
+    integer :: num_cells_super
+	! denominator of eq. (8) 
+	real (dp) :: srhof(parallel%mydim,1)
+	! hirshfeld atomic partitioning weight for the atoms
+	real (dp) :: watm(parallel%mydim,clust%atom_num)
+	! the integrand of the numertor and denominator of eq. (7) 
+	real (dp) :: v_d(parallel%mydim,clust%atom_num), v_u(parallel%mydim, clust%atom_num)
+	real (dp) :: v_d_pbc(parallel%mydim,clust%atom_num), v_u_pbc(parallel%mydim, clust%atom_num)
+	! free and effective volume
+	real (dp) :: v_free(clust%atom_num),v_eff(clust%atom_num)
+	real (dp) :: v_free_pbc(clust%atom_num),v_eff_pbc(clust%atom_num)
+	! v_eff/v_free
+	real (dp) :: v_eff_free(clust%atom_num)
+	! c6, alpha and R0 free
+	real (dp) :: c6ii_free(clust%atom_num),alpha_free(clust%atom_num),R0(clust%atom_num)
+	! c6, alpha and R eff
+	real (dp) :: c6ii_eff(clust%atom_num),alpha_eff(clust%atom_num),R_eff(clust%atom_num)
+	! c6ij eff
+	real (dp) :: c6ij_eff
+	! distance between pairs of atoms
+	real (dp) :: R_cor
+	! Reff_i+Reff_j
+	real (dp) :: R_eff_ij
+	! f_damp
+        real (dp) :: f_damp
+	! the van der waals energy from each pair of atoms
+        real (dp) :: evdw_add
+	! forces between pairs of atoms in x y and z directions
+        real (dp) :: Fx_ij(clust%atom_num,1),Fy_ij(clust%atom_num,1),Fz_ij(clust%atom_num,1)
+	! total force on each atom in x y and z directions
+        real (dp) :: Ft_xyz(clust%atom_num,3)
+	! storge variable
+	real (dp) :: rr0,rexp,aexp,rfac,ffac,rphi,maxchange
+        real(dp) :: evdw_pbc,evdw_pbc_add,Ft_xyz_pbc(clust%atom_num,3),F_xyz_pbc(clust%atom_num,3)
+        real(dp) :: C6_pbc
+        real(dp) :: R_pbc
+        real(dp) :: coord_rep_x(clust%atom_num),coord_rep_y(clust%atom_num),coord_rep_z(clust%atom_num),coord_diff(3,1)
+        real(dp) :: d2_pbc,d6_pbc,d_pbc,exp_arg,exp_pbc,f_dump_pbc
+	logical pbc_conv
 ! what is this	if (parallel%iammaster) open(1,file='efvdw_data.dat')
-v_eff(:)=zero
+        v_eff(:)=zero
 
 
-v_free(:)=elec_st%v_free_periodic(1,:)
-
-
-
-num_cells_super = (elec_st%hirsh_3d_cell(1,1)*2+1)* &
-                  (elec_st%hirsh_3d_cell(1,2)*2+1)* &
-                  (elec_st%hirsh_3d_cell(1,3)*2+1)
-
-do ja = 1, clust%atom_num
-do i_per = 1, num_cells_super
-        v_eff(ja) = v_eff(ja) + &
-                sum(elec_st%dist_periodic(:,i_per,ja)**3D0* &
-                elec_st%hirshfeld_periodic(:,i_per,ja)* &
-                elec_st%rho(:,1)*grid%hcub)
-enddo
-enddo
+        v_free(:)=elec_st%v_free_periodic(1,:)
 
 
 
-call psum(v_eff,clust%atom_num,parallel%group_size,parallel%group_comm)
+  num_cells_super = (elec_st%hirsh_3d_cell(1,1)*2+1)*(elec_st%hirsh_3d_cell(1,2)*2+1)*(elec_st%hirsh_3d_cell(1,3)*2+1)
+  do ja = 1, clust%atom_num
+        do i_per = 1, num_cells_super
+              v_eff(ja) = v_eff(ja) + sum(elec_st%dist_periodic(:,i_per,ja)**3D0*elec_st%hirshfeld_periodic(:,i_per,ja)*elec_st%rho(:,1)*grid%hcub)
+        end do
+  end do
 
 
-v_eff_free=v_eff/v_free
+
+  call psum(v_eff,clust%atom_num,parallel%group_size,parallel%group_comm)
+ 
+
+	v_eff_free=v_eff/v_free
 
 
 if (.not. parallel%iammaster) return
@@ -314,80 +289,79 @@ do itype=1,clust%type_num
 end do
 
 
-c6ii_eff=(v_eff_free**two)*c6ii_free
+	c6ii_eff=(v_eff_free**two)*c6ii_free
 
 
-alpha_eff=v_eff_free*alpha_free
+	alpha_eff=v_eff_free*alpha_free
 
 
-R_eff=(v_eff_free**(one/three))*R0
+	R_eff=(v_eff_free**(one/three))*R0
+
+	
+        elec_st%evdw=zero
+
+	Fx_ij(:,:)=zero
+	Fy_ij(:,:)=zero
+	Fz_ij(:,:)=zero
+
+	Ft_xyz(:,:)=zero
 
 
-elec_st%evdw=zero
+	do ieff=1,clust%atom_num
+        do jeff=1,clust%atom_num
+            if (jeff==ieff) cycle
 
-Fx_ij(:,:)=zero
-Fy_ij(:,:)=zero
-Fz_ij(:,:)=zero
+            c6ij_eff = (two*c6ii_eff(ieff)*c6ii_eff(jeff))/(alpha_eff(jeff)/alpha_eff(ieff)*c6ii_eff(ieff)&
+                +alpha_eff(ieff)/alpha_eff(jeff)*c6ii_eff(jeff))
 
-Ft_xyz(:,:)=zero
-
-
-do ieff=1,clust%atom_num
-do jeff=1,clust%atom_num
-        if (jeff==ieff) cycle
-
-        c6ij_eff = (two*c6ii_eff(ieff)*c6ii_eff(jeff))/ &
-                (alpha_eff(jeff)/alpha_eff(ieff)*c6ii_eff(ieff) + &
-                 alpha_eff(ieff)/alpha_eff(jeff)*c6ii_eff(jeff))
-
-        R_cor=dsqrt((clust%xatm(ieff)-clust%xatm(jeff))**two&
+            R_cor=dsqrt((clust%xatm(ieff)-clust%xatm(jeff))**two&
                 +(clust%yatm(ieff)-clust%yatm(jeff))**two&
                 +(clust%zatm(ieff)-clust%zatm(jeff))**two)
 
-        R_eff_ij=R_eff(ieff)+R_eff(jeff)
+            R_eff_ij=R_eff(ieff)+R_eff(jeff)
 
-        f_damp=one/(one+dexp(-20.D0*(R_cor/(0.94D0*R_eff_ij)-one)))
+            f_damp=one/(one+dexp(-20.D0*(R_cor/(0.94D0*R_eff_ij)-one)))
 
-        evdw_add=(f_damp*c6ij_eff)/(R_cor**six)
+            evdw_add=(f_damp*c6ij_eff)/(R_cor**six)
 
-        elec_st%evdw=elec_st%evdw+evdw_add
-
-
-        ! forces
-        ! Note!! the expresions for the forces were taken from fhi-aims code
-        rr0=R_eff_ij*0.94D0
-
-        rexp=dexp(-20.D0*(R_cor/(0.94D0*R_eff_ij)-one))
-        aexp=one+rexp
-        rphi=-evdw_add
-
-        rfac=-six/R_cor + 20D0*rexp/(aexp*rr0)
-        ffac=rphi*rfac/R_cor
+            elec_st%evdw=elec_st%evdw+evdw_add
 
 
+            ! forces
+            ! Note!! the expresions for the forces were taken from fhi-aims code
+            rr0=R_eff_ij*0.94D0
 
-        Fx_ij(ieff,1)=Fx_ij(ieff,1)-(clust%xatm(ieff)-clust%xatm(jeff))*ffac
-        Fy_ij(ieff,1)=Fy_ij(ieff,1)-(clust%yatm(ieff)-clust%yatm(jeff))*ffac
-        Fz_ij(ieff,1)=Fz_ij(ieff,1)-(clust%zatm(ieff)-clust%zatm(jeff))*ffac
+            rexp=dexp(-20.D0*(R_cor/(0.94D0*R_eff_ij)-one))
+            aexp=one+rexp
+            rphi=-evdw_add
+
+            rfac=-six/R_cor + 20D0*rexp/(aexp*rr0)
+            ffac=rphi*rfac/R_cor
 
 
-enddo 
-enddo
+
+            Fx_ij(ieff,1)=Fx_ij(ieff,1)-(clust%xatm(ieff)-clust%xatm(jeff))*ffac
+            Fy_ij(ieff,1)=Fy_ij(ieff,1)-(clust%yatm(ieff)-clust%yatm(jeff))*ffac
+            Fz_ij(ieff,1)=Fz_ij(ieff,1)-(clust%zatm(ieff)-clust%zatm(jeff))*ffac
 
 
-Ft_xyz(:,1)=Fx_ij(:,1)
-Ft_xyz(:,2)=Fy_ij(:,1)
-Ft_xyz(:,3)=Fz_ij(:,1)
+        end do 
+	end do
+
+
+        Ft_xyz(:,1)=Fx_ij(:,1)
+        Ft_xyz(:,2)=Fy_ij(:,1)
+        Ft_xyz(:,3)=Fz_ij(:,1)
 
 ! factor 0.5 due to complete sumations
 ! factor -1 because.
-elec_st%evdw=-0.5D0*elec_st%evdw
+        elec_st%evdw=-0.5D0*elec_st%evdw
 !factor 2 for converting into Rydberg
-elec_st%evdw=two*elec_st%evdw
+        elec_st%evdw=two*elec_st%evdw
 
 
-Ft_xyz_pbc(:,:)=zero        
-if (pbc%is_on) then
+        Ft_xyz_pbc(:,:)=zero        
+    if (pbc%is_on) then
         pbc_conv=.false.
         n_cell=0
 
@@ -397,126 +371,112 @@ if (pbc%is_on) then
                 Ft_xyz_pbc(:,:)=0D0
 
                 do i1=-n_cell,n_cell
-                do i2=-n_cell,n_cell
-                do i3=-n_cell,n_cell
-                        if ( (abs(i1).eq.n_cell) .or. &
-                             (abs(i2).eq.n_cell) .or. &
-                             (abs(i3).eq.n_cell) ) then
+                    do i2=-n_cell,n_cell
+                        do i3=-n_cell,n_cell
+                            if ((abs(i1).eq.n_cell) .or. (abs(i2).eq.n_cell) .or. (abs(i3).eq.n_cell)) then
 
                                 do atmn1=1,clust%atom_num,1 
-                                do atmn2=1,clust%atom_num,1
+                                    do atmn2=1,clust%atom_num,1
 
-C6_pbc=two*c6ii_eff(atmn1)*c6ii_eff(atmn2)/ &
-        (alpha_eff(atmn2)/alpha_eff(atmn1)*c6ii_eff(atmn1) + &
-         alpha_eff(atmn1)/alpha_eff(atmn2)*c6ii_eff(atmn2))
+                                        C6_pbc=two*c6ii_eff(atmn1)*c6ii_eff(atmn2)/(alpha_eff(atmn2)/alpha_eff(atmn1)*c6ii_eff(atmn1)+alpha_eff(atmn1)/alpha_eff(atmn2)*c6ii_eff(atmn2))
+                                        
+                                        coord_rep_x(atmn2)=clust%xatm(atmn2)+i1*pbc%latt_vec(1,1)+i2*pbc%latt_vec(1,2)+i3*pbc%latt_vec(1,3)
+                                        coord_rep_y(atmn2)=clust%yatm(atmn2)+i1*pbc%latt_vec(2,1)+i2*pbc%latt_vec(2,2)+i3*pbc%latt_vec(2,3)
+                                        coord_rep_z(atmn2)=clust%zatm(atmn2)+i1*pbc%latt_vec(3,1)+i2*pbc%latt_vec(3,2)+i3*pbc%latt_vec(3,3)
 
-coord_rep_x(atmn2) = clust%xatm(atmn2) + &
-        i1*pbc%latt_vec(1,1)+i2*pbc%latt_vec(1,2)+i3*pbc%latt_vec(1,3)
-coord_rep_y(atmn2) = clust%yatm(atmn2) + &
-        i1*pbc%latt_vec(2,1)+i2*pbc%latt_vec(2,2)+i3*pbc%latt_vec(2,3)
-coord_rep_z(atmn2) = clust%zatm(atmn2) + &
-        i1*pbc%latt_vec(3,1)+i2*pbc%latt_vec(3,2)+i3*pbc%latt_vec(3,3)
+                                        coord_diff(1,1)=clust%xatm(atmn1)-coord_rep_x(atmn2)
+                                        coord_diff(2,1)=clust%yatm(atmn1)-coord_rep_y(atmn2)
+                                        coord_diff(3,1)=clust%zatm(atmn1)-coord_rep_z(atmn2)
 
-coord_diff(1,1)=clust%xatm(atmn1)-coord_rep_x(atmn2)
-coord_diff(2,1)=clust%yatm(atmn1)-coord_rep_y(atmn2)
-coord_diff(3,1)=clust%zatm(atmn1)-coord_rep_z(atmn2)
+                                        d2_pbc=coord_diff(1,1)**two+coord_diff(2,1)**two+coord_diff(3,1)**two
 
-d2_pbc=coord_diff(1,1)**two+coord_diff(2,1)**two+coord_diff(3,1)**two
+                                        d6_pbc=d2_pbc**three
 
-d6_pbc=d2_pbc**three
+                                        d_pbc=dsqrt(d2_pbc)
 
-d_pbc=dsqrt(d2_pbc)
-
-exp_arg=-20D0*(d_pbc/(0.94D0*(R_eff(atmn1)+R_eff(atmn2)))-1)
-exp_pbc=dexp(exp_arg)
-f_dump_pbc=1/(1+exp_pbc)
-evdw_pbc_add=-C6_pbc*f_dump_pbc/d6_pbc
-evdw_pbc=evdw_pbc+evdw_pbc_add
+                                        exp_arg=-20D0*(d_pbc/(0.94D0*(R_eff(atmn1)+R_eff(atmn2)))-1)
+                                        exp_pbc=dexp(exp_arg)
+                                        f_dump_pbc=1/(1+exp_pbc)
+                                        evdw_pbc_add=-C6_pbc*f_dump_pbc/d6_pbc
+                                        evdw_pbc=evdw_pbc+evdw_pbc_add
 
 
-! forces
-! Note!! the expresions for the forces were taken from fhi-aims code
-! so someone should double check to see if there were bugfixes there!
-rr0=0.94D0*(R_eff(atmn1)+R_eff(atmn2))
+                                        ! forces
+                                        ! Note!! the expresions for the forces were taken from fhi-aims code
+                                        ! so someone should double check to see if there were bugfixes there!
+                                        rr0=0.94D0*(R_eff(atmn1)+R_eff(atmn2))
 
-rexp=exp_pbc
-aexp=one+rexp
-rphi=evdw_pbc_add
+                                        rexp=exp_pbc
+                                        aexp=one+rexp
+                                        rphi=evdw_pbc_add
 
-rfac=-six/d_pbc + 20D0*rexp/(aexp*rr0)
-ffac=rphi*rfac/d_pbc
-
-
-F_xyz_pbc(atmn1,1)=-coord_diff(1,1)*ffac
-Ft_xyz_pbc(atmn1,1)=Ft_xyz_pbc(atmn1,1)+F_xyz_pbc(atmn1,1)
-
-F_xyz_pbc(atmn1,2)=-coord_diff(2,1)*ffac
-Ft_xyz_pbc(atmn1,2)=Ft_xyz_pbc(atmn1,2)+F_xyz_pbc(atmn1,2)
-
-F_xyz_pbc(atmn1,3)=-coord_diff(3,1)*ffac
-Ft_xyz_pbc(atmn1,3)=Ft_xyz_pbc(atmn1,3)+F_xyz_pbc(atmn1,3)
-
-                                enddo
-                                enddo
-                        endif
-                enddo
-                enddo
-                enddo
-
-                ! factor of 0.5 due to complete sumation        
-                evdw_pbc=0.5D0*evdw_pbc
-                ! factor of 2 to convert for Rydberg
-                evdw_pbc=2D0*evdw_pbc
-                pbc_conv=(dabs(evdw_pbc).lt.7.3D-8)
-                elec_st%evdw=elec_st%evdw+evdw_pbc
-                ! the forces here are in units of Ha/bohr
-                Ft_xyz(:,:)=Ft_xyz(:,:)+Ft_xyz_pbc(:,:)
-        enddo
-endif
-
-vdw_forces(:,:)=zero  
-vdw_forces(:,:)=Ft_xyz(:,:)
-
-write(7,*)"NOTE: Writing VDW force info to STDOUT"
-
-write(*,*)"vdW force components in units of eV/A"
-
-do ieff=1,clust%atom_num
-        write(*,*) &
-                Ft_xyz(ieff,1)*51.42208245D0, &
-                Ft_xyz(ieff,2)*51.42208245D0, &
-                Ft_xyz(ieff,3)*51.42208245D0
-enddo
+                                        rfac=-six/d_pbc + 20D0*rexp/(aexp*rr0)
+                                        ffac=rphi*rfac/d_pbc
 
 
-write(*,*)
-write(*,*)"vdW force components in units of Ha/bohr"
+                                        F_xyz_pbc(atmn1,1)=-coord_diff(1,1)*ffac
+                                        Ft_xyz_pbc(atmn1,1)=Ft_xyz_pbc(atmn1,1)+F_xyz_pbc(atmn1,1)
 
-do ieff=1,clust%atom_num
-        write(*,*)vdw_forces(ieff,1),vdw_forces(ieff,2),vdw_forces(ieff,3)
-enddo
+                                        F_xyz_pbc(atmn1,2)=-coord_diff(2,1)*ffac
+                                        Ft_xyz_pbc(atmn1,2)=Ft_xyz_pbc(atmn1,2)+F_xyz_pbc(atmn1,2)
+
+                                        F_xyz_pbc(atmn1,3)=-coord_diff(3,1)*ffac
+                                        Ft_xyz_pbc(atmn1,3)=Ft_xyz_pbc(atmn1,3)+F_xyz_pbc(atmn1,3)
+
+                                    end do
+                                end do
+                            end if
+                        end do
+                    end do
+                end do
+        ! factor of 0.5 due to complete sumation        
+        evdw_pbc=0.5D0*evdw_pbc
+        ! factor of 2 to convert for Rydberg
+        evdw_pbc=2D0*evdw_pbc
+        pbc_conv=(dabs(evdw_pbc).lt.7.3D-8)
+        elec_st%evdw=elec_st%evdw+evdw_pbc
+        ! the forces here are in units of Ha/bohr
+        Ft_xyz(:,:)=Ft_xyz(:,:)+Ft_xyz_pbc(:,:)
+
+        end do
+    end if
+     
+    vdw_forces(:,:)=zero  
+    vdw_forces(:,:)=Ft_xyz(:,:)
+    
+    write(7,*)"NOTE: Writing VDW force info to STDOUT"
+
+    write(*,*)"vdW force components in units of eV/A"
+        do ieff=1,clust%atom_num
+              write(*,*)Ft_xyz(ieff,1)*51.42208245D0,Ft_xyz(ieff,2)*51.42208245D0,Ft_xyz(ieff,3)*51.42208245D0
+        end do
+        
+
+    write(*,*)
+    write(*,*)"vdW force components in units of Ha/bohr"
+        do ieff=1,clust%atom_num
+               write(*,*)vdw_forces(ieff,1),vdw_forces(ieff,2),vdw_forces(ieff,3)
+        end do
 
 
 
-write(*,*)
-write(*,*)
-write(*,*)"Free and effective volumes of each atom"
+    write(*,*)
+    write(*,*)
+    write(*,*)"Free and effective volumes of each atom"
+        do ieff=1,clust%atom_num
+              write(*,*)v_free(ieff),v_eff(ieff)
+        end do
 
-do ieff=1,clust%atom_num
-        write(*,*)v_free(ieff),v_eff(ieff)
-enddo
-
-write(*,*)
-write(*,*)"Ratio of effective and free volumes"
-
-do ieff=1,clust%atom_num
-        write(*,*)v_eff(ieff)/v_free(ieff)
-enddo
-
-write(*,*)
-write(*,*)
+    write(*,*)
+    write(*,*)"Ratio of effective and free volumes"
+        do ieff=1,clust%atom_num
+              write(*,*)v_eff(ieff)/v_free(ieff)
+        end do
+         
+    write(*,*)
+    write(*,*)
 
 
 
-return
-end subroutine efvdw
+	return
+	end subroutine efvdw

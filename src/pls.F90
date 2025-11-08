@@ -86,9 +86,9 @@ subroutine pls(elec_st,solver,nloc_p_pot,parallel)
      eval = zero
      !  first put the eigenvalues on the diagonal
      do i = 1, nn
-        h_spin(i,i) = cmplx(elec_st%eig(1,kplp,1)%en(i),zero,dpc)
+        h_spin(i,i) = cmplx(elec_st%eig(1,kplp,1)%en(i),zero)
         k = i + nn
-        h_spin(k,k) = cmplx(elec_st%eig(1,kplp,2)%en(i),zero,dpc)
+        h_spin(k,k) = cmplx(elec_st%eig(1,kplp,2)%en(i),zero)
      enddo
 
      if(elec_st%cplx) then
@@ -103,7 +103,7 @@ subroutine pls(elec_st,solver,nloc_p_pot,parallel)
         do i = 1, 2            !spin
            do j = 1, nn        !number of states
               do k = 1, mdim   !elements in each wf, the last is zero
-                 p_spin(k,j,i) = cmplx(elec_st%eig(1,kplp,i)%wf(k,j),zero,dpc)
+                 p_spin(k,j,i) = cmplx(elec_st%eig(1,kplp,i)%wf(k,j),zero)
               enddo
            enddo
         enddo

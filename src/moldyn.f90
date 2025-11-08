@@ -119,12 +119,12 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   ! about the origin
   real(dp) :: xmov, ymov, zmov
   ! total kinetic energy [Ry] and total kinetic energy per atom [eV].
-  real(dp) :: tke, tkeev
+  real(dp) :: tke, tkeev, tke2
   ! effective actual temperature 
   real(dp) :: tcalc
   ! factor with which to rescale the velocities
   ! (ratio of t_input /tcalc)
-  real(dp) :: rescale
+  real(dp) :: rescale, tcorrect
 
   ! current and final temperatures (in kelvin)
   real(dp) :: tempi, tempf
@@ -141,7 +141,7 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   integer iframe
 
   ! counters
-  integer i,j,ii
+  integer i,j,l,ii
   !
   ! External functions:
   !
@@ -149,6 +149,27 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   ! deviation of one
   real(dp), external :: gdev
 
+  real(dp), dimension(clust%atom_num) :: xold2, yold2, zold2
+  real(dp), dimension(clust%atom_num) :: vxold2, vyold2, vzold2
+  real(dp), dimension(clust%atom_num) :: accxold2, accyold2, acczold2
+  integer, parameter :: cdflag = 0
+  !Nose-Hoover Thermostat stuff
+  real(dp), allocatable :: Jacob(:,:), deltak(:), h(:), DWORK(:)
+  real(dp), allocatable :: vxcur(:), vycur(:), vzcur(:)
+  integer,  allocatable :: IPIV(:)
+  real(dp) :: qnose(mol_dynamic%nchain)
+  real(dp) :: nose, nosez, nosezd, nosezdd, nosezdcur
+  real(dp) :: nosezold, nosezdold, enose, thkh, nodof, nosezoldr
+  real(dp) :: nosezcur,nosezddold
+  real(dp) :: exn, evn
+  logical :: finiter, beeman
+  integer :: info, inr,k
+  integer :: nchain
+  !Artificial force stuff
+  integer :: ni, nj, ia, ja
+  real(dp) :: dxx, dyy, dzz, dcell, rij, rij2
+  real(dp) :: frep
+  real(dp), dimension(:,:), allocatable :: forc
   !---------------------------------------------------------------
 
   natom = clust%atom_num
@@ -180,6 +201,116 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   accyold = mol_dynamic%accyold
   acczold = mol_dynamic%acczold
 
+  nose = mol_dynamic%nose 
+  nosez = mol_dynamic%nosez
+  nosezd = mol_dynamic%nosezd
+  nosezdd = mol_dynamic%nosezdd
+  nosezcur = mol_dynamic%nosezcur
+  nchain = mol_dynamic%nchain
+  beeman = .false.
+
+  if(nose .ge. 0.d0) then
+    allocate(Jacob(3*natom+1,3*natom+1))
+    allocate(IPIV(3*natom+1))
+    allocate(deltak(3*natom+1))
+    allocate(DWORK(3*natom+1))
+    allocate(h(3*natom+1))
+    allocate(vxcur(natom))
+    allocate(vycur(natom))
+    allocate(vzcur(natom))
+  endif
+
+
+  if (imove == 0 ) then
+    if(mol_dynamic%class_restart) then
+      write(7,*) "r, v, and a are read from the last step of CMD"
+      xatm = mol_dynamic%xcur2
+      yatm = mol_dynamic%ycur2
+      zatm = mol_dynamic%zcur2
+      xold = mol_dynamic%xold2
+      yold = mol_dynamic%yold2
+      zold = mol_dynamic%zold2
+      xcur = mol_dynamic%xcur2
+      ycur = mol_dynamic%ycur2
+      zcur = mol_dynamic%zcur2
+      vxold = mol_dynamic%vxold2
+      vyold = mol_dynamic%vyold2
+      vzold = mol_dynamic%vzold2
+      accxold = mol_dynamic%accxold2
+      accyold = mol_dynamic%accyold2
+      acczold = mol_dynamic%acczold2
+    endif
+  endif
+
+  write(7,*) xold
+  write(7,*) xcur
+  write(7,*) vxold
+  write(7,*) accxold
+
+  !Classical Repulsive Forces if necessary
+  allocate(forc(3,natom))
+  forc(:,:) = 0.d0
+  ni = 0
+  do ia=1,naty
+    do k=1,clust%natmi(ia) 
+      ni=ni+1
+      nj=0 
+      if(clust%rpat(ni) == 1) then
+        do ja=1,naty
+          do l=1,clust%natmi(ja)
+            nj =nj+1
+            !write(7,*) "anums",ni,nj
+            if(clust%rpat(nj) == 1) then
+              if (ni/=nj) then
+                dxx =xatm(ni)-xatm(nj)
+                dyy =yatm(ni)-yatm(nj)
+                dzz =zatm(ni)-zatm(nj)
+                if(pbc%per==3) then
+                  dcell =abs(pbc%latt_vec(1,1)+pbc%latt_vec(1,2)+pbc%latt_vec(1,3))
+                  if(abs(dxx) > dcell*half) dxx = dxx -  sign(dcell,dxx) 
+                  dcell =abs(pbc%latt_vec(2,1)+pbc%latt_vec(2,2)+pbc%latt_vec(2,3))
+                  if(abs(dyy) > dcell*half) dyy = dyy -  sign(dcell,dyy) 
+                  dcell =abs(pbc%latt_vec(3,1)+pbc%latt_vec(3,2)+pbc%latt_vec(3,3))
+                  if(abs(dzz) > dcell*half) dzz = dzz -  sign(dcell,dzz) 
+                endif
+                rij2=(dxx*dxx+dyy*dyy+dzz*dzz)
+                rij =sqrt(rij2)
+                !write(7,*) "Distance", rij
+                if(rij < 6.d0) then
+                  !write(7,*) "Computing force"
+                  frep = clust%cr6 /(rij2*rij2*rij2)
+                  forc(1,ni)=forc(1,ni)+dxx*frep/rij
+                  forc(2,ni)=forc(2,ni)+dyy*frep/rij
+                  forc(3,ni)=forc(3,ni)+dzz*frep/rij
+                endif
+                if(rij <= clust%rex + 1.d0 ) then
+                  frep = exp( - clust%cex * (rij - clust%rex))
+                  forc(1,ni)=forc(1,ni)+dxx*frep/rij
+                  forc(2,ni)=forc(2,ni)+dyy*frep/rij
+                  forc(3,ni)=forc(3,ni)+dzz*frep/rij
+                endif
+              endif
+            endif
+          enddo
+        enddo
+      endif
+      if(abs(forc(1,ni)) > 1.d0) forc(1,ni) =  sign(clust%rf, forc(1,ni)) 
+      if(abs(forc(2,ni)) > 1.d0) forc(2,ni) =  sign(clust%rf, forc(2,ni)) 
+      if(abs(forc(3,ni)) > 1.d0) forc(3,ni) =  sign(clust%rf, forc(3,ni)) 
+    enddo
+  enddo
+  write(*,*) iframe, "Total force and force including art_rep (in Ry/au)"
+  do j = 1,natom
+     write(7,*) forc(:,j)
+     write(7,41)  "F",j,xatm(j),yatm(j),zatm(j), &
+                 clust%force(1,j),clust%force(2,j),clust%force(3,j)
+     if(clust%rpat(j) == 1) then
+       clust%force(:,j) = clust%force(:,j) + forc(:, j) 
+       write(7,41)  "A",j,xatm(j),yatm(j),zatm(j), &
+                   clust%force(1,j),clust%force(2,j),clust%force(3,j)
+     endif
+  end do
+
   amove = real(clust%mvat,dp)
   ! number of mobile atoms
   nmobileatom = sum (clust%mvat)
@@ -191,8 +322,12 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   ! if initial run, there are no previous steps to use a random guess 
   ! for the velocity
   !
-  if ((imove == 0) .and. (.not. mol_dynamic%is_restart)) then
+  if ((imove == 0) .and. (.not. mol_dynamic%is_restart) .and. (.not. mol_dynamic%class_restart)) then
      ! set accumulators for total mass and center of mass velocity
+     mol_dynamic%initen = bdev * real(natom,dp) / rydberg
+     if(mol_dynamic%hybrid) write(7,*) "Doing first initialization MD run"
+     if(mol_dynamic%hybrid) write(7,*) "Initial total energy is", mol_dynamic%initen
+     mol_dynamic%de = zero
      do  j=1, natom
         ! find thermal velocity in each direction, x, y, z
         !                              (0.5kT=0 .5m(vel)^2)
@@ -203,12 +338,13 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
         !      p(x) ~ exp ( -0.5*x^2)
         ! and therefore the needed v is simply vel*x
         vxold(j) = vel*gdev(mol_dynamic)*amove(j)
+        write(7,*) vxold(j) / vel
         vyold(j) = vel*gdev(mol_dynamic)*amove(j)
+        write(7,*) vyold(j) / vel
         vzold(j) = vel*gdev(mol_dynamic)*amove(j)
-
+        write(7,*) vzold(j) / vel
      enddo
-
-     ! determined total mass and mass of mobile atoms
+     ! determined to total mass and mass of mobile atoms
      tmass = sum (amass)
      tmobilemass = dot_product(amass,amove)
 
@@ -226,21 +362,40 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
      ! calculation of temperature. Note that the kinetic energy is in
      ! hartrees.
      tke = zero
+     tke2= zero
 
      vxold = vxold-vxav*amove
      vyold = vyold-vyav*amove
      vzold = vzold-vzav*amove 
 
+
+     write(777,*) iframe, mol_dynamic%mdtime, 0, 0 
+     if(mol_dynamic%read_inivel) then
+        write(7,*) "Reading initial velocities"
+        do j = 1, natom
+          read(999,*) vxold(j), &
+                      vyold(j), &
+                      vzold(j)
+        enddo 
+     endif
      do j = 1, natom
         tke = tke+half*amass(j)*(vxold(j)*vxold(j)+vyold(j)* &
              vyold(j)+vzold(j)*vzold(j))
+        ! Report velocitiy
+        write(777,'(3f21.17,i5)') vxold(j), &
+                                  vyold(j), &
+                                  vzold(j), 0 
+        ! Report Initial Velocity
+        write(999,'(3f21.17,i5)') vxold(j), &
+                                  vyold(j), &
+                                  vzold(j) 
      enddo
      ! Calculate the actual temperature and rescale the velocities so
      ! that you get the input temperature.
      if (nmobileatom > 1) then
-        if (beta < 10d-6) then
+        if (beta < 1.0d-6 .and. nose .lt. zero) then
            rescale = two*tke/real(3*nmobileatom,dp)
-        else
+        else if (beta .ge. 1.0d-6 .or. nose .ge. zero) then
            rescale = two*tke/real(3*nmobileatom - 3,dp)
         endif
         rescale = sqrt(tempeh/rescale)
@@ -262,7 +417,7 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
      ! save the current coordinates into {x,y,z}old
      xold = xcur; yold = ycur; zold = zcur
 
-     if (beta < 1.0d-6) then
+     if (nose .lt. zero .and. beta < 1.0d-6) then
         do j = 1, natom
            ! calculate the accelarations (in hartree/mass-au)
            accxold(j) = half*clust%force(1,j)/amass(j)*amove(j)
@@ -281,7 +436,7 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
            vyold(j) = vyold(j) + accyold(j)*deltat
            vzold(j) = vzold(j) + acczold(j)*deltat
         enddo
-     else
+     else if(nose .lt. zero) then
         do j = 1, natom
            ! Calculate the standard deviation (i.e., the autocorrelation)
            ! sigm = sqrt(two*beta*amass(j)*tempeh/deltat) is the standard
@@ -316,6 +471,61 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
            vyold(j) = vyold(j) + deltat*accyold(j)
            vzold(j) = vzold(j) + deltat*acczold(j)
         enddo
+     else if(nose .ge. zero) then
+        !debug 
+       !do j = 1, natom
+       !  vxold(j) = zero
+       !  vyold(j) = zero
+       !  vzold(j) = zero
+       !enddo
+       !tke = zero
+        !Nose-Hoover
+        ! Num degree of freedom 3(N-1)+1?
+        nodof = dble(3*(nmobileatom-1))
+        ! 300 K in Hartree
+        thkh = 0.02586d0*half/rydberg
+        ! Fictitious mass Q
+        qnose(1) = nodof*thkh*nose*nose
+        if(nchain > 1) then
+          do j = 2, nchain
+            qnose(j) = qnose(1)/nodof
+          enddo
+        endif
+        enose = tke + dble(nmobileatom)*bdev*half/rydberg
+        call nhcmkt(clust,mol_dynamic,tke,vxold,vyold,vzold,&
+               mol_dynamic%xnose,mol_dynamic%vnose)
+        exn = zero
+        evn = zero
+        do j = 1, nchain
+          evn = evn + half*mol_dynamic%vnose(j)*mol_dynamic%vnose(j)/qnose(j) 
+          if(j == 1) then
+            exn = exn + nodof*mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          else
+            exn = exn +       mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          endif
+        enddo
+        enose = enose + exn + evn
+        do j =1, natom
+          accxold(j) = amove(j)*(half*clust%force(1,j)/amass(j))
+          accyold(j) = amove(j)*(half*clust%force(2,j)/amass(j))
+          acczold(j) = amove(j)*(half*clust%force(3,j)/amass(j))
+        enddo
+       ! Upd velocity and positions
+        xold = xcur; yold = ycur; zold = zcur
+        do j =1, natom
+           vxold(j) = vxold(j) + deltat*half*accxold(j)
+           vyold(j) = vyold(j) + deltat*half*accyold(j)
+           vzold(j) = vzold(j) + deltat*half*acczold(j)
+            xcur(j) =  xold(j) + deltat     * vxold(j)
+            ycur(j) =  yold(j) + deltat     * vyold(j)
+            zcur(j) =  zold(j) + deltat     * vzold(j)
+        enddo
+        write(7,*) "Nose-Hoover conserved energy is:", enose
+        write(7,*) "Kinetic   energy", tke
+        write(7,*) "Potential energy", dble(nmobileatom)*bdev*half/rydberg
+        write(7,*) "Xnose     energy", exn
+        write(7,*) "Vnose     energy", evn
+        write(7,*) "================================"
      endif
      !
      ! print initial coordinates to atom.cor
@@ -342,7 +552,8 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   else
      ! again there are two cases here: microcanonical and canonical
      tke = zero
-     if (beta < 1.0d-6) then
+     tke2= zero
+     if (nose .lt. zero .and. beta < 1.0d-6) then
         ! In this case, we also have to make sure that we subtarct the
         ! center of mass velocity. Tha just complicates things a little 
         ! bit and some careful handling of old and new coordinates and 
@@ -365,6 +576,62 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
            vzold(j) = amove(j) * ( (zcur(j) - zold(j))/deltat + &
                 deltat*(clust%force(3,j)/amass(j)+acczold(j))/six )
         enddo
+        mol_dynamic%tke = 0.d0
+        do j = 1,natom 
+           mol_dynamic%tke = mol_dynamic%tke+half*clust%amass(j)*(vxold(j)*vxold(j)+&
+            vyold(j)*vyold(j)+vzold(j)*vzold(j))
+        enddo
+        tcorrect = -(mol_dynamic%tke+bdev*real(natom,dp)*half/rydberg) + mol_dynamic%initen*half
+        if(mol_dynamic%rescale_bo .and. abs(tcorrect) .gt. 1.d-4) then
+            write(7,*) "Correcting velocity because the conservation of energy is violated:"
+            write(7,*) "Current kinetic energy is", mol_dynamic%tke, "Hartree"
+            write(7,*) "Current total energy is",bdev*real(natom,dp)*half/rydberg,"Hartree"
+            write(7,*) "Initial total energy is", mol_dynamic%initen*half, "Hartree"
+            write(7,*) "Energy difference is",tcorrect,"Hartree"
+            write(7,*) ""
+            ! Resacle
+            vxold(:) = vxold(:) * sqrt((mol_dynamic%tke + tcorrect) / mol_dynamic%tke)
+            vyold(:) = vyold(:) * sqrt((mol_dynamic%tke + tcorrect) / mol_dynamic%tke)
+            vzold(:) = vzold(:) * sqrt((mol_dynamic%tke + tcorrect) / mol_dynamic%tke)
+            !do j = 1, natom
+            !   if(vxold(j)*vxold(j) + &
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vxold(j)**2)/(mol_dynamic%tke) .lt. 0.d0) then 
+            !     vxold(j) = vxold(j)*0.9d0
+            !   else
+            !     vxold(j) = sign(sqrt(vxold(j)*vxold(j) + & 
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vxold(j)**2)/(mol_dynamic%tke)), vxold(j))
+            !   endif
+            !   if(vyold(j)*vyold(j) + &
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vyold(j)**2)/(mol_dynamic%tke) .lt. 0.d0) then 
+            !     vyold(j) = vyold(j)*0.9d0
+            !   else
+            !     vyold(j) = sign(sqrt(vyold(j)*vyold(j) + & 
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vyold(j)**2)/(mol_dynamic%tke)), vyold(j)) 
+            !   endif
+            !   if(vzold(j)*vzold(j) + &
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vzold(j)**2)/(mol_dynamic%tke) .lt. 0.d0) then 
+            !     vzold(j) = vzold(j)*0.9d0
+            !   else
+            !     vzold(j) = sign(sqrt(vzold(j)*vzold(j) + & 
+            !     (tcorrect*two/clust%amass(j)) * &
+            !     (half*clust%amass(j)*vzold(j)**2)/(mol_dynamic%tke)), vzold(j))
+            !   endif
+            !end do
+            mol_dynamic%tke = 0.d0
+            do j = 1,natom 
+             mol_dynamic%tke = mol_dynamic%tke+half*clust%amass(j)*(vxold(j)*vxold(j)+&
+                vyold(j)*vyold(j)+vzold(j)*vzold(j))
+            enddo
+            write(7,*) "Modified kinetic energy is", mol_dynamic%tke,"Hartree"
+            tcorrect = -(mol_dynamic%tke+bdev*real(natom,dp)*half/rydberg) + mol_dynamic%initen*half
+            write(7,*) "Corrected energy difference is",tcorrect,"Hartree"
+            !mol_dynamic%cstep = 0
+        endif
         vxav = dot_product(amass,vxold)
         vyav = dot_product(amass,vyold)
         vzav = dot_product(amass,vzold)
@@ -381,6 +648,7 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
         vzold = vzold-vzav*amove
         ! move the positions to the old
         xold = xcur; yold = ycur; zold = zcur
+        write(777,*) iframe, mol_dynamic%mdtime, 0, 0 
         do j = 1, natom
 
            ! Calculate the updated positions
@@ -395,6 +663,10 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
                 (two*clust%force(3,j)*amove(j)/amass(j)-acczold(j))/six)
            ! Find the kinetic energy of the atoms for calculation of
            ! temperature.
+           ! Report velocitiy
+           write(777,'(3f21.17,i5)') vxold(j), &
+                                     vyold(j), &
+                                     vzold(j), 0 
            tke = tke + half*amass(j)*(vxold(j)*vxold(j)+vyold(j)* &
                 vyold(j)+vzold(j)*vzold(j))
            ! Finally correct the velocity again the force term has the
@@ -414,9 +686,9 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
            accyold(j) = half*clust%force(2,j)*amove(j)/amass(j)
            acczold(j) = half*clust%force(3,j)*amove(j)/amass(j)
         enddo
-     else
-        !
+     else if(nose .lt. zero) then
         ! for all atoms...
+        write(777,*) iframe, mol_dynamic%mdtime, 0, 0 
         do j = 1, natom
            ! Calculate the standard deviation (i.e., the autocorrelation)
            ! sigm = sqrt(two*beta*amass(j)*temper/deltat) is the standard
@@ -467,6 +739,10 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
                 (four*accyold(j)-accyoldr)/six)
            zcur(j)=zold(j)+deltat*(vzoldr + deltat* &
                 (four*acczold(j)-acczoldr)/six)
+           ! Report velocitiy
+           write(777,'(3f21.17,i5)') vxold(j), &
+                                     vyold(j), &
+                                     vzold(j), 0 
            ! calculate the kinetic energy
            tke = tke+half*amass(j)*(vxoldr*vxoldr+vyoldr* &
                 vyoldr+vzoldr*vzoldr)
@@ -478,7 +754,93 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
            vzold(j) = vzoldr + deltat* &
                 (three*acczold(j)-acczoldr)*half
         enddo
-     endif
+     !Nose Hoover
+     else if (nose .ge. zero) then
+        ! Num degree of freedom 3(N-1)+1?
+        nodof = dble(3*(nmobileatom-1))
+        ! 300 K in Hartree
+        thkh = 0.02586d0*half/rydberg
+        ! Fictitious mass Q
+        qnose(1) = nodof*thkh*nose*nose
+        if(nchain > 1) then
+          do j = 2, nchain
+          qnose(j) = qnose(1)/nodof
+          end do
+        endif
+
+        tke =zero
+        do j =1, natom
+           tke = tke + half*amass(j)*(vxold(j)*vxold(j)+vyold(j)* &
+              vyold(j)+vzold(j)*vzold(j))
+        enddo
+
+        call nhcmkt(clust,mol_dynamic,tke,vxold,vyold,vzold,&
+               mol_dynamic%xnose,mol_dynamic%vnose)
+        enose = tke + dble(nmobileatom)*bdev*half/rydberg
+        exn = zero
+        evn = zero
+        do j = 1, nchain
+          evn = evn + half*mol_dynamic%vnose(j)*mol_dynamic%vnose(j)/qnose(j) 
+          if(j == 1) then
+            exn = exn + nodof*mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          else
+            exn = exn +       mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          endif
+        enddo
+        enose = enose + evn + exn
+
+        do j = 1, natom
+          accxold(j) = amove(j)*(half*clust%force(1,j)/amass(j))
+          accyold(j) = amove(j)*(half*clust%force(2,j)/amass(j))
+          acczold(j) = amove(j)*(half*clust%force(3,j)/amass(j))
+        enddo
+
+        tke =zero
+        write(777,*) iframe, mol_dynamic%mdtime, 0, 0 
+        do j =1, natom
+           vxold(j) = vxold(j) + deltat*half*accxold(j)
+           vyold(j) = vyold(j) + deltat*half*accyold(j)
+           vzold(j) = vzold(j) + deltat*half*acczold(j)
+           tke = tke + half*amass(j)*(vxold(j)*vxold(j)+vyold(j)* &
+              vyold(j)+vzold(j)*vzold(j))
+           ! Report velocitiy
+           write(777,'(3f21.17,i5)') vxold(j), &
+                                     vyold(j), &
+                                     vzold(j), 0 
+        enddo
+
+        xold = xcur; yold = ycur; zold = zcur
+
+        call nhcmkt(clust,mol_dynamic,tke,vxold,vyold,vzold,&
+               mol_dynamic%xnose,mol_dynamic%vnose)
+        do j =1, natom
+           vxold(j) = vxold(j) + deltat*half*accxold(j)
+           vyold(j) = vyold(j) + deltat*half*accyold(j)
+           vzold(j) = vzold(j) + deltat*half*acczold(j)
+            xcur(j) =  xold(j) + deltat     * vxold(j)
+            ycur(j) =  yold(j) + deltat     * vyold(j)
+            zcur(j) =  zold(j) + deltat     * vzold(j)
+        enddo
+
+        write(7,*) "Nose-Hoover conserved energy is:", enose
+        write(7,*) "Kinetic   energy", tke
+        write(7,*) "Potential energy", dble(nmobileatom)*bdev*half/rydberg
+        write(7,*) "Xnose     energy", exn 
+        write(7,*) "Vnose     energy", evn
+        exn = zero
+        evn = zero
+        do j = 1, nchain
+          evn = evn + half*mol_dynamic%vnose(j)*mol_dynamic%vnose(j)/qnose(j) 
+          if(j == 1) then
+            exn = exn + nodof*mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          else
+            exn = exn +       mol_dynamic%xnose(j)*thkh*(tempi/300.d0)
+          endif
+        enddo
+        write(7,*) "Xnose(+dt)  energy", exn
+        write(7,*) "Vnose(+dt)  energy", evn 
+        write(7,*) "================================"
+    endif !Nose Hoover 
   endif
   !
   ! If this is a confined system:
@@ -524,8 +886,14 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
           ,vxold(j),vyold(j),vzold(j),accxold(j),accyold(j),acczold(j), &
           amove(j)
   enddo
+  if(nose .ge. zero) then
+    write(7,*)iframe, "For restart run"
+    do j = 1, mol_dynamic%nchain
+      write(7,'(2f19.14)') mol_dynamic%xnose(j), mol_dynamic%vnose(j)
+    enddo
+  endif
 22 format(13(1x,e15.8))
-24 format('Step #',i4)
+24 format('Step #',i9)
   !
   ! Just for the purpose of reporting, calculate the center of mass
   ! velocity in the end as well...
@@ -549,24 +917,36 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
 
   ! Calculate the effective temperature (as opposed to the input one).
   ! Note here the natom/(natom-1) has to do with the correct
-  ! degrees of freedom! for canonical ensemble. For micro-canonical 
+  ! degrees of ereedom! for canonical ensemble. For micro-canonical 
   ! there is no such correction needed.
-  if (beta < 1.0d-6) then
+  if (beta < 1.0d-6 .and. nose .lt. zero) then
      tcalc = two/three*tke/tempkry
-  else
+  else if (beta .ge. 1.0d-6 .or. nose .ge. zero) then
      tcalc = two/three*tke/tempkry* &
           real(nmobileatom,dp)/real(nmobileatom-1,dp)
   endif
 
+  mol_dynamic%tav = mol_dynamic%tav + tcalc 
+  write(7,*) "Average temperature is", mol_dynamic%tav / dble(iframe + 1)
+
   ! Report the kinetic, potential, and total energies per atom, in
   ! eV, input and actual temperature  to md_nrg.dat
-  write(78,12) iframe,real(iframe,dp)*deltat*timeaups,tkeev,bdev, &
-       tkeev+bdev,tempi,tcalc
-12 format(i4,3x,f7.3,2x,f11.5,2(2x,f11.5),2x,f7.2,3x,f7.2)
+if(.not. mol_dynamic%hybrid .OR. mol_dynamic%seq) then
+  write(78,12) iframe,mol_dynamic%mdtime,tkeev,bdev, &
+       tkeev+bdev,tempi,tcalc,cdflag
+  if(imove /= 0) then
+    if(abs(bdev - mol_dynamic%bdevprev) .gt. mol_dynamic%de) then 
+      mol_dynamic%de = abs(bdev - mol_dynamic%bdevprev)
+    endif
+  else if(imove==0) then
+    mol_dynamic%de = zero
+  endif
+    mol_dynamic%bdevprev = bdev
+12 format(i4,3x,f9.5,2x,f11.5,2(2x,f11.5),2x,f7.2,3x,f9.4,i4)
   !
   ! Unless this was already the last step...
   if ((imove /= mol_dynamic%step_num) .or.  &
-       (abs(tempi-tempf) > 1.d-5)) then
+       (abs(tempi-tempf) > 1.d-5) .or. mol_dynamic%hybrid) then
      !
      ! Report coordinates to atom.cor
      write(66,*) 'Coordinates for step #', iframe+1
@@ -580,16 +960,30 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
      enddo
 
      ! report xyz formatted data to movie.xyz
-     write(92,84) natom
-     write(92,*) 'Step # ', iframe+1
-     ii = 0
-     do i = 1, naty
-        do j = 1, clust%natmi(i)
-           ii = ii + 1
-           write(92,88) clust%name(i), xatm(ii)*angs, &
-                yatm(ii)*angs, zatm(ii)*angs
-        enddo
-     enddo
+       write(92,84) natom
+       write(92,*) 'Step # ', iframe+1
+       ii = 0
+       do i = 1, naty
+          do j = 1, clust%natmi(i)
+             ii = ii + 1
+             write(92,88) clust%name(i), xatm(ii)*angs, &
+                  yatm(ii)*angs, zatm(ii)*angs
+          enddo
+       enddo
+       if(pbc%per==0) then
+         write(931,*) 'ATOM', mol_dynamic%iframe+2
+       elseif(pbc%per==3) then
+         write(931,*) 'PRIMCOORD', mol_dynamic%iframe+2
+         write(931,'(2i6)') natom, 1
+       endif
+       ii = 0
+       do i = 1, clust%type_num
+          do j = 1, clust%natmi(i)
+             ii = ii + 1
+             write(931,'(1i5,3f15.10)') clust%natmi(i), xatm(ii)*angs,yatm(ii)*angs,zatm(ii)*angs
+          enddo
+       enddo
+
      ! If this was the last step, report coordinates for next run to atom.cor.
   else
      write(66,*)
@@ -597,7 +991,34 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
      do j = 1,natom
         write(66,80) xatm(j),yatm(j),zatm(j)
      enddo
+     open(221,file='mdinit.dat',status='unknown',form='formatted')
+     write(221,24) iframe+1
+     do j=1,natom
+        write(221,22) xcur(j),ycur(j),zcur(j),xold(j),yold(j),zold(j) &
+             ,vxold(j),vyold(j),vzold(j),accxold(j),accyold(j),acczold(j), &
+             amove(j)
+     enddo
+     do i = 1,naty
+        do j = 1,naty
+           write(221,*) mol_dynamic%dist_min(i,j), mol_dynamic%dist_max(i,j)
+        enddo
+     enddo
+     write(221,*) bdev
+     write(7,*) "writing the maximum delta E in deltat t", mol_dynamic%de, "(meV/atom)"
+     write(221,*) mol_dynamic%de
+     write(221,*) mol_dynamic%initen
+     close(221)
+     !NOSE
+     if(nose .ge. zero) then
+       open(222,file='nhinit.dat',status='unknown',form='formatted')
+       do j = 1, mol_dynamic%nchain
+         write(222,'(2f19.14)') mol_dynamic%xnose(j), mol_dynamic%vnose(j)
+       enddo
+       close(222)
+     endif
   endif
+endif
+41 format(A4,i4,2x,3(f11.6,1x),2x,3(f11.6,1x))
 80 format(3(2x,f11.6))
 82 format(3(2x,f14.9))
 84 format(i3)
@@ -635,6 +1056,23 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   iframe = iframe + 1
   imove = imove + 1
 
+  if(mol_dynamic%hybrid .and. (.not.mol_dynamic%seq)) then
+    continue
+  else 
+    mol_dynamic%mdtime = mol_dynamic%mdtime + deltat*timeaups 
+  endif
+! if (imove .gt. mol_dynamic%step_num) then
+!    xatm = xold
+!    yatm = yold
+!    zatm = zold
+!    vxold = vxold2
+!    vyold = vyold2
+!    vzold = vzold2
+!  accxold = accxold2
+!  accyold = accyold2
+!  acczold = acczold2
+! endif
+
   clust%xatm = xatm
   clust%yatm = yatm
   clust%zatm = zatm
@@ -658,6 +1096,31 @@ subroutine moldyn(clust,mol_dynamic,pbc,imove,bdev)
   mol_dynamic%accxold = accxold
   mol_dynamic%accyold = accyold
   mol_dynamic%acczold = acczold
+
+  mol_dynamic%nosez    = nosez
+  mol_dynamic%nosezd   = nosezd
+  mol_dynamic%nosezdd  = nosezdd
+  mol_dynamic%nosezcur = nosezcur
+
+  if (imove .gt. mol_dynamic%step_num .and. mol_dynamic%seq) then
+    mol_dynamic%xold2= mol_dynamic%xold
+    mol_dynamic%yold2= mol_dynamic%yold
+    mol_dynamic%zold2= mol_dynamic%zold
+    mol_dynamic%xcur2= mol_dynamic%xcur
+    mol_dynamic%ycur2= mol_dynamic%ycur
+    mol_dynamic%zcur2= mol_dynamic%zcur
+    mol_dynamic%vxold2= mol_dynamic%vxold
+    mol_dynamic%vyold2= mol_dynamic%vyold
+    mol_dynamic%vzold2= mol_dynamic%vzold
+    mol_dynamic%accxold2= mol_dynamic%accxold
+    mol_dynamic%accyold2= mol_dynamic%accyold
+    mol_dynamic%acczold2= mol_dynamic%acczold
+  endif
+
+  write(7,*) xold
+  write(7,*) xcur
+  write(7,*) vxold
+  write(7,*) accxold
 
   ! flush buffer of md output files
   call myflush(66)
@@ -784,6 +1247,7 @@ function getrandom(mol_dynamic)
      deallocate(oldseed)
   endif
   getrandom = mol_dynamic%vrandom(mol_dynamic%iset)
+  !write(7,*) "random number is",getrandom
   mol_dynamic%iset = mol_dynamic%iset + 1
   if (mol_dynamic%iset > mol_dynamic%nrandom) mol_dynamic%iset = 0
 
@@ -812,8 +1276,7 @@ function get_rand_test(mol_dynamic)
     iseed = ia*(iseed-kk*iq) -ir*kk
     if (iseed < 0) iseed = iseed + im
     mol_dynamic%rng_seed = iseed
-    !get_rand_test = dfloat(iseed)/dfloat(im)
-    get_rand_test = real(iseed, kind=dp)/real(im, kind=dp)
+    get_rand_test = dfloat(iseed)/dfloat(im)
 
     return
 end function get_rand_test

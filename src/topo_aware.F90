@@ -28,11 +28,7 @@
 ! 
 !===============================================================!
 subroutine topo_aware(parallel) !,experimental)
-
-#ifdef MPI
     use mpi
-#endif
-
     use parallel_data_module
 
     implicit none
@@ -79,10 +75,6 @@ subroutine topo_aware(parallel) !,experimental)
     integer :: source_check
     integer :: destination_check
     logical :: weight_check
-
-! -------------------------------------------------------------
-
-#ifdef MPI
 
     graph_degree = parallel%countcomm
     nnodes = parallel%group_size
@@ -149,8 +141,7 @@ call MPI_DIST_GRAPH_NEIGHBORS(parallel%group_comm_topo, max_in_degree, sources, 
     do inode = 0,max_in_degree-1
         sendcounts(inode) = parallel%jsendp(sources(inode)+1)-parallel%jsendp(sources(inode))
     enddo
-
-if (parallel%countcomm /= 0) sdispls(0) = 0
+    sdispls(0) = 0
     do ipack=1,max_in_degree-1
         sdispls(ipack)=sdispls(ipack-1)+sendcounts(ipack-1)
     enddo
@@ -159,7 +150,7 @@ if (parallel%countcomm /= 0) sdispls(0) = 0
         recvcounts(inode) = parallel%irecvp(destinations(inode)+1)-parallel%irecvp(destinations(inode))
     enddo
 
-if (parallel%countcomm /= 0) rdispls(0)=0
+    rdispls(0) = 0
     do ipack=1,max_out_degree-1
         rdispls(ipack)=rdispls(ipack-1)+recvcounts(ipack-1)
     enddo
@@ -206,7 +197,4 @@ parallel%rdispls=rdispls
 #endif
      endif
 ! endif
-
-#endif
-
 end subroutine topo_aware

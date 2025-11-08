@@ -199,7 +199,7 @@ subroutine  chebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &
 
   !.. local external subroutines
 #ifdef CPLX
-  external  zorth_normal,  zrandom_array 
+  external  zorth_normal,  random_array 
 #else
   external  orth_normal,  random_array 
 #endif
@@ -366,7 +366,7 @@ subroutine  chebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &
   num_mv = num_mv + 5
 
   !.. get an estimated of the lower bound by linear interpolation
-  lowb = (lowb0*1.4d0 + (lowb0+upperb)/two* 1.6d0)/three
+  lowb = (lowb0*1.4d0 + (lowb+upperb)/two* 1.6d0)/three
   lowb = max(0.d0, lowb)
   if (flag == "cont" .and. nconv > 0) then
      lowb = max(lowb,  eval(nconv))
@@ -393,7 +393,7 @@ subroutine  chebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &
         utmp(:,:) = u_init(:,1:init_size)
         ktmp = blksize - init_size
 #ifdef CPLX
-        call zrandom_array(ldn, ndim, ktmp, utmp(1,1+init_size), info)
+        call random_array(ldn * 2, ndim * 2, ktmp, utmp(1,1+init_size), info)
 #else
         call random_array(ldn, ndim, ktmp, utmp(1,1+init_size), info)
 #endif
@@ -402,7 +402,7 @@ subroutine  chebdav_diag(kplp,max_spdim, nwant, nconv, max_mv, eval, &
      utmp(:,:) =  v_basis(:,nconv+1:nconv+blksize)
   else
 #ifdef CPLX
-     call zrandom_array(ldn, ndim, blksize, utmp, info)
+     call random_array(ldn * 2, ndim * 2, blksize, utmp, info)
 #else
      call random_array(ldn, ndim, blksize, utmp, info)
 #endif

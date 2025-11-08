@@ -33,11 +33,12 @@
 !           Phys., 113, 8918 (2000).
 !
 !---------------------------------------------------------------
-subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
+subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc,vt,et,pot)
 
   use constants
   use grid_module
   use parallel_data_module
+  use potential_module
   implicit none
   !
   ! Input/Output variables:
@@ -46,6 +47,8 @@ subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
   type (grid_data), intent(in) :: grid
   ! parallel computation related data
   type (parallel_data), intent(in) :: parallel
+  ! potential related data
+  type (potential), intent(in) :: pot
 
   ! correlation type
   character (len=2), intent(in) :: icorr
@@ -61,6 +64,13 @@ subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
   ! total exchange-correlation energy
   real(dp), intent(out) :: exc
   real(dp), dimension(1):: excvec
+
+  ! output kinetic potential
+  real(dp), intent(out) :: vt(parallel%mydim)
+  ! output total exchange-correlation energy
+  real(dp), intent(out) :: et
+  real(dp), dimension(1):: tvec
+
   !
   ! Work variables:
   !
@@ -144,6 +154,9 @@ subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
   ! initialize the total exchange-correlation energy to zero
   !
   exc = zero
+
+  !Compute kinetic energy
+  if(pot%fex_is) call kinetic_energy(grid,parallel,pot,weight,vxc,et,vt,wvec)
 
   if (icorr == 'pw' .or. icorr == 'pb') then
 
@@ -347,6 +360,10 @@ subroutine exc_nspn(grid,parallel,nrep,icorr,dioniz,vxc,wvec,exc)
   excvec = exc
   call psum(excvec,1,parallel%group_size,parallel%group_comm)
   exc  = excvec(1) * (grid%hcub)
+  tvec = et
+  call psum(tvec,1,parallel%group_size,parallel%group_comm)
+  et  = tvec(1) * (grid%hcub)
+
 
   deallocate(laplac)
   deallocate(absgrad)

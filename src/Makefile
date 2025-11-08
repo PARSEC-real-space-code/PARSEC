@@ -8,6 +8,8 @@
 MACH ?= ubuntu_intel
 include config/make.$(MACH)
 
+include DetectOptions.mk
+
 # Detect Compiler - modified from original 762Studios under DWTFYWTPL2
 # DON'T MODIFY THIS UNLESS YOU KNOW WHAT ITS DOING....
 # You shouldn't need to change this unless one of the compilers
@@ -30,7 +32,8 @@ SRCF	=  anderson.f90 cg.f90 corecd.f90 dipole.f90 domove.f90 \
  pseudo.f90 ptable.f90 spinmix.f90 spinunmix.f90 spline.f90 spn_pbe.f90 \
  subspace_sub.f90 symgen.f90 symmetries.f90 symm_forces.f90 \
  totnrg.f90 v_first.f90 zmatvec_so.f90 ewald_slab.f90 \
- ionpot_slab.f90 forcloc_slab.f90 calc_bands.f90 laplacian_test.f90
+ ionpot_slab.f90 forcloc_slab.f90 calc_bands.f90 laplacian_test.f90 \
+ kinetic.f90 moldyn_class.f90 nhcmkt.f90 read_pot.f90 
 OBJF	= $(SRCF:.f90=.o) lbfgsb.o linpack.o timer.o 
 
 #
@@ -42,7 +45,8 @@ PSRCF     = cfftw.F90 chkmemory.F90 comm_neigh.F90 eigval.F90 \
  restart_run.F90 rho_hart.F90 setup.F90 soforc.F90 \
  topo_aware.F90 upot.F90 usrinputfile.F90 wfnsave.F90 \
  hartset_slab.F90 dos.F90 sort.F90 timing.F90 bxc.F90 spec_tet.F90 \
- calc_nscf.F90 gw_write.F90 h5_wfnsave.F90
+ calc_nscf.F90 gw_write.F90 h5_wfnsave.F90 \
+ potsave.F90 potfield.F90
 POBJF = $(PSRCF:.F90=.o)
 
 #
@@ -159,8 +163,8 @@ $(BUILDDIR)/esdf_mod.o: $(BUILDDIR)/esdf_key_mod.o
 $(BUILDDIR)/parsec.o : def.h
 $(BUILDDIR)/arpk.o : arpkdbg.h
 # something wasn't quite right (shrugs)
-$(BUILDDIR)/arpk.o $(BUILDDIR)/chebdav.o $(BUILDDIR)/chebff.o $(BUILDDIR)/diagla.o $(BUILDDIR)/lancz_bound.o $(BUILDDIR)/subspace.o $(BUILDDIR)/zmatvec_so.o: $(BUILDDIR)/matvecB.o
 $(BUILDDIR)/arpk.o $(BUILDDIR)/chebdav.o $(BUILDDIR)/chebff.o $(BUILDDIR)/diagla.o $(BUILDDIR)/lancz_bound.o $(BUILDDIR)/subspace.o $(BUILDDIR)/zmatvec_so.o: $(BUILDDIR)/matvec.o 
+$(BUILDDIR)/arpk.o $(BUILDDIR)/chebdav.o $(BUILDDIR)/chebff.o $(BUILDDIR)/diagla.o $(BUILDDIR)/lancz_bound.o $(BUILDDIR)/subspace.o $(BUILDDIR)/zmatvec_so.o: $(BUILDDIR)/matvecB.o
 $(BUILDDIR)/matvecB.o :$(BUILDDIR)/buffer_module.o
 #$(addprefix $(BUILDDIR),trlanc_diag.o arpk.o chebdav.o diagla.o lancz_bound.o subspace.o zmatvec_so.o):$(BUILDDIR)/matvec.o
 

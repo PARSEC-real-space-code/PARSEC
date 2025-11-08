@@ -68,7 +68,7 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
   !... irandom counts how many random vectors have been constructed
   integer :: irandom
 
-  real(dp) :: norm(1), normproj(1)
+  real(dp) :: norm, normproj
   SCALAR :: invnorm
 
   SCALAR :: h(vsize+augsize)
@@ -138,23 +138,23 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
 
      ! calculate the norm. mainly to see that its not zero
 #ifdef CPLX
-     norm(1) = real(Zdot(ndim, v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+     norm = real(Zdot(ndim, v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
 #else
-     norm(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+     norm = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
 #endif
 
 ! !$OMP BARRIER
 ! !$OMP MASTER
-     call psum(norm(1), 1, parallel%group_size, parallel%group_comm)
+     call psum(norm, 1, parallel%group_size, parallel%group_comm)
 ! !$OMP END MASTER
 
-     norm(1) = sqrt(norm(1))
+     norm = sqrt(norm)
 
 #ifdef DEBUG
-     if (parallel%iammaster) write (9,*) "norm                      ",norm(1)
+     if (parallel%iammaster) write (9,*) "norm                      ",norm
 #endif
 
-     if (norm(1) >= epsbig) then
+     if (norm >= epsbig) then
      !
      !  Do the following computations only when v_basis(:,k) is non-zero; 
      !  otherwise, replace v_basis(:,k) with a random vector to restart.
@@ -183,29 +183,29 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
 
 
 #ifdef CPLX
-         normproj(1) = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+         normproj = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
 #else
-         normproj(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+         normproj = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
 #endif
-         call psum(normproj(1), 1, parallel%group_size, parallel%group_comm)
-         normproj(1) = sqrt(normproj(1))
+         call psum(normproj, 1, parallel%group_size, parallel%group_comm)
+         normproj = sqrt(normproj)
 
 #ifdef DEBUG
-         if (parallel%iammaster) write (9,*) "norm after 1st projection:",normproj(1)
+         if (parallel%iammaster) write (9,*) "norm after 1st projection:",normproj
 #endif
 
-       if (normproj(1) > reorth1*norm(1)) then
+       if (normproj > reorth1*norm) then
            !
            !  Pass the reorthogonalization test, no need to refine.
            !
 #ifdef DEBUG
                  if(parallel%iammaster) then
-                 write(9,*) "PASSED 1st with ratio ",normproj(1)/norm(1)
+                 write(9,*) "PASSED 1st with ratio ",normproj/norm
                  endif
 #endif
 
-           if (abs(normproj(1)-one) >= eps) then
-              invnorm = Zone/normproj(1)
+           if (abs(normproj-one) >= eps) then
+              invnorm = Zone/normproj
               call Zscal(ndim, invnorm, v_basis(1,k), 1)
            endif
 
@@ -220,7 +220,7 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
            !
 #ifdef DEBUG
                if(parallel%iammaster) then
-             write(9,*) "FAILED 1st with ratio",normproj(1)/norm(1)
+             write(9,*) "FAILED 1st with ratio",normproj/norm
                 endif
 #endif
 
@@ -244,38 +244,38 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
            call  Zgemv('N', ndim, k-1, -Zone, v_basis(1,1), ldn, h, 1, Zone, v_basis(1, k), 1)
 
 ! if the vector is lin. dep. then the norm will surely go down now.
-           norm(1) =  normproj(1)
+           norm =  normproj
 #ifdef CPLX
-        normproj(1) = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
+        normproj = real(Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1),dp)
 #else
-        normproj(1) = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
+        normproj = Zdot(ndim,v_basis(1:ndim,k),1, v_basis(1:ndim,k),1)
 #endif
 
 ! !$OMP BARRIER
 ! !$OMP MASTER
-           call psum(normproj(1), 1, parallel%group_size, parallel%group_comm)
+           call psum(normproj, 1, parallel%group_size, parallel%group_comm)
 
 ! !$OMP END MASTER
-           normproj(1) = sqrt(normproj(1))  
+           normproj = sqrt(normproj)  
 
 #ifdef DEBUG
-         if (parallel%iammaster) write (9,*) "norm after 2nd projection:",normproj(1)
+         if (parallel%iammaster) write (9,*) "norm after 2nd projection:",normproj
            ! 2nd and final test - if you fail this then the new vector probably is lin. dep.
 #endif
 
-            if (normproj(1) > reorth2*norm(1)) then
+            if (normproj > reorth2*norm) then
              !
              !  Pass the 2nd reorthogonalization test.
              !  It was probably numerical noise/nothing
              !
 #ifdef DEBUG
                  if(parallel%iammaster) then
-                 write(9,*) "PASSED 2nd with ratio ",normproj(1)/norm(1)
+                 write(9,*) "PASSED 2nd with ratio ",normproj/norm
                  endif
 #endif
 
-               if (abs(normproj(1)-one) >= eps) then
-                  invnorm = Zone/normproj(1)
+               if (abs(normproj-one) >= eps) then
+                  invnorm = Zone/normproj
                   call Zscal(ndim, invnorm, v_basis(1,k), 1)
                endif
 
@@ -286,14 +286,14 @@ subroutine orth_normal(parallel, ldn, ndim, vsize, augsize, &
             !
 #ifdef DEBUG
                if(parallel%iammaster) then
-             write(9,*) "FAILED 2nd with ratio",normproj(1)/norm(1)
+             write(9,*) "FAILED 2nd with ratio",normproj/norm
                endif
 #endif
 
 #ifdef CPLX
-               call zrandom_array(ldn * 2, ndim * 2, 1, v_basis(1,k), info)
+               call random_array(ldn * 2, ndim * 2, 1, v_basis(1,k))
 #else
-               call random_array(ldn, ndim, 1, v_basis(1,k), info)
+               call random_array(ldn, ndim, 1, v_basis(1,k))
 #endif
                irandom = irandom+1
                goto 10

@@ -111,10 +111,10 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
   !  to the other 2, if there is no such direction value is 0.
   integer   :: lap_orth_dir
 
-  integer i,j,k,idx1,op(4,200), disti(200), neig(3,20),flag, ngflag
+  integer i,j,k,idx1,op(200,4), disti(200), neig(20,3),flag, ngflag
   integer ndir ! number of mixed derivatives in laplacian of grid.
-  real(dp) opg(3,200), opp(3,200), distp(200)
-  real(dp) pneig(3,20), neig_un(3,20)
+  real(dp) opg(200,3), opp(200,3), distp(200)
+  real(dp) pneig(20,3), neig_un(20,3)
   real(dp) kv,kw
   real(dp) uu(3,3), mt(3,3), mtinv(3,3), bb(3), ff(3),vf
 
@@ -207,15 +207,15 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
   do i=-1,1
    do j=-1,1
     do k=-1,1
-      op(1,idx1)=i
-      op(2,idx1)=j
-      op(3,idx1)=k
-      op(4,idx1)=idx1
-      opg(1,idx1)=i
-      opg(2,idx1)=kv*j
-      opg(3,idx1)=kw*k
-      call matvec3('N',avec_tmp,opg(1:3,idx1),opp(1:3,idx1))
-      distp(idx1)=sqrt(dot_product(opp(1:3,idx1),opp(1:3,idx1)))
+      op(idx1,1)=i
+      op(idx1,2)=j
+      op(idx1,3)=k
+      op(idx1,4)=idx1
+      opg(idx1,1)=i
+      opg(idx1,2)=kv*j
+      opg(idx1,3)=kw*k
+      call matvec3('N',avec_tmp,opg(idx1,1:3),opp(idx1,1:3))
+      distp(idx1)=sqrt(dot_product(opp(idx1,1:3),opp(idx1,1:3)))
       disti(idx1)=idx1
       idx1=idx1+1
     enddo
@@ -235,22 +235,22 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
  
   do while((i<28) .and. (ngflag>0))
     i=i+1
-    if(sum(abs(op(1:3,disti(i))))>1) then ! check that it is not one of the axis
+    if(sum(abs(op(disti(i),1:3)))>1) then ! check that it is not one of the axis
       if(idx1==1) then
-        neig(1:3,idx1)=op(1:3,disti(i))
-        neig_un(1:3,idx1)=opg(1:3,disti(i))
-        pneig(1:3,idx1)=opp(1:3,disti(i))
+        neig(idx1,1:3)=op(disti(i),1:3)
+        neig_un(idx1,1:3)=opg(disti(i),1:3)
+        pneig(idx1,1:3)=opp(disti(i),1:3)
         idx1=idx1+1 
       else
         flag=0
         do j=1,idx1-1
-         vf = sum((neig(1:3,j) + op(1:3,disti(i)))**2)
+         vf = sum((neig(j,1:3) + op(disti(i),1:3))**2)
          if (vf < 0.0001) flag = flag + 1
         enddo
         if(flag==0) then
-          neig(1:3,idx1)=op(1:3,disti(i))
-          neig_un(1:3,idx1)=opg(1:3,disti(i))
-          pneig(1:3,idx1)=opp(1:3,disti(i))
+          neig(idx1,1:3)=op(disti(i),1:3)
+          neig_un(idx1,1:3)=opg(disti(i),1:3)
+          pneig(idx1,1:3)=opp(disti(i),1:3)
           idx1=idx1+1
         endif
 
@@ -261,13 +261,13 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
 
      write(9,*) 'found the following 3 nearest neighbors'
      do k=1,3
-        write(9,*) k, neig(1:3,k)
+        write(9,*) k, neig(k,1:3)
      enddo
 
 
      do k=1,3
-      uu(1:3,k)=neig_un(1:3,k)/sqrt(dot_product(pneig(1:3,k),pneig(1:3,k)))
-      lap_dir_step(k)=sqrt(dot_product(pneig(1:3,k),pneig(1:3,k)))* &
+      uu(1:3,k)=neig_un(k,1:3)/sqrt(dot_product(pneig(k,1:3),pneig(k,1:3)))
+      lap_dir_step(k)=sqrt(dot_product(pneig(k,1:3),pneig(k,1:3)))* &
                      grid%step(1)
      enddo
 
@@ -347,7 +347,7 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
   grid%b_lap = b_lap
 
   do i=1,3
-    grid%lap_neig(1:3,i)=neig(1:3,i)
+    grid%lap_neig(i,1:3)=neig(i,1:3)
   enddo
 
   if (lprint) then 
@@ -355,7 +355,7 @@ subroutine pbc_grid_coefs(pbc,grid,lprint,tol)
           grid%lap_dir_num
      write(7,*) 'Laplacian directions:'
      do i=1,3
-      write(7,*) grid%lap_neig(1:3,i), '  weight is: ', grid%b_lap(3+i)
+      write(7,*) grid%lap_neig(i,1:3), '  weight is: ', grid%b_lap(3+i)
      enddo
      write(7,*) 'Laplacian coefficients data:'
      write(7,'(6(f5.2, 1x))') grid%b_lap
@@ -688,18 +688,18 @@ subroutine pbc_grid_coefs_2d(pbc,grid,lprint,tol,plane_num)
 
 
   if(lap_dir(1)>0) then 
-    grid%lap_neig(:,1)=dflag
+    grid%lap_neig(1,:)=dflag
   else 
-    grid%lap_neig(:,1)=mflag
+    grid%lap_neig(1,:)=mflag
   endif
 
-  grid%lap_neig(:,2)=zero
-  grid%lap_neig(:,3)=zero
+  grid%lap_neig(2,:)=zero
+  grid%lap_neig(3,:)=zero
 
   if (lprint) then 
      write(7,'(1x,a,1x,i2)') 'Laplacian number of directions:', &
           grid%lap_dir_num
-     write(7,*) grid%lap_neig(1:3,1), '  weight is: ', grid%b_lap(4)
+     write(7,*) grid%lap_neig(1,1:3), '  weight is: ', grid%b_lap(4)
 
      write(7,*) 'Laplacian coefficients data:'
      write(7,'(6(f5.2, 1x))') grid%b_lap

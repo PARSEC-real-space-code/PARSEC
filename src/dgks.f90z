@@ -294,9 +294,6 @@ end subroutine dgks
   external  dlarnv,  zlarnv
 
   !-------------------------------------------------------------------
-
-  info = 0
-
   !!! the following are not necessary at all, since idist is set to 2 
   !
   ! if (idist /= 1 .and. idist /= 2  .and. idist /= 3) then

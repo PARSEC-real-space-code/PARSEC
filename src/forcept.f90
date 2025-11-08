@@ -67,7 +67,7 @@ subroutine forcept(clust,zion,ipr,enucpt)
                  ! Hartree->Rydberg cancels with the half resulting from
                  ! summing over all pcs pairs, so each pair is counted twice.
                  ! Decomment if Q-Q should be added to energy.
-                 !                 enucpt = enucpt + qiqj/rij
+                 enucpt = enucpt + qiqj/rij
               endif
            enddo
         enddo

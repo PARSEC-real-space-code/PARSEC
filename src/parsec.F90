@@ -164,6 +164,9 @@ program parsec
   real(dp) :: kgrid_shift_tmp(3),tmp
   ! Transitional object (equivalent to a stuffed toy)
   real(dp), allocatable :: vect(:)
+  integer :: k, l, kk, pp
+  real(dp) :: dxx, dyy, dzz, rij2, tcorrect
+  character(len=72) :: cpcmnd
 
   ! Initialize error flag.
   ierr = 0
@@ -237,6 +240,9 @@ program parsec
   endif
   ! set the setup state on. why? see later.
   is_setup = .true.
+  if(parallel%iammaster) open(25,file='md.config',status='replace', position ='append')
+  
+  !For hybrid MD run
 
   ! ===============================================================
   ! Initialize standard output:
@@ -292,6 +298,10 @@ program parsec
        export_griddata_flag,chsym, &
        parallel%groups_num,parallel%procs_num,wstrt,nscf, &
        oldinpformat,outevflag,readwfndat,ignoresym,outputgw,enable_data_out,file_id,ierr)
+
+  mol_dynamic%xcur2 = clust%xatm
+  mol_dynamic%ycur2 = clust%yatm
+  mol_dynamic%zcur2 = clust%zatm
 
 #ifdef MPI
   ! so why is it so important to do this now?
@@ -390,7 +400,7 @@ program parsec
 
   if (parallel%iammaster) call initial(clust,elec_st,pbc, &
        mol_dynamic,move,elval,npolflg,field,ifield, &
-       istart,outevflag,grid%domain_shape,ierr)
+       istart,outevflag,grid%domain_shape,bdev,ierr)
   call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
        move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,&
        file_id,ierr)
@@ -424,7 +434,31 @@ program parsec
        parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(mol_dynamic%is_on,1,MPI_LOGICAL, &
        parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%class,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%hybrid,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%csw,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%check,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%class_restart,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(mol_dynamic%step_num,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%step_num_old,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%step_num_class,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%step_num_class_old,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%step_num_hybrid,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%seq,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%uhist,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%md_thr,1,MPI_DOUBLE_PRECISION, &
        parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(elec_st%mxwd, &
        1,MPI_INTEGER,parallel%masterid,parallel%comm,mpinfo)
@@ -542,14 +576,6 @@ program parsec
        1,MPI_LOGICAL,parallel%masterid,parallel%comm,mpinfo)
 #endif
 
-#ifdef AJB_DEBUG
-  if (parallel%iammaster) then
-     write(7,*)
-     write(7,*) ' BCATSED spin-orbit flags'
-     write(7,*)
-  endif
-     write(9,*) 'i am here bfore init_var !'
-#endif
   ! ===============================================================
   ! Send some basic info over to the procs.
   ! ===============================================================
@@ -573,14 +599,6 @@ program parsec
   call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
        move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,&
        file_id,ierr)
-#ifdef AJB_DEBUG
-  if (parallel%iammaster) then
-     write(7,*)
-     write(7,*) ' survived init var'
-     write(7,*)
-  endif
-#endif
-
 #ifdef ITAC
   call VTTRACEON(vt_ierr)  !AJB: I decided that tracing should begin here 
   call VTBEGIN( vt_grid_setup_state , vt_ierr)  !set the VT state to grid_setup
@@ -724,6 +742,7 @@ program parsec
        move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,&
        file_id,ierr)
 
+364 continue
 #ifdef ITAC
   call VTEND( vt_grid_setup_state, vt_ierr)
   call VTBEGIN( vt_nonloc, vt_ierr)
@@ -797,62 +816,76 @@ program parsec
 #endif
 
 
+  ! ===============================================================
+  ! Set ionic potential - superposition of local ionic potential
+  ! ===============================================================
+  ! 
+  if (solver%name /= TEST) then
+    select case(pbc%per)
+    case(0)
+      ! sets pot%vion, for grid points away from ions, the ionic
+      ! potential Zion/r  is used.  If any gridpoint is within rc of an ion,
+      ! the local pseudopotential is interpolated on the spot 
+      call ionpot(clust, grid, p_pot, parallel, pot%vion, oldinpformat)
+    case(1)
+      ! constructs the local potential using a superposition of the
+      ! ions and compensating gaussian charges
+      ! using the domain decomposition each PE eventually does:
+      !   pot%vion(1:mydim)=vion_local(1:mydim)-rho_gauss(1:mydim)
+      ! 
+      ! rho_gauss is a potential compensating for the fake charge added to vion_local, see below
+      ! 
+      ! vion_local is a superimposed contribution from each atom, 
+      ! although with Gaussian charge dist. cancellation to reduce the need for summing over
+      ! the cell replicas. The Zion/r form is used here as in ionpot, 
+      ! else, an on-the-spot interpolation is made for the local part of the
+      ! pseudopotential
+      !
+      ! WARNING: The interpolation is taken from ionpot, but only the part that
+      ! assumes a logarithmic gird is found, so "old style" is actually not supported
+      ! 
+      call ionpot_wire(clust, grid, pot, p_pot, pbc, rsymm, parallel, &
+                       solver%lpole)
+    case(2)
+        ! pretty much the same as ionpot_wire only in 2D, including the warning.
+      call ionpot_slab(clust, grid, pot, p_pot, pbc, rsymm, parallel, &
+                       solver%lpole)
+    case(3)
+      ! Completely serial starts in g-space,
+      ! with the v_first subroutine, which calculates 4 things
+      !
+      ! 1. vql(type,star) ionic potential per type and star (also used for forces)
+      ! 2. vionz , i.e. sum(vql*structure_factor): the total ionic potential
+      ! 3. dnc(type,star) core charge per type and g-star (for forces) , can be
+      !     done elsewhere
+      ! 4. FOR NO APPARENT REASON, now commented out: dvqj - approx for ionic
+      !      pot. derivative, 
+      !    
+      ! transfers vionz to real space using cfftw:dfft
+      ! and then changes the mapping to fit the real space grid and uses an
+      ! outdated method to export the potential pot%vion to all other PEs
+      call ionpbc(clust, grid, pbc, parallel, pot%vion, ipr)
+    end select
 
+  else
+    write(9,*) 'TEST MODE - Skipping ionic potential'
+  endif
 
-! ===============================================================
-! Set ionic potential - superposition of local ionic potential
-! ===============================================================
-! 
-if (solver%name /= TEST) then
-        select case(pbc%per)
-        case(0)
-                ! sets pot%vion, for grid points away from ions, the ionic
-                ! potential Zion/r  is used.  If any gridpoint is within rc of an ion,
-                ! the local pseudopotential is interpolated on the spot 
-                call ionpot(clust, grid, p_pot, parallel, pot%vion, oldinpformat)
-        case(1)
-                ! constructs the local potential using a superposition of the
-                ! ions and compensating gaussian charges
-                ! using the domain decomposition each PE eventually does:
-                !   pot%vion(1:mydim)=vion_local(1:mydim)-rho_gauss(1:mydim)
-                ! 
-                ! rho_gauss is a potential compensating for the fake charge added to vion_local, see below
-                ! 
-                ! vion_local is a superimposed contribution from each atom, 
-                ! although with Gaussian charge dist. cancellation to reduce the need for summing over
-                ! the cell replicas. The Zion/r form is used here as in ionpot, 
-                ! else, an on-the-spot interpolation is made for the local part of the
-                ! pseudopotential
-                !
-                ! WARNING: The interpolation is taken from ionpot, but only the part that
-                ! assumes a logarithmic gird is found, so "old style" is actually not supported
-                ! 
-                call ionpot_wire(clust, grid, pot, p_pot, pbc, rsymm, parallel, &
-                        solver%lpole)
-        case(2)
-                ! pretty much the same as ionpot_wire only in 2D, including the warning.
-                call ionpot_slab(clust, grid, pot, p_pot, pbc, rsymm, parallel, &
-                        solver%lpole)
-        case(3)
-                ! Completely serial starts in g-space,
-                ! with the v_first subroutine, which calculates 4 things
-                !
-                ! 1. vql(type,star) ionic potential per type and star (also used for forces)
-                ! 2. vionz , i.e. sum(vql*structure_factor): the total ionic potential
-                ! 3. dnc(type,star) core charge per type and g-star (for forces) , can be
-                !     done elsewhere
-                ! 4. FOR NO APPARENT REASON, now commented out: dvqj - approx for ionic
-                !      pot. derivative, 
-                !    
-                ! transfers vionz to real space using cfftw:dfft
-                ! and then changes the mapping to fit the real space grid and uses an
-                ! outdated method to export the potential pot%vion to all other PEs
-                call ionpbc(clust, grid, pbc, parallel, pot%vion, ipr)
-        end select
-
-else
-        write(9,*) 'TEST MODE - Skipping ionic potential'
-endif
+  ! ===============================================================
+  ! ADD external potential field (pot.dat)
+  ! ===============================================================
+#ifdef MPI
+  call MPI_BCAST(pot%fex_is, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+  call MPI_BCAST(pot%kin_name, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+  call MPI_BCAST(pot%vum, 1, MPI_DOUBLE_PRECISION, parallel%masterid, parallel%comm, mpinfo)
+  call MPI_BCAST(pot%vuk, 1, MPI_DOUBLE_PRECISION, parallel%masterid, parallel%comm, mpinfo)
+#endif
+  if (pot%fex_is) then
+     call potfield(grid, pbc, parallel, pot%vsion, pot%vshart, pot%rho0, pot%oldke, pot%fex_name, 131, ierr)
+  end if
+#ifdef MPI
+  call MPI_Barrier(parallel%comm, mpinfo)
+#endif
 
   ! this is the place to write out the potential and check what's going on
   ! Write pot%vion to external file if requested.
@@ -871,7 +904,11 @@ endif
          case(1)
             call forceion_wire(clust,pbc%latt_vec(1,1), enuc,ipr,p_pot%zion,ierr)
          case(2)
-            call ewald_slab(clust,pbc,enuc,1,p_pot%zion)
+            if (pot%fex_is) then 
+               call ewald_slab_pt(clust, pbc, enuc, 1, p_pot%zion, clust%qpt)
+            else
+               call ewald_slab(clust, pbc, enuc, 1, p_pot%zion)
+            end if
          case(3)
             call ewald_sum(clust,pbc,enuc,ipr,p_pot%zion)
          end select
@@ -1014,7 +1051,9 @@ endif
 #endif 
      do isp = 1, elec_st%nspin
         do ii = 1, parallel%mydim
-           pot%vold(ii,isp) = pot%vion(ii)+pot%vxc(ii,isp)+pot%vhart(ii)
+           if (pot%fex_is) pot%vion(ii) = pot%vion(ii) + pot%vsion(ii) + pot%vshart(ii)
+           pot%vold(ii,isp) = pot%vion(ii)+pot%vxc(ii,isp)+pot%vhart(ii) 
+           if (pot%fex_is) pot%vold(ii,isp) = pot%vold(ii,isp) + pot%vnadd(ii)
         enddo
      enddo
   endif
@@ -1063,6 +1102,11 @@ endif
   call VTEND ( vt_pre_scf_state, vt_ierr)
 #endif
 
+  if (mol_dynamic%hybrid .and. parallel%iammaster) then
+    write (7, *) '*********Performing hybrid molecular dynamics********'
+    if (mol_dynamic%seq) write (7, *) 'Sequential dynamics of DFT and pair potential'
+    if (mol_dynamic%uhist) write (7, *) 'Using previous data for fitting of the potential'
+  end if
 30 continue
 
   ! Set timers for self-consistent field and movement timings.
@@ -1118,6 +1162,7 @@ endif
   endif
 !#endif
 99 continue
+  if (mol_dynamic%class == .true. .or. mol_dynamic%csw == .true.) goto 2123
   do iter = 1, mxiter
        
 #ifdef ITAC
@@ -1281,7 +1326,9 @@ endif
      do isp = 1, elec_st%nspin
         do i = 1, parallel%mydim
            pot%vhxcold(i,isp) = pot%vnew(i,isp) - pot%vion(i)
+           if (pot%fex_is) pot%vhxcold(i,isp) = pot%vhxcold(i,isp) - pot%vnadd(i) 
            pot%vnew(i,isp) = pot%vhart(i) + pot%vxc(i,isp) + pot%vion(i)
+           if (pot%fex_is) pot%vnew(i,isp) = pot%vnew(i,isp) + pot%vnadd(i) 
         enddo
      enddo
 
@@ -1291,7 +1338,7 @@ endif
      ! Find total energy.
      ! ===============================================================
      call totnrg(elec_st,pot,pbc,parallel,exc,enuc,grid%hcub, &
-         clust%atom_num,bdev,.FALSE.,ierr)  ! .FALSE. argument is hack for vdw_flag
+                 clust%atom_num,bdev,.FALSE.,pot%newke,ierr)
      call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
          move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel, &
          file_id,ierr)
@@ -1473,7 +1520,7 @@ endif
             endif
 
              call totnrg(elec_st,pot,pbc,parallel,exc,enuc,grid%hcub, &
-                 clust%atom_num,bdev,elec_st%do_vdw,ierr)
+                         clust%atom_num,bdev,elec_st%do_vdw,pot%newke,ierr)
              call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
                  move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel, &
                  file_id,ierr)
@@ -1645,6 +1692,28 @@ endif
        call dipole(clust,rsymm,elec_st,grid,parallel,p_pot%zion)
 
   ! ===============================================================
+  ! Write out results for AFM (potential data)
+  ! ===============================================================
+  if (pot%fex_is) then
+    do isp = 1, elec_st%nspin
+      do ii = 1, parallel%mydim
+        pot%vion(ii) = pot%vion(ii) - pot%vsion(ii) - pot%vshart(ii)
+        pot%vold(ii,isp) = pot%vold(ii,isp) - pot%vnadd(ii)
+      end do
+    end do
+  end if
+  call potsave(clust, elec_st, grid, pbc, rsymm, pot%vion, pot%vhart, &
+               pot%vxc, elec_st%rho, elec_st%rhoc, pot%newke, parallel, 126)
+  if (pot%fex_is) then
+    do isp = 1, elec_st%nspin
+      do ii = 1, parallel%mydim
+        pot%vion(ii) = pot%vion(ii) + pot%vsion(ii) + pot%vshart(ii)
+        pot%vold(ii,isp) = pot%vold(ii,isp) + pot%vnadd(ii)
+      end do
+    end do
+  end if
+
+  ! ===============================================================
   ! Write out results for charge plots and restarts.
   ! ===============================================================
 !HERE BE DRAGONS!
@@ -1721,6 +1790,9 @@ endif
   ! ===============================================================
   ! POLARIZABILITY LOOP ENDS HERE !!
   ! ===============================================================
+  if (export_griddata_flag(1) /= 0) then
+    call export_grid_data(export_griddata_flag, parallel, pbc, grid, elec_st, pot)
+  end if
 
   ! ===============================================================
   ! Calculate forces on each nucleus. Start with local contribution.
@@ -1732,9 +1804,10 @@ endif
      call mysecond(tforce0)
   endif
 
+ !write(9,*) "Calling local forces"
   select case(pbc%per)
   case(3)
-     call forpbc(clust,elec_st,grid,pbc,parallel,elec_st%rho(1,1),pot%vxc)
+     call forpbc(clust,elec_st,grid,pbc,parallel,elec_st%rho(1,1),pot%vxc,pot)
   case(2)
      ! A temporary call, until forloc_slab will be written (ayelet)
      call forcloc_slab(clust,grid,pbc,pot,p_pot,rsymm,parallel, &
@@ -1745,6 +1818,9 @@ endif
   case(0)
      call forcloc(clust,grid,pot,p_pot,rsymm,parallel, &
           elec_st%rho(1,1),ipr,oldinpformat)
+     ! write(9,*) "Done loc forces for atoms"
+     ! if(pot%fex_is) call forcloc_pt(clust,grid,pot,p_pot,rsymm,parallel, &
+     !     elec_st%rho(1,1),ipr,oldinpformat)
   end select
   if(parallel%iammaster) then
      call mysecond(tforce1)
@@ -1767,11 +1843,12 @@ write(9,*) ' Adding non-local pseudopotential contribution to the force'
      call mysecond(tforce0)
   endif
 
+  write(9,*) "Calling nonloc forces"
   if ( maxval(abs(p_pot%uu)) > zero .or. maxval(abs(p_pot%jj)) > zero ) &
        call forcnloc_u(clust,elec_st,p_pot,u_pot, &
        symm,rsymm,parallel,ipr,ierr)
   call forcnloc(clust,elec_st,p_pot,nloc_p_pot, &
-      symm,rsymm,parallel,pbc%is_on,ipr,ierr)
+                symm,rsymm,parallel,pbc%is_on,ipr,ierr,pot)
 #ifdef AJB_DEBUG
 write(9,*) '    ....Done with non-local force contribution!'
 #endif
@@ -1805,8 +1882,14 @@ write(9,*) '    ....Done with non-local force contribution!'
   !
   ! Exit if no atom movements are needed.
   !
+  if (parallel%iammaster .and. (.not. mol_dynamic%csw) .and. (.not. mol_dynamic%class)) then
+    if (mod(move%num+1, mol_dynamic%every_save) == 0) then
+      call write_config(clust, mol_dynamic, pbc, move%num, bdev, 25)
+    end if
+  end if
+
   if ((move%is_on) .and. (move%mxmove == 0)) goto 80
-  if ( (mol_dynamic%is_on) .and. (mol_dynamic%step_num == 0) ) goto 80
+  if ((mol_dynamic%is_on) .and. (mol_dynamic%step_num == 0) .and. (.not. mol_dynamic%csw)) goto 4321
   ! ===============================================================
   ! Relax atomic coordinates to minimize energy.
   ! ===============================================================
@@ -1815,19 +1898,18 @@ write(9,*) '    ....Done with non-local force contribution!'
 #endif
   if (move%is_on) then
      if (parallel%iammaster) then
-!ifdef AJB_DEBUG
+#ifdef AJB_DEBUG
      write(7,*)
-     write(7,*) ' calling domove'
+     write(7,*) ' called domove'
      write(7,*)
-!#endif
+#endif
         call domove(clust,move,pbc,elec_st%etot,bdev,ipr,ierr)
-!        call myflush(66)
-!ifdef AJB_DEBUG
+        call myflush(66)
+#ifdef AJB_DEBUG
      write(7,*)
      write(7,*) ' finished domove'
      write(7,*)
-!        call myflush(7)
-!endif
+#endif
      endif
      call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
           move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,&
@@ -1878,11 +1960,24 @@ write(9,*) '    ....Done with non-local force contribution!'
 #ifdef ITAC
        call VTBEGIN( vt_move_state, vt_ierr)
 #endif
+2123 continue
   if (mol_dynamic%is_on .and. parallel%iammaster) then
-       call moldyn(clust,mol_dynamic,pbc,move%num,bdev)
-  endif
+    if (mol_dynamic%class .or. mol_dynamic%csw) then
+      write(7,*) "Classical dynamics step", move%num
+      call moldyn_class(clust, mol_dynamic, pbc, move%num, bdev)
+    else
+      call get_range(mol_dynamic, clust, 0, i)
+      if (mol_dynamic%emin < elec_st%etot) mol_dynamic%emin = elec_st%etot
+      if (mol_dynamic%emax > elec_st%etot) mol_dynamic%emax = elec_st%etot
+      call moldyn(clust,mol_dynamic,pbc,move%num,bdev)
+    end if
+  end if
 #ifdef MPI
+  call MPI_BCAST(mol_dynamic%contn,1,MPI_LOGICAL, &
+       parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(move%num,1,MPI_INTEGER, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%iframe,1,MPI_INTEGER, &
        parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(clust%xatm,clust%atom_num,MPI_DOUBLE_PRECISION, &
        parallel%masterid,parallel%comm,mpinfo)
@@ -1890,33 +1985,36 @@ write(9,*) '    ....Done with non-local force contribution!'
        parallel%masterid,parallel%comm,mpinfo)
   call MPI_BCAST(clust%zatm,clust%atom_num,MPI_DOUBLE_PRECISION, &
        parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(mol_dynamic%eclass,1,MPI_DOUBLE_PRECISION, &
+       parallel%masterid,parallel%comm,mpinfo)
+  call MPI_BCAST(elec_st%etot,1,MPI_DOUBLE_PRECISION, &
+       parallel%masterid,parallel%comm,mpinfo)
 #endif
+  if (mol_dynamic%hybrid .and. mol_dynamic%iframe > mol_dynamic%step_num_hybrid) then
+    if (parallel%iammaster) write (7, *) "Finishing hybrid MD, nstep =", mol_dynamic%iframe
+    mol_dynamic%hybrid = .false.
+    goto 80
+  end if
+  if (mol_dynamic%class .or. mol_dynamic%csw) then 
+    if (move%num > mol_dynamic%step_num_class) then
+      goto 80 
+    else
+      goto 4321
+    end if
+  end if
 #ifdef ITAC
        call VTEND( vt_move_state, vt_ierr)
 #endif
-     ! AJB: 
-     ! this is not so useful in its current form. commenting out for the moment
-      ! if (parallel%iammaster) then
-      !    inquire(file='stop_scf',exist=ioflag)
-      !    if (ioflag) then
-      !       ierr = -10
-      !       write(7,*)
-      !       write(7,*) 'WARNING: abort SCF '
-      !       write(7,*)
-      !    endif
-      ! endif
-! #ifdef MPI
-      ! call MPI_BCAST(ierr,1,MPI_INTEGER, &
-      !      parallel%masterid,parallel%comm,mpinfo)
-! #endif
-      ! if (ierr /= 0) goto 80
   !
   ! If no more atom movements are needed - leave the atom
   ! movemement loop.
   if ((.not. move%is_on) .and. (.not.mol_dynamic%is_on)) goto 80
   if ((move%is_on) .and. (move%num > move%mxmove)) goto 80
-  if ( (mol_dynamic%is_on) .and. &
-       (move%num > mol_dynamic%step_num) ) goto 80
+  if ( (mol_dynamic%is_on) .and. (move%num > mol_dynamic%step_num)) then
+    if (.not. mol_dynamic%hybrid) then
+      if (parallel%iammaster) close(25)
+    end if
+  end if
 
   ! ===============================================================
   ! ===============================================================
@@ -2020,7 +2118,7 @@ write(9,*) '    ....Done with non-local force contribution!'
           solver%lpole)
   case(2)
      call ionpot_slab(clust,grid,pot,p_pot,pbc,rsymm,parallel, &
-          solver%lpole)
+	  solver%lpole)
   case(3)
      call ionpbc(clust,grid,pbc,parallel,pot%vion,ipr)
   end select
@@ -2028,6 +2126,7 @@ write(9,*) '    ....Done with non-local force contribution!'
   ! Add the new ionic potential component.
   do isp = 1, elec_st%nspin
      do ii = 1, parallel%mydim
+        if (pot%fex_is) pot%vion(ii) = pot%vion(ii) + pot%vsion(ii) +pot%vshart(ii)
         pot%vnew(ii,isp) = pot%vnew(ii,isp) + pot%vion(ii)
      enddo
   enddo
@@ -2041,7 +2140,11 @@ write(9,*) '    ....Done with non-local force contribution!'
      case(1)
         call forceion_wire(clust,pbc%latt_vec(1,1), enuc,ipr,p_pot%zion,ierr)
      case(2)
-        call ewald_slab(clust,pbc,enuc,ipr,p_pot%zion)
+        if (pot%fex_is) then 
+          call ewald_slab_pt(clust, pbc, enuc, 1, p_pot%zion, clust%qpt)
+        else
+          call ewald_slab(clust, pbc, enuc, 1, p_pot%zion)
+        end if
      case(3)
         call ewald_sum(clust,pbc,enuc,ipr,p_pot%zion)
      end select
@@ -2055,9 +2158,72 @@ write(9,*) '    ....Done with non-local force contribution!'
        move, mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,&
        file_id,ierr)
 
+4321 continue
+  if (mol_dynamic%hybrid .and. mol_dynamic%csw == .false. .and. mol_dynamic%check .and. move%num == 0) then
+#ifdef MPI
+    call MPI_BCAST(elec_st%etot, 1, MPI_DOUBLE_PRECISION, parallel%masterid, parallel%comm, mpinfo)
+#endif
+    if (parallel%iammaster) then 
+      write (7, *) "Finished checking run"
+      write (7, *) "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$"
+      write (7, *) "The DFT and classical energies are :", elec_st%etot,mol_dynamic%eclass, "(Ry)"
+      write (7, *) "The error in energy is :", (elec_st%etot - mol_dynamic%eclass)*rydberg/dble(clust%atom_num), "(eV/atom)"
+    end if
+    if (abs(elec_st%etot - mol_dynamic%eclass)*rydberg/dble(clust%atom_num) < mol_dynamic%md_thr .and. mol_dynamic%contn == .false.) then
+       mol_dynamic%check = .false.
+       mol_dynamic%csw = .true.
+       mol_dynamic%step_num = mol_dynamic%step_num_old 
+       mol_dynamic%step_num_class = mol_dynamic%step_num_class_old
+       ! mol_dynamic%step_num_class = mol_dynamic%step_num_class_old / 2.d0
+       move%num = 0
+       if (parallel%iammaster) write (7, *) "Continue classical dynamics"
+       mol_dynamic%contn = .true.
+       if (parallel%iammaster) write (7, *) mol_dynamic%step_num_class, "classical steps will be done"  
+       ! if(parallel%iammaster) write(7,*) "with half time step", mol_dynamic%time_step
+       if (parallel%iammaster) write (7, *) ""  
+#ifdef MPI
+       call MPI_BCAST(mol_dynamic%contn, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+       call MPI_BCAST(mol_dynamic%csw, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+       call MPI_BCAST(mol_dynamic%check, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+       call MPI_BCAST(move%num, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+#endif
+        ! if(parallel%iammaster) close(25)
+       goto 99
+     else
+       if (mol_dynamic%contn .and. parallel%iammaster) write (7, *) "Cannot continue classical MD (returned)!"
+       mol_dynamic%dist_min(:,:) = 30.0d0
+       mol_dynamic%dist_max(:,:) =  0.0d0
+       mol_dynamic%theta_min(:,:,:) =  1.0d0
+       mol_dynamic%theta_max(:,:,:) = -1.0d0
+       mol_dynamic%emin = -123d20
+       mol_dynamic%emax =  0.d0
+       mol_dynamic%step_num = mol_dynamic%step_num_old 
+       mol_dynamic%step_num_class = mol_dynamic%step_num_class_old
+       ! if (abs(elec_st%etot - mol_dynamic%eclass) > (mol_dynamic%md_thr * 10.d0)) then
+       !   mol_dynamic%step_num = mol_dynamic%step_num_old * 2
+       !   mol_dynamic%step_num_class = mol_dynamic%step_num_class_old / 2
+       !   if (parallel%iammaster) write (7, *) "The error is large"
+       !   if (parallel%iammaster) write (7, *) "Perfom half numbers of steps for classical MD"
+       ! end if
+       if (parallel%iammaster) write (7, *) "Continue ab initio molecular dynamics"
+       if (parallel%iammaster) write (7, *) mol_dynamic%step_num, "steps will be done"
+       mol_dynamic%contn = .false.
+       mol_dynamic%hybrid = .false.
+#ifdef MPI
+       call MPI_BCAST(mol_dynamic%contn,1,MPI_LOGICAL, &
+           parallel%masterid,parallel%comm,mpinfo)
+#endif
+       goto 2123
+     end if
+   end if
   if ((move%is_on) .and. (move%num <= move%mxmove)) goto 30
-  if( (mol_dynamic%is_on) .and.  &
-       (move%num <= mol_dynamic%step_num) )  goto 30
+  if (mol_dynamic%is_on .and. (mol_dynamic%step_num /= 0)) then
+    if (mol_dynamic%class .or. mol_dynamic%csw) then
+      if (move%num <= mol_dynamic%step_num_class) goto 99
+    else
+      if (move%num <= mol_dynamic%step_num) goto 30
+    end if
+  end if
 
   ! ===============================================================
   ! ===============================================================
@@ -2065,9 +2231,120 @@ write(9,*) '    ....Done with non-local force contribution!'
   ! ===============================================================
   ! ===============================================================
 
-
-
 80 continue
+
+  if (mol_dynamic%hybrid .and. mol_dynamic%csw .and. mol_dynamic%check == .false.) then
+    mol_dynamic%csw = .false.
+    ! mol_dynamic%time_step = mol_dynamic%time_step * 2.d0
+    mol_dynamic%class_restart = .true.
+    mol_dynamic%check = .true.
+    move%num = 0
+    mol_dynamic%step_num = 0
+    if (parallel%iammaster) then 
+      write (7, *) "Finished classical dynamics"
+      write (7, *) "---------------------------"
+      write (7, *) "Check run"
+      write (7, *) "The atomic coordinates of first atom are"
+      write (7, '(3f14.9)') clust%xatm(1), clust%yatm(1), clust%zatm(1)
+      ! write (7, *) "with usual time step", mol_dynamic%time_step
+    endif
+#ifdef MPI
+    call MPI_BCAST(mol_dynamic%csw, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(mol_dynamic%class_restart, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(mol_dynamic%check, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(move%num, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(mol_dynamic%step_num, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(mol_dynamic%step_num_old, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+#endif
+    !if(parallel%iammaster) open(25,file='md.config',status='replace', position ='append')
+    istart = 0
+    goto 364
+  end if
+
+  if (mol_dynamic%hybrid .and. mol_dynamic%csw == .false. .and. mol_dynamic%check) then
+    if (parallel%iammaster) close (25) 
+    if (parallel%iammaster) write (7, *) "Finished ab initio run"
+    if (parallel%iammaster) write (7, *) "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$S$$$$$$$$$$$$$$$$$$"
+    if (parallel%iammaster) write (7, *) "The previous configurations are added"
+    if (mol_dynamic%uhist .and. parallel%iammaster) then
+      call system('cp md.config prev2.config')
+      call system('cat prev.config >> md.config')
+      call system('cp prev2.config prev.config')
+    end if
+    if (parallel%iammaster) write (7, *) '****************Running an external program: potfit****************'
+    if (parallel%iammaster) write (7, *) ""
+    if (parallel%iammaster) then
+      if (mol_dynamic%ptype == 4) then
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_mtheta md.param >> Potfit.out')
+      else if (mol_dynamic%ptype == 5) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_ljmt md.param >> Potfit.out')
+      else if (mol_dynamic%ptype == 6) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_eam md.param >> Potfit.out')
+      else if (mol_dynamic%ptype == 7) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_stiweb md.param >> Potfit.out')
+      else
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_pair md.param >> Potfit.out')
+      end if
+    end if
+    ! if (parallel%iammaster) write(cpcmnd, "('cp md.plot', ' potential', i4.4)") mol_dynamic%iframe
+    if (parallel%iammaster) call system(cpcmnd)
+    ! if (parallel%iammaster) call system('cp md.pot_end md.pot')
+    mol_dynamic%check = .false.
+    mol_dynamic%csw = .true.
+    ! mol_dynamic%time_step = mol_dynamic%time_step / 2.d0
+    if (parallel%iammaster) write (7,*) mol_dynamic%step_num_class, "classical steps will be done"
+    ! if (parallel%iammaster) write(7,*) "with half time step", mol_dynamic%time_step
+    if (parallel%iammaster) write (7, *) ""  
+    move%num = 0
+#ifdef MPI
+    call MPI_BCAST(mol_dynamic%csw, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(mol_dynamic%check, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(move%num, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+#endif
+     goto 99
+  end if
+ 
+  call MPI_BARRIER(parallel%comm, mpinfo)
+  if (mol_dynamic%hybrid .and. mol_dynamic%csw == .false. .and. mol_dynamic%check == .false.) then
+    if (parallel%iammaster) close (25) 
+    if (parallel%iammaster) write (7, *) "Finished initial ab initio MD run"
+    if (parallel%iammaster) write (7, *) "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$S$$$$$$$$$$$$$$$$$$"
+    if (parallel%iammaster) write (7, *) '****************Running an external program: potfit****************'
+    if (parallel%iammaster) write (7, *) ""
+    if (parallel%iammaster) then 
+      if (mol_dynamic%ptype == 4) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_mtheta md.param > Potfit.out')
+      else if (mol_dynamic%ptype == 5) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_ljmt md.param > Potfit.out')
+      else if (mol_dynamic%ptype == 6) then 
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_eam md.param > Potfit.out')
+      else if (mol_dynamic%ptype == 7) then 
+        call system('mpiexec -n 1 /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_stiweb md.param > Potfit.out')
+        ! call system('/work/03545/tg828447/lonestar/Bulk_Silicon/XSF_test/test.sh')
+      else
+        call system('mpiexec /home1/03545/tg828447/bin/potfit/potfit_mpi_apot_pair md.param > Potfit.out')
+      end if
+    end if
+    call MPI_BARRIER(parallel%comm, mpinfo)
+    if (parallel%iammaster) call system('cp md.config prev.config')
+    ! if (parallel%iammaster) write(cpcmnd, "('cp md.plot', ' potential', i4.4)") mol_dynamic%iframe
+    if (parallel%iammaster) call system(cpcmnd)
+    ! if (parallel%iammaster) call system('cp md.pot_end md.pot')
+    mol_dynamic%csw =.true.
+    !mol_dynamic%time_step = mol_dynamic%time_step / 2.d0
+    if (parallel%iammaster) write (7, *) mol_dynamic%step_num_class, "classical steps will be done"
+    ! if(parallel%iammaster) write(7,*) "with half time step", mol_dynamic%time_step
+    if (parallel%iammaster) write (7, *) ""
+    ! mol_dynamic%md_thr = elec_st%etot / 2000.d0
+    if (parallel%iammaster) write (7, *) "The threshold for QM/CL difference is", mol_dynamic%md_thr
+    if (parallel%iammaster) write (7, *) ""
+    move%num = 0
+#IFDEF MPI
+    call MPI_BCAST(mol_dynamic%csw, 1, MPI_LOGICAL, parallel%masterid, parallel%comm, mpinfo)
+    call MPI_BCAST(move%num, 1, MPI_INTEGER, parallel%masterid, parallel%comm, mpinfo)
+#ENDIF
+    goto 99
+  end if
 
 #ifdef ITAC
   call VTBEGIN( vt_post_processing_state, vt_ierr)
@@ -2190,9 +2467,9 @@ write(9,*) '    ....Done with non-local force contribution!'
   endif !parallel%iammaster
 
   ! Write grid data to external files if requested.
-  if (export_griddata_flag(1) /= 0) then
-     call export_grid_data(export_griddata_flag,parallel,pbc,grid,elec_st,pot)
-  endif
+! if (export_griddata_flag(1) /= 0) then
+!    call export_grid_data(export_griddata_flag,parallel,pbc,grid,elec_st,pot)
+! endif
 
   if (parallel%iammaster) then
      ! Report timing
@@ -2238,11 +2515,9 @@ write(9,*) '    ....Done with non-local force contribution!'
 !     clust, p_pot, ipr, ierr) 
 ! endif
   call exit_err (clust,elec_st,grid,pot,p_pot,nloc_p_pot,u_pot, &
-       move,mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,file_id,0)
+       move,mol_dynamic,pbc,mixer,solver,symm,rsymm,parallel,file_id,-666)
 
 ! AJB: FAIL SAFE -  will this work?
-#ifdef MPI
-     call MPI_FINALIZE(mpinfo)
-#endif
+  call MPI_ABORT(MPI_COMM_WORLD, -1, mpinfo)
 end program parsec
 !===============================================================
