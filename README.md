@@ -2,13 +2,13 @@
 
 ## Current release
 
-This version is PARSEC 1.4. It is the core engine of PARSEC that solves the Kohn–Sham equations.
+This version is PARSEC 1.4 with the frozen density embedding theory (FDET) implementation. FDET can be employed to accelerate atomic force microscopy (AFM) simulations.  
 
 ## About PARSEC
 
-PARSEC is a computer code that solves the Kohn-Sham equations by expressing electron wave functions directly in real space without the use of explicit basis sets. It uses norm-conserving pseudopotentials, such as Troullier-Martins and other varieties. It is designed for *ab initio* quantum mechanical calculations of the electronic structure of matter within density functional theory.
+PARSEC is a computer code that solves the Kohn-Sham equations by expressing electron wave functions directly in real space without the use of explicit basis sets. It uses norm-conserving pseudopotentials, such as Troullier-Martins and other varieties. It is designed for *ab initio* quantum mechanical calculations of the electronic structure of matter within density functional theory.  
 
-PARSEC is optimized for massively parallel computing environments but is also compatible with serial machines. A finite-difference approach is used for the calculation of spatial derivatives. Owing to the sparsity of the Hamiltonian matrix, the Kohn-Sham equations are solved by direct diagonalization using extremely efficient sparse-matrix eigensolvers. 
+PARSEC is optimized for massively parallel computing environments but is also compatible with serial machines. A finite-difference approach is used for the calculation of spatial derivatives. Owing to the sparsity of the Hamiltonian matrix, the Kohn-Sham equations are solved by direct diagonalization using extremely efficient sparse-matrix eigensolvers.  
 
 Some of its features are:
 - Choice of boundary conditions: periodic (in all three directions) or confined
@@ -33,9 +33,21 @@ mpirun -np 8 ../../../src/parsec-ubuntu_intel-ifx-2024.2.0.mpi
 
 ## Terms of usage
 
-If you publish work using our code, please cite some of the following papers:
+If you publish work using PARSEC, please cite some of the following papers:  
 
-1.  James R. Chelikowsky, Norm Troullier, and Yousef Saad, *Finite-difference-pseudopotential method: electronic structure calculations without a basis*, [Physical Review Letters **72**, 1240](https://doi.org/10.1103/PhysRevLett.72.1240) (1994).
-2.  James R. Chelikowsky, *The pseudopotential-density functional method applied to nanostructures*, [Journal of Physics D: Applied Physics **33**, R33](https://doi.org/10.1088/0022-3727/33/8/201) (2000).
-3.  Leeor Kronik, Adi Makmal, Murilo L. Tiago, Manuel M. G. Alemany, Manish Jain, Xiangyang Huang, Yousef Saad, and James R. Chelikowsky, *PARSEC – the pseudopotential algorithm for real-space electronic structure calculations: recent advances and novel applications to nano-structures*, [Physica Status Solidi (b) **243**, 1063](https://doi.org/10.1002/pssb.200541463) (2006).
-4.  Yousef Saad, James R. Chelikowsky, and Suzanne M. Shontz, *Numerical methods for electronic structure calculations of materials*, [SIAM Review **52**, 3](https://doi.org/10.1137/060651653) (2010). 
+* James R. Chelikowsky, Norm Troullier, and Yousef Saad, *Finite-difference-pseudopotential method: electronic structure calculations without a basis*, [Physical Review Letters **72**, 1240](https://doi.org/10.1103/PhysRevLett.72.1240) (1994).
+* James R. Chelikowsky, *The pseudopotential-density functional method applied to nanostructures*, [Journal of Physics D: Applied Physics **33**, R33](https://doi.org/10.1088/0022-3727/33/8/201) (2000).
+* Leeor Kronik, Adi Makmal, Murilo L. Tiago, Manuel M. G. Alemany, Manish Jain, Xiangyang Huang, Yousef Saad, and James R. Chelikowsky, *PARSEC – the pseudopotential algorithm for real-space electronic structure calculations: recent advances and novel applications to nano-structures*, [Physica Status Solidi (b) **243**, 1063](https://doi.org/10.1002/pssb.200541463) (2006).
+* Yousef Saad, James R. Chelikowsky, and Suzanne M. Shontz, *Numerical methods for electronic structure calculations of materials*, [SIAM Review **52**, 3](https://doi.org/10.1137/060651653) (2010).
+
+For a comprehensive overview of AFM simulation methods developed within our group, see:  
+
+* James R. Chelikowsky, Dingxin Fan, Alex J. Lee, and Yuki Sakai, *Simulating noncontact atomic force microscopy images*, [Physical Review Materials **3**, 110302](https://doi.org/10.1103/PhysRevMaterials.3.110302) (2019).
+
+If you use the FDET method for AFM simulations, please cite:  
+
+* Yuki Sakai, Alex J. Lee, and James R. Chelikowsky, *First-principles atomic force microscopy image simulations with density embedding theory*, [Nano Letters **16**, 3242](https://doi.org/10.1021/acs.nanolett.6b00741) (2016).
+
+Scripts for the iterative tip tilting correction are available in a [separate repository](https://github.com/tangzhao20/dftscr), with accompanying [documentation](https://github.com/tangzhao20/dftscr/wiki/AFM-simulation-preparation). If this method is employed, please cite the following publication:  
+
+* Zhao Tang, Dingxin Fan, and James R. Chelikowsky, *Real space simulation for state-resolved high-resolution atomic force microscopy of defects in monolayer h-BN*, [Physical Review Materials **9**, 086201](https://doi.org/10.1103/ncc2-rhmb) (2025).
