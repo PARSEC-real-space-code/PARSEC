@@ -15,6 +15,7 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
   use potential_module
   use pbc_module
   use parallel_data_module
+  use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
   implicit none
   !
   ! Input/Output variables:
@@ -176,7 +177,7 @@ subroutine totnrg(elec_st,pot,pbc,parallel,totexc,enuc,hcub,natom,bdev,vdw_flag,
      write(7,52) etot 
      write(7,54) bdev 
      write(7,*)
-     if (isnan(excnew) .or. isnan(totexc)) then
+     if (ieee_is_nan(excnew) .or. ieee_is_nan(totexc)) then
         write (7,'(A)') " ERROR: NaNs were observed when using the PBE functional with a large radius."
         write (7,'(A)') "        If this is the case, try reducing the radius."
         call myflush(7)
