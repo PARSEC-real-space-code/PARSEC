@@ -1,13 +1,13 @@
 #
 # Architecture name
 #
-KSEIG_ARCH = vista_gg
+KSEIG_ARCH = vista
 ##### config/make.vista_gg #####
 #
-# module load nvpl fftw3
+# module load nvidia/26.1
 #
 # Currently Loaded Modules:
-#   1) nvidia/24.7   2) ucx/1.17.0   3) openmpi/5.0.5   4) cmake/3.29.5   5) TACC   6) nvpl/24.7   7) fftw3/3.3.10
+#   1) ucc/1.7.0   2) ucx/1.20.0   3) cmake/4.1.1   4) xalt/3.1   5) TACC   6) nvidia/26.1   7) nvpl/26.1   8) openmpi/5.0.9
 #
 # Also, you might want to use the FLAGS_OMP.sh in the tools directory
 # to properly setup the openmp shell env parameters, i.e.:
@@ -21,7 +21,8 @@ KSEIG_ARCH = vista_gg
 #   that has been tuned for your hardware
 #   for mkl - don't need to link anything explicitly
 #####
-LIBBLAS = -mp -L${TACC_NVPL_LIB} -lnvpl_blas_lp64_seq -lnvpl_lapack_lp64_seq -lnvpl_blacs_lp64_openmpi5 -lnvpl_scalapack_lp64
+CPPOPT += -DOMPFUN
+LIBBLAS = -mp -L${TACC_NVPL_LIB} -lnvpl_blas_lp64_gomp -lnvpl_lapack_lp64_gomp -lnvpl_blacs_lp64_openmpi5 -lnvpl_scalapack_lp64
 
 ######### RECOMMENDED: FFTW3
 # FFTW libraries should be downloaded from
@@ -33,7 +34,7 @@ LIBBLAS = -mp -L${TACC_NVPL_LIB} -lnvpl_blas_lp64_seq -lnvpl_lapack_lp64_seq -ln
 #   for mkl - don't need to link anything explicitly
 #####
 CPPOPT += -DUSEFFTW3 
-LIBFFTW = -L${TACC_FFTW3_LIB} -lfftw3
+LIBFFTW = -lnvpl_fftw
 
 ########### OPTIONAL: TRLANC
 # TRLAN libraries are included with PARSEC - but you must compile them separately
@@ -96,7 +97,7 @@ FFLAGS += -Ofast
 FFLAGS += -mcpu=neoverse-v2
 #FFLAGS += -mcpu=native
 FFLAGS += -g -traceback
-FFLAGS += -I${TACC_NVPL_INC} -I${TACC_FFTW3_INC}
+FFLAGS += -I${TACC_NVPL_INC}
 
 #library archiver
 AR = ar
@@ -106,7 +107,7 @@ AR = ar
 #  for config files that use non-mpi components, and .mpi for the mpi variants.
 #  This is entirely up to you, though.
 #######
-EXT ?= .mpi
+EXT ?= .mpi.omp
 
 ##### 
 # machine-dependent options
